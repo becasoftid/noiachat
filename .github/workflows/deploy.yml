@@ -2,7 +2,7 @@ name: Deploy NoiaChat to Droplet
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -23,9 +23,9 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: 167.172.251.181
-          username: root
-          port: 22
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          port: ${{ secrets.DROPLET_PORT }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
           command_timeout: 30m
           script_stop: true
@@ -43,13 +43,8 @@ jobs:
             php8.4 artisan down || true
 
             echo "🔹 Fetch y reset a remoto"
-            git fetch origin master || git fetch origin main
-
-            if git ls-remote --exit-code origin master >/dev/null 2>&1; then
-              git reset --hard origin/master
-            else
-              git reset --hard origin/main
-            fi
+            git fetch origin main
+            git reset --hard origin/main
 
             echo "🔹 Último commit desplegado:"
             git log -1 --oneline || true

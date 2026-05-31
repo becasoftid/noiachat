@@ -11,6 +11,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Workflow de GitHub Actions para desplegar NoiaChat automaticamente en la droplet cuando se suben cambios a `main` o `master`.
 - Validacion del secreto `DROPLET_SSH_KEY` antes de ejecutar el despliegue por SSH.
 - Script de despliegue remoto con modo mantenimiento, sincronizacion con el remoto, instalacion de dependencias, migraciones, build de frontend, cacheo de Laravel, permisos y reinicio de servicios.
+- Ajuste del despliegue automatico para ejecutarse solo desde `main`, leer host, usuario y puerto desde secretos de GitHub Actions, y sincronizar siempre contra `origin/main`.
 
 ### Pendiente
 
