@@ -13,6 +13,10 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Script de despliegue remoto con modo mantenimiento, sincronizacion con el remoto, instalacion de dependencias, migraciones, build de frontend, cacheo de Laravel, permisos y reinicio de servicios.
 - Ajuste del despliegue automatico para ejecutarse solo desde `main`, leer host, usuario y puerto desde secretos de GitHub Actions, y sincronizar siempre contra `origin/main`.
 
+### Changed
+
+- Ajuste del workflow de despliegue para conectar directamente a la droplet `167.172.251.181` con usuario `root` y puerto `22`, manteniendo la autenticacion por el secreto `DROPLET_SSH_KEY`.
+
 ### Pendiente
 
 - Definir version publica inicial.
