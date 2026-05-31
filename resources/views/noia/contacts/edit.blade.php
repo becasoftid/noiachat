@@ -1,0 +1,1 @@
+<x-layouts.noia title="Editar Contacto" header="Editar contacto">@include('noia.contacts.partials.form', ['action' => route('contacts.update', $contact), 'method' => 'PUT', 'contact' => $contact])</x-layouts.noia>
