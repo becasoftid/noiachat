@@ -14,11 +14,11 @@ jobs:
 
       - name: Verificar que exista la llave SSH
         run: |
-          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "❌ SSH_PRIVATE_KEY está vacío o no definido"
+          if [ -z "${{ secrets.DROPLET_SSH_KEY }}" ]; then
+            echo "❌ DROPLET_SSH_KEY está vacío o no definido"
             exit 1
           fi
-          echo "✅ SSH_PRIVATE_KEY presente"
+          echo "✅ DROPLET_SSH_KEY presente"
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.10
@@ -26,7 +26,7 @@ jobs:
           host: 167.172.251.181
           username: root
           port: 22
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
           command_timeout: 30m
           script_stop: true
           debug: true
