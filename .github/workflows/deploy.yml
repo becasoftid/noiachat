@@ -1,0 +1,91 @@
+name: Deploy NoiaChat to Droplet
+
+on:
+  push:
+    branches: [ master, main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verificar que exista la llave SSH
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ SSH_PRIVATE_KEY está vacío o no definido"
+            exit 1
+          fi
+          echo "✅ SSH_PRIVATE_KEY presente"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 167.172.251.181
+          username: root
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 30m
+          script_stop: true
+          debug: true
+          script: |
+            set -e
+
+            APP_DIR=/var/www/noiachat
+            cd "$APP_DIR"
+
+            echo "🔹 Configurando git safe.directory"
+            git config --global --add safe.directory "$APP_DIR"
+
+            echo "🔹 Activando modo mantenimiento"
+            php8.4 artisan down || true
+
+            echo "🔹 Fetch y reset a remoto"
+            git fetch origin master || git fetch origin main
+
+            if git ls-remote --exit-code origin master >/dev/null 2>&1; then
+              git reset --hard origin/master
+            else
+              git reset --hard origin/main
+            fi
+
+            echo "🔹 Último commit desplegado:"
+            git log -1 --oneline || true
+
+            echo "🔹 Dependencias PHP"
+            php8.4 /usr/bin/composer install --no-dev --optimize-autoloader
+
+            echo "🔹 Migraciones"
+            php8.4 artisan migrate --force
+
+            echo "🔧 Frontend Build"
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+
+            export NODE_ENV=production
+            export NODE_OPTIONS="--max-old-space-size=1024"
+            npm run build
+
+            echo "🔹 Limpiando caches"
+            php8.4 artisan optimize:clear
+            php8.4 artisan config:cache
+            php8.4 artisan route:cache
+            php8.4 artisan view:cache
+
+            echo "🔹 Corrigiendo permisos"
+            chown -R www-data:www-data storage bootstrap/cache
+            chmod -R 775 storage bootstrap/cache
+
+            echo "🔹 Reiniciando servicios"
+            systemctl restart php8.4-fpm
+            systemctl reload nginx
+
+            echo "🔹 Desactivando modo mantenimiento"
+            php8.4 artisan up
+
+            echo "✅ Deploy completo de NoiaChat desde GitHub Actions 🚀"
