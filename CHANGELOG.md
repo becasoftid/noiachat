@@ -15,6 +15,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 
 ### Changed
 
+- Redisenio de la pantalla de login con una interfaz moderna para NoiaChat, panel visual de marca, formulario responsive y estilos enfocados en una aplicacion operativa de mensajeria y compliance.
 - Ajuste del workflow de despliegue para conectar directamente a la droplet `167.172.251.181` con usuario `root` y puerto `22`, manteniendo la autenticacion por el secreto `DROPLET_SSH_KEY`.
 - Ajuste del despliegue remoto para validar la disponibilidad de Composer y ejecutar la instalacion de dependencias PHP usando la ruta detectada por `which composer`.
 
