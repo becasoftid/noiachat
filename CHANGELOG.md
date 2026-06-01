@@ -16,6 +16,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 ### Changed
 
 - Ajuste del workflow de despliegue para conectar directamente a la droplet `167.172.251.181` con usuario `root` y puerto `22`, manteniendo la autenticacion por el secreto `DROPLET_SSH_KEY`.
+- Ajuste del despliegue remoto para validar la disponibilidad de Composer y ejecutar la instalacion de dependencias PHP usando la ruta detectada por `which composer`.
 
 ### Pendiente
 

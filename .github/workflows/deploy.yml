@@ -49,8 +49,12 @@ jobs:
             echo "🔹 Último commit desplegado:"
             git log -1 --oneline || true
 
+            echo "🔹 Validando Composer"
+            which composer
+            composer --version
+
             echo "🔹 Dependencias PHP"
-            php8.4 /usr/bin/composer install --no-dev --optimize-autoloader
+            php8.4 $(which composer) install --no-dev --optimize-autoloader
 
             echo "🔹 Migraciones"
             php8.4 artisan migrate --force
