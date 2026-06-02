@@ -24,9 +24,18 @@ class SendWhatsAppDocumentJob implements ShouldQueue
     {
         $message = Message::with('attachments.mediaFile')->findOrFail($this->messageId);
         $media = $message->attachments->first()?->mediaFile;
+        $statusService->transition($message, MessageStatus::SENDING, ['job' => self::class], 'sending');
         $response = $provider->sendDocument(new SendDocumentMessageDTO($message->id, $message->contact->primary_phone, asset('storage/'.$media->path), $media->original_name, $message->body));
-        $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_document', 'external_event_id' => data_get($response, 'messages.0.id'), 'payload' => $response]);
-        $statusService->transition($message, MessageStatus::SENT, $response, 'provider_sent');
+        $providerId = data_get($response, 'messages.0.id');
+        $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_document', 'external_event_id' => $providerId, 'payload' => $response]);
+        if (data_get($response, 'error')) {
+            $statusService->transition($message->fresh(), MessageStatus::FAILED, $response, 'provider_failed');
+
+            return;
+        }
+
+        $message->update(['provider_message_id' => $providerId]);
+        $statusService->transition($message->fresh(), MessageStatus::SENT, $response, 'provider_sent');
     }
 
     public function failed(Throwable $exception): void

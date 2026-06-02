@@ -12,12 +12,19 @@ use App\Modules\Contacts\Application\Services\ContactService;
 use App\Modules\Contacts\Infrastructure\Persistence\Models\Channel;
 use App\Modules\Contacts\Infrastructure\Persistence\Models\Contact;
 use App\Modules\Messaging\Application\Services\MessageStatusService;
+use App\Modules\Messaging\Application\DTOs\SendDocumentMessageDTO;
+use App\Modules\Messaging\Application\DTOs\SendImageMessageDTO;
+use App\Modules\Messaging\Application\DTOs\SendTemplateMessageDTO;
+use App\Modules\Messaging\Application\DTOs\SendTextMessageDTO;
+use App\Modules\Messaging\Application\DTOs\UploadMediaDTO;
 use App\Modules\Messaging\Application\UseCases\QueueTemplateMessageUseCase;
 use App\Modules\Messaging\Application\UseCases\QueueTextMessageUseCase;
 use App\Modules\Messaging\Domain\Enums\MessageStatus;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
+use App\Modules\Messaging\Infrastructure\Jobs\SendWhatsAppTextJob;
 use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
+use App\Modules\Shared\Domain\Contracts\MessagingProviderInterface;
 use App\Modules\Users\Infrastructure\Persistence\Models\Role;
 use App\Modules\Webhooks\Application\UseCases\ProcessWhatsAppWebhookUseCase;
 use Database\Seeders\DatabaseSeeder;
@@ -274,6 +281,56 @@ class NoiaChatMvpTest extends TestCase
             'type' => 'template',
             'message_template_id' => $template->id,
         ]);
+    }
+
+    public function test_provider_error_marks_text_message_as_failed(): void
+    {
+        $contact = $this->makeContact('573101000014', true);
+        $message = Message::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'user_id' => $this->admin->id,
+            'type' => 'text',
+            'status' => 'queued',
+            'body' => 'Hola',
+        ]);
+
+        $provider = new class implements MessagingProviderInterface {
+            public function sendText(SendTextMessageDTO $dto): array
+            {
+                return ['error' => ['message' => '(#131005) Access denied', 'code' => 131005]];
+            }
+
+            public function sendImage(SendImageMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function sendDocument(SendDocumentMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function sendTemplate(SendTemplateMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function uploadMedia(UploadMediaDTO $dto): array
+            {
+                return [];
+            }
+
+            public function parseWebhook(array $payload): array
+            {
+                return $payload;
+            }
+        };
+
+        (new SendWhatsAppTextJob($message->id))->handle($provider, app(MessageStatusService::class));
+
+        $this->assertDatabaseHas('messages', ['id' => $message->id, 'status' => 'failed']);
+        $this->assertDatabaseHas('message_events', ['message_id' => $message->id, 'status' => 'failed', 'event_type' => 'provider_failed']);
     }
 
     public function test_operator_can_retry_failed_message(): void

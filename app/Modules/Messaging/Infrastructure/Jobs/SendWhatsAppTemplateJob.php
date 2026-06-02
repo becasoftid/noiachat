@@ -43,6 +43,12 @@ class SendWhatsAppTemplateJob implements ShouldQueue
             'external_event_id' => $providerId,
             'payload' => $response,
         ]);
+        if (data_get($response, 'error')) {
+            $statusService->transition($message->fresh(), MessageStatus::FAILED, $response, 'provider_failed');
+
+            return;
+        }
+
         $message->update(['provider_message_id' => $providerId]);
         $statusService->transition($message->fresh(), MessageStatus::SENT, $response, 'provider_sent');
     }

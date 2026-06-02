@@ -28,6 +28,12 @@ class SendWhatsAppTextJob implements ShouldQueue
         $providerId = data_get($response, 'messages.0.id');
 
         $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_text', 'external_event_id' => $providerId, 'payload' => $response]);
+        if (data_get($response, 'error')) {
+            $statusService->transition($message->fresh(), MessageStatus::FAILED, $response, 'provider_failed');
+
+            return;
+        }
+
         $message->update(['provider_message_id' => $providerId]);
         $statusService->transition($message->fresh(), MessageStatus::SENT, $response, 'provider_sent');
     }

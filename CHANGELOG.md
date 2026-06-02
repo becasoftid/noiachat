@@ -15,6 +15,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 
 ### Changed
 
+- Ajuste del registro de envios WhatsApp para marcar como fallidos los mensajes cuando Meta responde con un error de proveedor, evitando estados `sent` sin `provider_message_id`.
 - Ajuste del webhook de WhatsApp para crear contactos provisionales con numeros entrantes desconocidos, relacionar mensajes recibidos con conversaciones y detectar contactos existentes aunque el telefono tenga formato local o internacional.
 - Ajuste de la integracion de WhatsApp para excluir el webhook de la validacion CSRF y leer credenciales desde `config/services.php`, compatible con cache de configuracion en produccion.
 - Estandarizacion visual de las vistas del panel, formularios, tablas, modales, navegacion, pantallas de cuenta y alertas globales para alinearlas con el nuevo lenguaje grafico aplicado al login.
