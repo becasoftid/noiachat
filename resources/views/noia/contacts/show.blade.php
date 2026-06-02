@@ -101,13 +101,13 @@
                             <form method="POST" action="{{ route('contacts.blacklist.destroy', [$contact, $entry]) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button class="text-sm text-sky-700">Quitar</button>
+                                <button class="noia-link text-sm">Quitar</button>
                             </form>
                         </li>
                     @endforeach
                 </ul>
             </div>
-            <div class="noia-card"><h3 class="font-semibold">Mensajes</h3><ul class="mt-3 space-y-2 text-sm">@foreach($contact->messages as $message)<li><a class="text-sky-700" href="{{ route('messages.show', $message) }}">{{ $messageTypeLabels[$message->type] ?? $message->type }} · {{ $messageStatusLabels[$message->status] ?? $message->status }}</a></li>@endforeach</ul></div>
+            <div class="noia-card"><h3 class="font-semibold">Mensajes</h3><ul class="mt-3 space-y-2 text-sm">@foreach($contact->messages as $message)<li><a class="noia-link" href="{{ route('messages.show', $message) }}">{{ $messageTypeLabels[$message->type] ?? $message->type }} · {{ $messageStatusLabels[$message->status] ?? $message->status }}</a></li>@endforeach</ul></div>
         </div>
     </div>
 </x-layouts.noia>

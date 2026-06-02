@@ -27,7 +27,7 @@
     </form>
     <div class="space-y-3">
         @foreach($conversations as $conversation)
-            <a href="{{ route('conversations.show', $conversation) }}" class="block rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:border-slate-300">
+            <a href="{{ route('conversations.show', $conversation) }}" class="noia-card block p-4 transition hover:-translate-y-0.5 hover:border-cyan-200">
                 <div class="flex items-center justify-between gap-4">
                     <div>
                         <p class="font-semibold">{{ $conversation->contact->full_name }}</p>

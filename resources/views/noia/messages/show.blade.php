@@ -68,7 +68,7 @@
                 <ul class="mt-3 space-y-2 text-sm">
                     @forelse($message->attachments as $attachment)
                         <li>
-                            <a href="{{ asset('storage/'.$attachment->mediaFile->path) }}" target="_blank" class="underline underline-offset-2">
+                            <a href="{{ asset('storage/'.$attachment->mediaFile->path) }}" target="_blank" class="noia-link">
                                 {{ $attachment->mediaFile->original_name }}
                             </a>
                             · {{ $attachment->mediaFile->mime_type }}

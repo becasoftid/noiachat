@@ -21,7 +21,7 @@
     @endphp
     <div class="grid gap-6 lg:grid-cols-[320px_1fr]">
         <aside class="space-y-6">
-            <div class="noia-card rounded-[28px]">
+            <div class="noia-card">
                 <h3 class="font-semibold">Gestión</h3>
                 <form method="POST" action="{{ route('conversations.assign', $conversation) }}" class="mt-4 space-y-3">
                     @csrf
@@ -47,10 +47,10 @@
             </div>
         </aside>
 
-        <div class="noia-card rounded-[28px]">
+        <div class="noia-card">
             <div class="space-y-4">
                 @forelse($timeline as $item)
-                    <div class="@if($item->direction === 'outbound') ml-auto bg-slate-900 text-white @else bg-slate-100 text-slate-900 @endif max-w-xl rounded-2xl px-4 py-3">
+                    <div class="@if($item->direction === 'outbound') ml-auto bg-[#10202a] text-white @else bg-slate-100 text-slate-900 @endif max-w-xl rounded-lg px-4 py-3 shadow-sm">
                         <div class="flex items-center justify-between gap-3">
                             <p class="text-xs font-medium uppercase tracking-[0.2em] opacity-70">{{ $item->direction === 'outbound' ? 'Saliente' : 'Entrante' }}</p>
                             <p class="text-xs opacity-70">{{ optional($item->created_at)->format('Y-m-d H:i') }}</p>
@@ -61,9 +61,9 @@
                         @endif
 
                         @if($item->attachments->isNotEmpty())
-                            <div class="mt-3 space-y-2 rounded-xl bg-black/10 p-3 text-sm">
+                            <div class="mt-3 space-y-2 rounded-lg bg-black/10 p-3 text-sm">
                                 @foreach($item->attachments as $attachment)
-                                    <a href="{{ asset('storage/'.$attachment->mediaFile->path) }}" target="_blank" class="block underline underline-offset-2">
+                                    <a href="{{ asset('storage/'.$attachment->mediaFile->path) }}" target="_blank" class="block noia-link">
                                         {{ $attachment->mediaFile->original_name }}
                                     </a>
                                 @endforeach
@@ -75,7 +75,7 @@
                         @endif
                     </div>
                 @empty
-                    <div class="rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-500">
+                    <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50/70 p-6 text-sm text-slate-500">
                         Esta conversación aún no tiene mensajes.
                     </div>
                 @endforelse
@@ -97,7 +97,7 @@
                         <option value="document">Documento</option>
                     </select>
                     <textarea class="noia-textarea min-h-[96px]" name="body" rows="2" placeholder="Texto opcional"></textarea>
-                    <input class="block w-full text-sm" type="file" name="file">
+                    <input class="noia-file-input" type="file" name="file">
                     <button class="noia-btn-info">Enviar adjunto</button>
                 </form>
                 <form method="POST" action="{{ route('conversations.reply-template', $conversation) }}" class="space-y-3 lg:col-span-2">

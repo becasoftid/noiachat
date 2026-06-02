@@ -15,6 +15,8 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 
 ### Changed
 
+- Ajuste de la integracion de WhatsApp para excluir el webhook de la validacion CSRF y leer credenciales desde `config/services.php`, compatible con cache de configuracion en produccion.
+- Estandarizacion visual de las vistas del panel, formularios, tablas, modales, navegacion, pantallas de cuenta y alertas globales para alinearlas con el nuevo lenguaje grafico aplicado al login.
 - Redisenio de la pantalla de login con una interfaz moderna para NoiaChat, panel visual de marca, formulario responsive y estilos enfocados en una aplicacion operativa de mensajeria y compliance.
 - Ajuste del workflow de despliegue para conectar directamente a la droplet `167.172.251.181` con usuario `root` y puerto `22`, manteniendo la autenticacion por el secreto `DROPLET_SSH_KEY`.
 - Ajuste del despliegue remoto para validar la disponibilidad de Composer y ejecutar la instalacion de dependencias PHP usando la ruta detectada por `which composer`.

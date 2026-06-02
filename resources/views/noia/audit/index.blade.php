@@ -36,7 +36,7 @@
             || filled(request('date_to'));
     @endphp
 
-    <div class="mb-6 rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+    <div class="noia-card mb-6">
         <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Trazabilidad</p>
@@ -59,12 +59,12 @@
                     type="button"
                     x-data
                     x-on:click="$dispatch('open-modal', 'audit-filters')"
-                    class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    class="noia-btn-primary"
                 >
                     Abrir filtros
                 </button>
                 @if($hasFilters)
-                    <a href="{{ route('audit-logs.index') }}" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
+                    <a href="{{ route('audit-logs.index') }}" class="noia-btn-secondary">
                         Limpiar
                     </a>
                 @endif
@@ -100,15 +100,15 @@
 
     <div class="mb-4 grid gap-3 md:grid-cols-4">
         @foreach($summary->take(4) as $row)
-            <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+            <div class="noia-card p-4">
                 <p class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ $moduleLabels[$row->module] ?? $row->module }}</p>
                 <p class="mt-2 text-2xl font-semibold">{{ $row->total }}</p>
             </div>
         @endforeach
     </div>
 
-    <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-        <table class="min-w-full text-sm">
+    <div class="noia-table-wrap">
+        <table class="noia-table">
             <thead class="bg-slate-50 text-left text-slate-500">
                 <tr>
                     <th class="px-4 py-3">Fecha</th>
@@ -135,12 +135,12 @@
     <div class="mt-4">{{ $logs->appends(request()->query())->links() }}</div>
 
     <x-modal name="audit-filters" max-width="2xl" focusable>
-        <div class="relative overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+        <div class="relative overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
             <button
                 type="button"
                 x-data
                 x-on:click="$dispatch('close-modal', 'audit-filters')"
-                class="absolute right-6 top-6 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+                class="absolute right-6 top-6 z-20 flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
                 aria-label="Cerrar filtros"
             >
                 <span class="text-2xl leading-none">&times;</span>
@@ -162,22 +162,22 @@
                 <div class="grid gap-4 md:grid-cols-2">
                     <label>
                         <span class="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Módulo</span>
-                        <input class="w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100" name="module" value="{{ request('module') }}" placeholder="Ej. contacts">
+                        <input class="noia-input" name="module" value="{{ request('module') }}" placeholder="Ej. contacts">
                     </label>
 
                     <label>
                         <span class="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Acción</span>
-                        <input class="w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100" name="action" value="{{ request('action') }}" placeholder="Ej. update">
+                        <input class="noia-input" name="action" value="{{ request('action') }}" placeholder="Ej. update">
                     </label>
 
                     <label>
                         <span class="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Tipo objetivo</span>
-                        <input class="w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100" name="target_type" value="{{ request('target_type') }}" placeholder="Ej. Message">
+                        <input class="noia-input" name="target_type" value="{{ request('target_type') }}" placeholder="Ej. Message">
                     </label>
 
                     <label>
                         <span class="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Usuario</span>
-                        <select class="w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100" name="user_id">
+                        <select class="noia-select" name="user_id">
                             <option value="">Todos los usuarios</option>
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}" @selected(request('user_id') == $user->id)>{{ $user->name }}</option>
@@ -187,26 +187,26 @@
 
                     <label>
                         <span class="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Desde</span>
-                        <input class="w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100" type="date" name="date_from" value="{{ request('date_from') }}">
+                        <input class="noia-input" type="date" name="date_from" value="{{ request('date_from') }}">
                     </label>
 
                     <label>
                         <span class="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Hasta</span>
-                        <input class="w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100" type="date" name="date_to" value="{{ request('date_to') }}">
+                        <input class="noia-input" type="date" name="date_to" value="{{ request('date_to') }}">
                     </label>
                 </div>
 
                 <div class="flex flex-col gap-4 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500 ring-1 ring-slate-200">
+                    <div class="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-500 ring-1 ring-slate-200">
                         {{ $hasFilters ? 'Los filtros actuales se aplicarán al guardar cambios.' : 'Puedes combinar campos o usar solo uno.' }}
                     </div>
                     <div class="flex flex-col gap-3 sm:flex-row">
                         @if($hasFilters)
-                            <a href="{{ route('audit-logs.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
+                            <a href="{{ route('audit-logs.index') }}" class="noia-btn-secondary">
                                 Limpiar
                             </a>
                         @endif
-                        <button class="inline-flex min-w-44 items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-slate-800">
+                        <button class="noia-btn-primary min-w-44">
                             Aplicar filtros
                         </button>
                     </div>

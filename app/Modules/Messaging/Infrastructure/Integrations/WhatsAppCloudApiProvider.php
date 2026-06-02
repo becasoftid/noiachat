@@ -61,10 +61,10 @@ class WhatsAppCloudApiProvider implements MessagingProviderInterface
 
     private function request(array $payload): array
     {
-        $baseUrl = rtrim((string) env('WHATSAPP_API_BASE_URL', 'https://graph.facebook.com/v21.0'), '/');
-        $phoneNumberId = env('WHATSAPP_PHONE_NUMBER_ID');
+        $baseUrl = rtrim((string) config('services.whatsapp.api_base_url', 'https://graph.facebook.com/v21.0'), '/');
+        $phoneNumberId = config('services.whatsapp.phone_number_id');
 
-        return Http::withToken((string) env('WHATSAPP_ACCESS_TOKEN'))
+        return Http::withToken((string) config('services.whatsapp.access_token'))
             ->post($baseUrl.'/'.$phoneNumberId.'/messages', $payload)
             ->json() ?? [];
     }

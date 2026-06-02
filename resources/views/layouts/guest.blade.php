@@ -14,15 +14,21 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+    <body class="font-sans text-slate-900 antialiased">
+        <div class="flex min-h-screen flex-col items-center justify-center bg-[#eef4f7] px-5 py-8">
+            <div class="mb-8">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-[#10202a] text-white shadow-lg shadow-slate-900/20">
+                        <span class="text-lg font-bold">N</span>
+                    </div>
+                    <div>
+                        <p class="text-lg font-semibold leading-none">NoiaChat</p>
+                        <p class="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Operations Hub</p>
+                    </div>
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            <div class="w-full max-w-md rounded-lg border border-slate-200 bg-white px-6 py-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)] sm:px-8">
                 {{ $slot }}
             </div>
         </div>

@@ -10,7 +10,7 @@ class WhatsAppWebhookController extends Controller
 {
     public function verify(Request $request)
     {
-        abort_unless($request->input('hub_verify_token') === env('WHATSAPP_WEBHOOK_VERIFY_TOKEN'), 403);
+        abort_unless($request->input('hub_verify_token') === config('services.whatsapp.webhook_verify_token'), 403);
 
         return response($request->input('hub_challenge'), 200);
     }

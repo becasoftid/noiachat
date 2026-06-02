@@ -41,7 +41,7 @@
         <a href="{{ route('messages.create') }}" class="noia-btn-primary">Nuevo envío</a>
     </div>
     <div class="noia-table-wrap">
-        <table class="min-w-full text-sm">
+        <table class="noia-table">
             <thead class="bg-slate-50 text-left text-slate-500">
                 <tr>
                     <th class="px-4 py-3">Contacto</th>
@@ -53,7 +53,7 @@
             <tbody>
                 @foreach($messages as $message)
                     <tr class="border-t border-slate-100">
-                        <td class="px-4 py-3"><a class="text-sky-700" href="{{ route('messages.show', $message) }}">{{ $message->contact->full_name }}</a></td>
+                        <td class="px-4 py-3"><a class="noia-link" href="{{ route('messages.show', $message) }}">{{ $message->contact->full_name }}</a></td>
                         <td class="px-4 py-3">{{ $typeLabels[$message->type] ?? $message->type }}</td>
                         <td class="px-4 py-3">{{ $statusLabels[$message->status] ?? $message->status }}</td>
                         <td class="px-4 py-3">{{ $message->created_at->format('Y-m-d H:i') }}</td>

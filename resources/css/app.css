@@ -4,15 +4,15 @@
 
 @layer components {
     .noia-card {
-        @apply rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-100;
+        @apply rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)];
     }
 
     .noia-card-soft {
-        @apply rounded-[22px] border border-slate-200 bg-slate-50/80 p-4;
+        @apply rounded-lg border border-slate-200 bg-slate-50/80 p-4;
     }
 
     .noia-input {
-        @apply w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100;
+        @apply h-11 w-full rounded-lg border border-slate-200 bg-slate-50/80 px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100;
     }
 
     .noia-select {
@@ -20,38 +20,98 @@
     }
 
     .noia-textarea {
-        @apply noia-input min-h-[110px] resize-y;
+        @apply w-full rounded-lg border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100 min-h-[110px] resize-y;
     }
 
     .noia-btn-primary {
-        @apply inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-800;
+        @apply inline-flex h-11 items-center justify-center rounded-lg bg-[#10202a] px-5 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-[#173141] focus:outline-none focus:ring-4 focus:ring-cyan-100;
     }
 
     .noia-btn-secondary {
-        @apply inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50;
+        @apply inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-cyan-100;
     }
 
     .noia-btn-success {
-        @apply inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-500;
+        @apply inline-flex h-11 items-center justify-center rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/10 transition hover:-translate-y-0.5 hover:bg-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-100;
     }
 
     .noia-btn-info {
-        @apply inline-flex items-center justify-center rounded-2xl bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-sky-600;
+        @apply inline-flex h-11 items-center justify-center rounded-lg bg-cyan-700 px-5 text-sm font-semibold text-white shadow-lg shadow-cyan-900/10 transition hover:-translate-y-0.5 hover:bg-cyan-600 focus:outline-none focus:ring-4 focus:ring-cyan-100;
     }
 
     .noia-btn-warning {
-        @apply inline-flex items-center justify-center rounded-2xl bg-amber-500 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-amber-400;
+        @apply inline-flex h-11 items-center justify-center rounded-lg bg-amber-500 px-5 text-sm font-semibold text-white shadow-lg shadow-amber-900/10 transition hover:-translate-y-0.5 hover:bg-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100;
     }
 
     .noia-btn-danger {
-        @apply inline-flex items-center justify-center rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-rose-500;
+        @apply inline-flex h-11 items-center justify-center rounded-lg bg-rose-600 px-5 text-sm font-semibold text-white shadow-lg shadow-rose-900/10 transition hover:-translate-y-0.5 hover:bg-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-100;
     }
 
     .noia-filter-bar {
-        @apply rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm ring-1 ring-slate-100;
+        @apply rounded-lg border border-slate-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.07)];
     }
 
     .noia-table-wrap {
-        @apply overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm ring-1 ring-slate-100;
+        @apply overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.07)];
+    }
+
+    .noia-table {
+        @apply min-w-full text-sm;
+    }
+
+    .noia-table thead {
+        @apply bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500;
+    }
+
+    .noia-table th {
+        @apply px-4 py-3;
+    }
+
+    .noia-table td {
+        @apply px-4 py-3 text-slate-700;
+    }
+
+    .noia-table tbody tr {
+        @apply border-t border-slate-100 transition hover:bg-slate-50/80;
+    }
+
+    .noia-alert {
+        @apply mb-5 rounded-lg border px-4 py-3 text-sm font-medium shadow-sm;
+    }
+
+    .noia-alert-success {
+        @apply noia-alert border-emerald-200 bg-emerald-50 text-emerald-800;
+    }
+
+    .noia-alert-danger {
+        @apply noia-alert border-rose-200 bg-rose-50 text-rose-800;
+    }
+
+    .noia-alert-warning {
+        @apply noia-alert border-amber-200 bg-amber-50 text-amber-800;
+    }
+
+    .noia-badge {
+        @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold;
+    }
+
+    .noia-badge-neutral {
+        @apply noia-badge border-slate-200 bg-slate-50 text-slate-600;
+    }
+
+    .noia-badge-success {
+        @apply noia-badge border-emerald-200 bg-emerald-50 text-emerald-700;
+    }
+
+    .noia-badge-danger {
+        @apply noia-badge border-rose-200 bg-rose-50 text-rose-700;
+    }
+
+    .noia-link {
+        @apply font-semibold text-cyan-700 transition hover:text-cyan-900 focus:outline-none focus:ring-4 focus:ring-cyan-100;
+    }
+
+    .noia-file-input {
+        @apply block w-full rounded-lg border border-dashed border-slate-300 bg-slate-50/80 px-4 py-3 text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-[#10202a] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-cyan-300 focus:outline-none focus:ring-4 focus:ring-cyan-100;
     }
 }
