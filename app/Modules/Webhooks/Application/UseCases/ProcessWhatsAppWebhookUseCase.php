@@ -61,12 +61,40 @@ class ProcessWhatsAppWebhookUseCase
             $fromPhone = PhoneNumber::from((string) data_get($messagePayload, 'from'))->value();
             $channel = $this->channels->findBySlug('whatsapp');
             $contact = $this->contacts->findByPrimaryPhone($fromPhone);
+            if (! $contact && $channel) {
+                $contact = $this->contacts->create([
+                    'first_name' => 'WhatsApp',
+                    'last_name' => null,
+                    'full_name' => 'WhatsApp '.$fromPhone,
+                    'email' => null,
+                    'primary_phone' => $fromPhone,
+                    'status' => 'active',
+                    'meta' => ['source' => 'whatsapp_webhook'],
+                ]);
+            }
+
+            if ($contact && $channel) {
+                $contact->contactChannels()->firstOrCreate(
+                    ['channel_id' => $channel->id, 'phone' => $fromPhone],
+                    ['is_primary' => true, 'is_active' => true],
+                );
+            }
+
             $conversation = $contact && $channel ? $this->conversations->findOrCreate($contact->id, $channel->id) : null;
+            $conversation?->update(['last_message_at' => now()]);
 
             $inbound = $this->inboundMessages->firstOrCreate(
                 ['provider_message_id' => data_get($messagePayload, 'id')],
                 ['contact_id' => $contact?->id, 'channel_id' => $channel?->id, 'conversation_id' => $conversation?->id, 'from_phone' => $fromPhone, 'body' => data_get($messagePayload, 'text.body'), 'payload' => $messagePayload],
             );
+
+            if (($contact || $conversation) && (! $inbound->contact_id || ! $inbound->conversation_id)) {
+                $inbound->update([
+                    'contact_id' => $contact?->id,
+                    'channel_id' => $channel?->id,
+                    'conversation_id' => $conversation?->id,
+                ]);
+            }
 
             if ($keyword = $this->keywordDetector->detect($inbound->body)) {
                 if ($contact && $channel) {

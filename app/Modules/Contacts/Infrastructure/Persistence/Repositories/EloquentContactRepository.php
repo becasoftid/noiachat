@@ -38,7 +38,29 @@ class EloquentContactRepository implements ContactRepositoryInterface
 
     public function findByPrimaryPhone(string $phone): ?Contact
     {
-        return Contact::query()->where('primary_phone', $phone)->first();
+        $contact = Contact::query()->where('primary_phone', $phone)->first();
+
+        if ($contact) {
+            return $contact;
+        }
+
+        $normalizedPhone = $this->normalizePhone($phone);
+
+        if ($normalizedPhone === '') {
+            return null;
+        }
+
+        return Contact::query()
+            ->with('contactChannels')
+            ->get()
+            ->first(function (Contact $contact) use ($normalizedPhone): bool {
+                $phones = collect([$contact->primary_phone])
+                    ->merge($contact->contactChannels->pluck('phone'))
+                    ->map(fn (?string $phone): string => $this->normalizePhone((string) $phone))
+                    ->filter();
+
+                return $phones->contains(fn (string $phone): bool => $this->phonesMatch($phone, $normalizedPhone));
+            });
     }
 
     public function ordered(): Collection
@@ -49,5 +71,21 @@ class EloquentContactRepository implements ContactRepositoryInterface
     public function findById(string $id): ?Contact
     {
         return Contact::query()->find($id);
+    }
+
+    private function normalizePhone(string $phone): string
+    {
+        return preg_replace('/\D+/', '', $phone) ?? '';
+    }
+
+    private function phonesMatch(string $storedPhone, string $incomingPhone): bool
+    {
+        if ($storedPhone === $incomingPhone) {
+            return true;
+        }
+
+        return strlen($storedPhone) >= 7
+            && strlen($incomingPhone) >= 7
+            && (str_ends_with($storedPhone, $incomingPhone) || str_ends_with($incomingPhone, $storedPhone));
     }
 }

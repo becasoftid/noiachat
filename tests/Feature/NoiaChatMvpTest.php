@@ -85,6 +85,37 @@ class NoiaChatMvpTest extends TestCase
         $this->assertDatabaseCount('opt_out_requests', 1);
     }
 
+    public function test_inbound_message_from_unknown_phone_creates_contact_and_conversation(): void
+    {
+        app(ProcessWhatsAppWebhookUseCase::class)->execute(['entry' => [['id' => 'entry-new-contact', 'changes' => [['value' => ['messages' => [['id' => 'wamid-inbound-new', 'from' => '573028018618', 'text' => ['body' => 'Prueba noia']]]]]]]]]);
+
+        $contact = Contact::query()->where('primary_phone', '573028018618')->firstOrFail();
+        $conversation = Conversation::query()->where('contact_id', $contact->id)->firstOrFail();
+
+        $this->assertDatabaseHas('inbound_messages', [
+            'provider_message_id' => 'wamid-inbound-new',
+            'contact_id' => $contact->id,
+            'conversation_id' => $conversation->id,
+            'body' => 'Prueba noia',
+        ]);
+    }
+
+    public function test_inbound_message_matches_existing_contact_with_local_phone_format(): void
+    {
+        $contact = $this->makeContact('3028018618', true);
+
+        app(ProcessWhatsAppWebhookUseCase::class)->execute(['entry' => [['id' => 'entry-existing-contact', 'changes' => [['value' => ['messages' => [['id' => 'wamid-inbound-existing', 'from' => '573028018618', 'text' => ['body' => 'Hola desde WhatsApp']]]]]]]]]);
+
+        $conversation = Conversation::query()->where('contact_id', $contact->id)->firstOrFail();
+
+        $this->assertDatabaseHas('inbound_messages', [
+            'provider_message_id' => 'wamid-inbound-existing',
+            'contact_id' => $contact->id,
+            'conversation_id' => $conversation->id,
+            'body' => 'Hola desde WhatsApp',
+        ]);
+    }
+
     public function test_opt_out_adds_contact_to_blacklist(): void
     {
         $contact = $this->makeContact('573101000007', true);
