@@ -19,6 +19,7 @@ El proyecto esta construido como un MVP funcional sobre Laravel, Breeze, Blade, 
 - [Roles y Permisos](#roles-y-permisos)
 - [Flujos del MVP](#flujos-del-mvp)
 - [WhatsApp Cloud API](#whatsapp-cloud-api)
+- [Manual de Integracion WhatsApp](#manual-de-integracion-whatsapp)
 - [Rutas Relevantes](#rutas-relevantes)
 - [Convenciones de Desarrollo](#convenciones-de-desarrollo)
 - [Despliegue](#despliegue)
@@ -370,6 +371,10 @@ POST /webhooks/whatsapp
 ```
 
 En Meta Developers configura la URL publica del webhook y el token de verificacion definido en `WHATSAPP_WEBHOOK_VERIFY_TOKEN`.
+
+## Manual de Integracion WhatsApp
+
+Consulta la guia operativa paso a paso en [docs/integracion-whatsapp.md](docs/integracion-whatsapp.md).
 
 ## Rutas Relevantes
 
