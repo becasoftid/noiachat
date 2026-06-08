@@ -94,10 +94,43 @@
 
             <div class="noia-card">
                 <h4 class="font-semibold">Provider logs</h4>
-                <ul class="mt-3 space-y-2 text-sm">
-                    @foreach($message->providerLogs as $log)
-                        <li>{{ $providerEventLabels[$log->event_type] ?? $log->event_type }} · {{ $log->created_at->format('Y-m-d H:i:s') }}</li>
-                    @endforeach
+                <ul class="mt-3 space-y-3 text-sm">
+                    @forelse($message->providerLogs as $log)
+                        <li class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="font-medium">{{ $providerEventLabels[$log->event_type] ?? $log->event_type }}</span>
+                                <span class="text-xs text-slate-500">{{ $log->created_at->format('Y-m-d H:i:s') }}</span>
+                            </div>
+
+                            @if($log->hasError())
+                                <div class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-800">
+                                    <p class="font-semibold">Error de Meta</p>
+                                    @if($log->errorCode())
+                                        <p class="mt-1">Código: {{ $log->errorCode() }}</p>
+                                    @endif
+                                    @if($log->errorMessage())
+                                        <p class="mt-1">{{ $log->errorMessage() }}</p>
+                                    @endif
+                                    @if($log->errorDetails())
+                                        <p class="mt-1">{{ $log->errorDetails() }}</p>
+                                    @endif
+                                </div>
+                            @endif
+
+                            @if(filled($log->external_event_id))
+                                <p class="mt-2 text-xs text-slate-500">ID proveedor: {{ $log->external_event_id }}</p>
+                            @endif
+
+                            @if(filled($log->payload))
+                                <details class="mt-3">
+                                    <summary class="cursor-pointer text-xs font-medium text-slate-500">Ver payload técnico</summary>
+                                    <pre class="mt-2 max-h-80 overflow-auto rounded-md bg-slate-900 p-3 text-xs text-slate-100">{{ json_encode($log->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
+                                </details>
+                            @endif
+                        </li>
+                    @empty
+                        <li class="text-slate-500">Sin logs del proveedor</li>
+                    @endforelse
                 </ul>
             </div>
         </div>

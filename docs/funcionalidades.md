@@ -44,9 +44,9 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | WA-001 | WhatsApp | Verificacion de webhook | Operativo | P0 | Challenge manual y Meta verificado | Agregar monitoreo periodico del endpoint. |
 | WA-002 | WhatsApp | Recepcion de mensajes entrantes | Operativo | P0 | Mensajes reales visibles en conversaciones | Agregar indicador de no leidos y auto-refresh. |
 | WA-003 | WhatsApp | Envio de texto libre | Operativo | P0 | Mensaje real recibido en WhatsApp; ventana 24h aplicada por compliance | Mostrar sugerencia de plantilla cuando la ventana este cerrada. |
-| WA-004 | WhatsApp | Estados enviado/entregado/leido | Operativo | P0 | Estados reales visibles en conversacion | Agregar panel de fallos y reintentos. |
+| WA-004 | WhatsApp | Estados enviado/entregado/leido | Operativo | P0 | Estados reales visibles en conversacion | Agregar panel de fallos consolidado. |
 | WA-005 | WhatsApp | Firma de webhook `X-Hub-Signature-256` | Operativo | P0 | Validacion HMAC-SHA256 con `WHATSAPP_APP_SECRET` y pruebas automatizadas | Configurar app secret en produccion y verificar evento real. |
-| WA-006 | WhatsApp | Manejo de errores de proveedor | Operativo | P0 | Commit `259b889`; errores se marcan como `failed` | Mostrar codigo/error de Meta en UI. |
+| WA-006 | WhatsApp | Manejo de errores de proveedor | Operativo | P0 | Errores se marcan como `failed` y se muestran en detalle/timeline con codigo y payload tecnico | Crear tablero operativo de fallos recientes. |
 | WA-007 | WhatsApp | Token permanente y rotacion | MVP | P0 | Token funcional configurado manualmente | Documentar fecha de expiracion, rotacion y responsable. |
 | MSG-001 | Mensajeria | Cola de mensajes de texto | Operativo | P0 | Envio real por WhatsApp | Mantener worker permanente. |
 | MSG-002 | Mensajeria | Envio de imagen/documento | MVP | P0 | Compliance corregido y cubierto por pruebas; jobs existen | Probar envio multimedia real con URL publica HTTPS. |
@@ -81,7 +81,6 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 - Probar envio multimedia real con URL publica HTTPS.
 - Configurar worker permanente.
 - Configurar backups automaticos.
-- Mostrar errores Meta en la interfaz.
 - Mover datos sensibles del deploy a secretos.
 
 ### P1 - Importante

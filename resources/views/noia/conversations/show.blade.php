@@ -87,6 +87,24 @@
                         @if(data_get($item->meta, 'eligibility_status') && data_get($item->meta, 'eligibility_status') !== 'allowed')
                             <p class="mt-1 text-xs opacity-70">Motivo: {{ $eligibilityLabels[data_get($item->meta, 'eligibility_status')] ?? data_get($item->meta, 'eligibility_status') }}</p>
                         @endif
+
+                        @php
+                            $providerError = $item->provider_logs->first(fn ($log) => $log->hasError());
+                        @endphp
+                        @if($providerError)
+                            <div class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+                                <p class="font-semibold">Error de Meta</p>
+                                @if($providerError->errorCode())
+                                    <p class="mt-1">Código: {{ $providerError->errorCode() }}</p>
+                                @endif
+                                @if($providerError->errorMessage())
+                                    <p class="mt-1">{{ $providerError->errorMessage() }}</p>
+                                @endif
+                                @if($providerError->errorDetails())
+                                    <p class="mt-1">{{ $providerError->errorDetails() }}</p>
+                                @endif
+                            </div>
+                        @endif
                     </div>
                 @empty
                     <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50/70 p-6 text-sm text-slate-500">

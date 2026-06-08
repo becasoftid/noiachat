@@ -367,9 +367,16 @@ class NoiaChatMvpTest extends TestCase
     public function test_provider_error_marks_text_message_as_failed(): void
     {
         $contact = $this->makeContact('573101000014', true);
+        $conversation = Conversation::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'status' => 'open',
+            'last_message_at' => now(),
+        ]);
         $message = Message::create([
             'contact_id' => $contact->id,
             'channel_id' => $this->channel->id,
+            'conversation_id' => $conversation->id,
             'user_id' => $this->admin->id,
             'type' => 'text',
             'status' => 'queued',
@@ -379,7 +386,15 @@ class NoiaChatMvpTest extends TestCase
         $provider = new class implements MessagingProviderInterface {
             public function sendText(SendTextMessageDTO $dto): array
             {
-                return ['error' => ['message' => '(#131005) Access denied', 'code' => 131005]];
+                return [
+                    'error' => [
+                        'message' => '(#131005) Access denied',
+                        'code' => 131005,
+                        'error_data' => [
+                            'details' => 'There was a problem with the access token or permissions.',
+                        ],
+                    ],
+                ];
             }
 
             public function sendImage(SendImageMessageDTO $dto): array
@@ -412,6 +427,19 @@ class NoiaChatMvpTest extends TestCase
 
         $this->assertDatabaseHas('messages', ['id' => $message->id, 'status' => 'failed']);
         $this->assertDatabaseHas('message_events', ['message_id' => $message->id, 'status' => 'failed', 'event_type' => 'provider_failed']);
+
+        $this->actingAs($this->admin)->get(route('messages.show', $message))
+            ->assertOk()
+            ->assertSee('Error de Meta')
+            ->assertSee('131005')
+            ->assertSee('Access denied')
+            ->assertSee('There was a problem with the access token or permissions.');
+
+        $this->actingAs($this->admin)->get(route('conversations.show', $conversation))
+            ->assertOk()
+            ->assertSee('Error de Meta')
+            ->assertSee('131005')
+            ->assertSee('Access denied');
     }
 
     public function test_operator_can_retry_failed_message(): void

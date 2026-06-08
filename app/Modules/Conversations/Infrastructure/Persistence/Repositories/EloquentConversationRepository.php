@@ -47,6 +47,7 @@ class EloquentConversationRepository implements ConversationRepositoryInterface
             'channel',
             'assignedUser',
             'messages.attachments.mediaFile',
+            'messages.providerLogs',
             'inboundMessages',
         ]);
 

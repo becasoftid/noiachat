@@ -128,6 +128,7 @@ class ConversationController extends Controller
                 'meta' => $message->meta,
                 'created_at' => $message->created_at,
                 'attachments' => $message->attachments,
+                'provider_logs' => $message->providerLogs,
             ];
         });
 
@@ -140,6 +141,7 @@ class ConversationController extends Controller
                 'meta' => [],
                 'created_at' => $message->created_at,
                 'attachments' => collect(),
+                'provider_logs' => collect(),
             ];
         });
 
