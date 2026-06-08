@@ -17,9 +17,11 @@ use App\Modules\Messaging\Application\DTOs\SendImageMessageDTO;
 use App\Modules\Messaging\Application\DTOs\SendTemplateMessageDTO;
 use App\Modules\Messaging\Application\DTOs\SendTextMessageDTO;
 use App\Modules\Messaging\Application\DTOs\UploadMediaDTO;
+use App\Modules\Messaging\Application\UseCases\QueueMediaMessageUseCase;
 use App\Modules\Messaging\Application\UseCases\QueueTemplateMessageUseCase;
 use App\Modules\Messaging\Application\UseCases\QueueTextMessageUseCase;
 use App\Modules\Messaging\Domain\Enums\MessageStatus;
+use App\Modules\Messaging\Infrastructure\Jobs\SendWhatsAppDocumentJob;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
 use App\Modules\Messaging\Infrastructure\Jobs\SendWhatsAppTextJob;
@@ -255,6 +257,26 @@ class NoiaChatMvpTest extends TestCase
 
         $this->assertSame('document', $message->type);
         $this->assertDatabaseHas('message_attachments', ['message_id' => $message->id]);
+        Queue::assertPushed(SendWhatsAppDocumentJob::class);
+    }
+
+    public function test_media_message_without_consent_is_blocked_without_attachment_or_dispatch(): void
+    {
+        $contact = $this->makeContact('573101000015');
+
+        $message = app(QueueMediaMessageUseCase::class)->execute(
+            $contact,
+            $this->channel->id,
+            'document',
+            UploadedFile::fake()->create('manual.pdf', 100, 'application/pdf'),
+            'Adjunto solicitado',
+            $this->admin->id,
+        );
+
+        $this->assertSame('document', $message->type);
+        $this->assertSame('blocked_by_policy', $message->status);
+        $this->assertDatabaseMissing('message_attachments', ['message_id' => $message->id]);
+        Queue::assertNotPushed(SendWhatsAppDocumentJob::class);
     }
 
     public function test_operator_can_reply_to_conversation_with_template(): void

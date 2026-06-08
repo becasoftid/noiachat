@@ -49,7 +49,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | WA-006 | WhatsApp | Manejo de errores de proveedor | Operativo | P0 | Commit `259b889`; errores se marcan como `failed` | Mostrar codigo/error de Meta en UI. |
 | WA-007 | WhatsApp | Token permanente y rotacion | MVP | P0 | Token funcional configurado manualmente | Documentar fecha de expiracion, rotacion y responsable. |
 | MSG-001 | Mensajeria | Cola de mensajes de texto | Operativo | P0 | Envio real por WhatsApp | Mantener worker permanente. |
-| MSG-002 | Mensajeria | Envio de imagen/documento | MVP | P0 | Jobs existen; falta validacion productiva completa | Corregir compliance en multimedia y probar URL publica. |
+| MSG-002 | Mensajeria | Envio de imagen/documento | MVP | P0 | Compliance corregido y cubierto por pruebas; jobs existen | Probar envio multimedia real con URL publica HTTPS. |
 | MSG-003 | Mensajeria | Envio por plantilla | MVP | P0 | Flujo existe; falta sincronizacion/aprobacion Meta | Sincronizar plantillas con Meta y validar variables. |
 | MSG-004 | Mensajeria | Reintento de mensajes fallidos | MVP | P1 | Ruta y prueba existen | Mostrar causa de fallo y permitir reintento con control. |
 | MSG-005 | Mensajeria | Ventana 24h de WhatsApp | Pendiente | P0 | No implementado | Bloquear texto libre fuera de ventana y sugerir plantilla. |
@@ -80,7 +80,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 
 - Validar firma de webhooks Meta.
 - Implementar regla de ventana 24h.
-- Corregir compliance en envio multimedia.
+- Probar envio multimedia real con URL publica HTTPS.
 - Configurar worker permanente.
 - Configurar backups automaticos.
 - Mostrar errores Meta en la interfaz.

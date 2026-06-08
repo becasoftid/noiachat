@@ -28,11 +28,19 @@ class QueueMediaMessageUseCase
         int $userId,
         ?Request $request = null,
     ): Message {
-        $message = $this->queueTextMessage->execute($contact, $channelId, $body ?? '', $userId, $request);
-        $message->update([
-            'type' => $type,
-            'status' => MessageStatus::QUEUED->value,
-        ]);
+        $message = $this->queueTextMessage->execute(
+            $contact,
+            $channelId,
+            $body ?? '',
+            $userId,
+            $request,
+            $type,
+            dispatch: false,
+        );
+
+        if ($message->status !== MessageStatus::QUEUED->value) {
+            return $message->fresh(['attachments.mediaFile', 'events']);
+        }
 
         $media = $this->mediaService->upload($file, $userId);
         $message->attachments()->create(['media_file_id' => $media->id]);
