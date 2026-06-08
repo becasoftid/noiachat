@@ -19,6 +19,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 
 - Aplicacion de la ventana de atencion de 24 horas de WhatsApp para bloquear texto libre y adjuntos fuera de ventana, permitiendo plantillas aprobadas.
 - Visualizacion de errores de Meta en el detalle del mensaje y en el timeline de conversaciones, incluyendo codigo, mensaje, detalle y payload tecnico.
+- Endurecimiento del workflow de despliegue para usar secretos `DROPLET_HOST`, `DROPLET_USERNAME`, `DROPLET_PORT` y `DROPLET_SSH_KEY`, retirando host quemado y debug.
 - Validacion opcional de firma `X-Hub-Signature-256` para webhooks de Meta usando `WHATSAPP_APP_SECRET`.
 - Ajuste del flujo de mensajes multimedia para respetar compliance antes de subir adjuntos o encolar jobs de WhatsApp.
 - Ajuste del registro de envios WhatsApp para marcar como fallidos los mensajes cuando Meta responde con un error de proveedor, evitando estados `sent` sin `provider_message_id`.
@@ -26,7 +27,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Ajuste de la integracion de WhatsApp para excluir el webhook de la validacion CSRF y leer credenciales desde `config/services.php`, compatible con cache de configuracion en produccion.
 - Estandarizacion visual de las vistas del panel, formularios, tablas, modales, navegacion, pantallas de cuenta y alertas globales para alinearlas con el nuevo lenguaje grafico aplicado al login.
 - Redisenio de la pantalla de login con una interfaz moderna para NoiaChat, panel visual de marca, formulario responsive y estilos enfocados en una aplicacion operativa de mensajeria y compliance.
-- Ajuste del workflow de despliegue para conectar directamente a la droplet `167.172.251.181` con usuario `root` y puerto `22`, manteniendo la autenticacion por el secreto `DROPLET_SSH_KEY`.
+- Ajuste inicial del workflow de despliegue para conectar por SSH a la droplet usando autenticacion por secreto.
 - Ajuste del despliegue remoto para validar la disponibilidad de Composer y ejecutar la instalacion de dependencias PHP usando la ruta detectada por `which composer`.
 
 ### Pendiente

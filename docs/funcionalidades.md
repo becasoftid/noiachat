@@ -16,7 +16,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | Mensajeria saliente | MVP | Texto validado; multimedia y plantillas requieren endurecimiento. |
 | Auditoria | MVP | Registro y filtros funcionan; falta detalle expandido/exportacion. |
 | Reportes | Pendiente | Dashboard basico; faltan metricas operativas y exportaciones. |
-| Despliegue | MVP | GitHub Actions funciona; falta worker permanente formal y secretos completos. |
+| Despliegue | MVP | GitHub Actions funciona con secretos; falta worker permanente formal. |
 | Seguridad | MVP | Roles, CSRF base y firma webhook; falta 2FA, gestion usuarios y politicas productivas. |
 
 ## Leyenda
@@ -65,7 +65,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | SETTINGS-002 | Plantillas | CRUD/versionado de plantillas | MVP | P1 | Implementado en settings | Sincronizar con Meta y estado de aprobacion. |
 | REPORT-001 | Dashboard | Contadores basicos | MVP | P2 | Dashboard con totales | Agregar tendencias, tasa respuesta y filtros avanzados. |
 | REPORT-002 | Reportes | Exportacion de datos | Pendiente | P2 | No implementado | Exportar contactos, conversaciones, auditoria y mensajes. |
-| DEPLOY-001 | Deploy | GitHub Actions a droplet | MVP | P0 | Workflow exitoso en `main` | Mover host a secretos y retirar debug. |
+| DEPLOY-001 | Deploy | GitHub Actions a droplet | Operativo | P0 | Workflow usa secretos para host, usuario, puerto y llave; debug retirado | Verificar nuevo run de Actions con secretos configurados. |
 | DEPLOY-002 | Deploy | Worker permanente | Pendiente | P0 | Worker manual probado | Configurar Supervisor/systemd y documentar restart. |
 | DEPLOY-003 | Deploy | Backups | Pendiente | P0 | No implementado | Programar backup DB y storage. |
 | DEPLOY-004 | Deploy | Monitoreo | Pendiente | P1 | No implementado | Alertar jobs fallidos, disco, errores 500 y webhook. |
@@ -81,7 +81,6 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 - Probar envio multimedia real con URL publica HTTPS.
 - Configurar worker permanente.
 - Configurar backups automaticos.
-- Mover datos sensibles del deploy a secretos.
 
 ### P1 - Importante
 

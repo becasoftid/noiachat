@@ -12,24 +12,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verificar que exista la llave SSH
+      - name: Validar secretos de despliegue
+        env:
+          DROPLET_HOST: ${{ secrets.DROPLET_HOST }}
+          DROPLET_USERNAME: ${{ secrets.DROPLET_USERNAME }}
+          DROPLET_PORT: ${{ secrets.DROPLET_PORT }}
+          DROPLET_SSH_KEY: ${{ secrets.DROPLET_SSH_KEY }}
         run: |
-          if [ -z "${{ secrets.DROPLET_SSH_KEY }}" ]; then
-            echo "❌ DROPLET_SSH_KEY está vacío o no definido"
+          missing=0
+
+          for secret_name in DROPLET_HOST DROPLET_USERNAME DROPLET_PORT DROPLET_SSH_KEY; do
+            if [ -z "${!secret_name}" ]; then
+              echo "::error::${secret_name} esta vacio o no definido"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
             exit 1
           fi
-          echo "✅ DROPLET_SSH_KEY presente"
+
+          echo "Secretos de despliegue presentes"
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: 167.172.251.181
-          username: root
-          port: 22
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USERNAME }}
+          port: ${{ secrets.DROPLET_PORT }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
           command_timeout: 30m
           script_stop: true
-          debug: true
           script: |
             set -e
 

@@ -429,6 +429,13 @@ npm run build
 
 ## Despliegue
 
+El workflow de GitHub Actions usa secretos del repositorio para conectarse al droplet. Configura estos valores en `Settings > Secrets and variables > Actions`:
+
+- `DROPLET_HOST`
+- `DROPLET_USERNAME`
+- `DROPLET_PORT`
+- `DROPLET_SSH_KEY`
+
 Checklist sugerido:
 
 1. Configurar `.env` de produccion.

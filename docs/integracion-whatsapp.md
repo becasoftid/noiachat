@@ -46,7 +46,7 @@ WHATSAPP_API_BASE_URL=https://graph.facebook.com/v25.0
 WHATSAPP_ACCESS_TOKEN=TOKEN_DE_META
 WHATSAPP_PHONE_NUMBER_ID=ID_DEL_NUMERO
 WHATSAPP_BUSINESS_ACCOUNT_ID=ID_DE_LA_CUENTA_WHATSAPP_BUSINESS
-WHATSAPP_WEBHOOK_VERIFY_TOKEN=noiachat_webhook_2026
+WHATSAPP_WEBHOOK_VERIFY_TOKEN=tu_token_de_verificacion
 WHATSAPP_APP_SECRET=APP_SECRET_DE_META
 ```
 
@@ -68,7 +68,7 @@ WHATSAPP_API_BASE_URL=https://graph.facebook.com/v25.0
 WHATSAPP_ACCESS_TOKEN=TOKEN_DE_META
 WHATSAPP_PHONE_NUMBER_ID=ID_DEL_NUMERO
 WHATSAPP_BUSINESS_ACCOUNT_ID=ID_DE_LA_CUENTA_WHATSAPP_BUSINESS
-WHATSAPP_WEBHOOK_VERIFY_TOKEN=noiachat_webhook_2026
+WHATSAPP_WEBHOOK_VERIFY_TOKEN=tu_token_de_verificacion
 WHATSAPP_APP_SECRET=APP_SECRET_DE_META
 ```
 
@@ -89,7 +89,7 @@ Antes de guardar el webhook en Meta, prueba que NoiaChat responde el challenge.
 Abre esta URL en el navegador, cambiando el token si usaste otro:
 
 ```text
-https://noiachat.saludlegal360.com/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=noiachat_webhook_2026&hub.challenge=12345
+https://noiachat.saludlegal360.com/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=tu_token_de_verificacion&hub.challenge=12345
 ```
 
 Resultado esperado:
@@ -129,7 +129,7 @@ https://noiachat.saludlegal360.com/webhooks/whatsapp
 4. En **Token de verificacion** coloca:
 
 ```text
-noiachat_webhook_2026
+tu_token_de_verificacion
 ```
 
 5. Clic en **Verificar y guardar**.
