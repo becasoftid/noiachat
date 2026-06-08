@@ -436,12 +436,14 @@ El workflow de GitHub Actions usa secretos del repositorio para conectarse al dr
 - `DROPLET_PORT`
 - `DROPLET_SSH_KEY`
 
+El worker permanente de colas se configura con Supervisor. Consulta [docs/deploy-workers.md](docs/deploy-workers.md).
+
 Checklist sugerido:
 
 1. Configurar `.env` de produccion.
 2. Definir `APP_ENV=production` y `APP_DEBUG=false`.
 3. Configurar base de datos persistente.
-4. Configurar driver de cola y levantar workers.
+4. Configurar driver de cola y levantar workers con Supervisor.
 5. Ejecutar `composer install --no-dev --optimize-autoloader`.
 6. Ejecutar `npm ci && npm run build`.
 7. Ejecutar `php artisan migrate --force`.

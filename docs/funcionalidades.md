@@ -16,7 +16,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | Mensajeria saliente | MVP | Texto validado; multimedia y plantillas requieren endurecimiento. |
 | Auditoria | MVP | Registro y filtros funcionan; falta detalle expandido/exportacion. |
 | Reportes | Pendiente | Dashboard basico; faltan metricas operativas y exportaciones. |
-| Despliegue | MVP | GitHub Actions funciona con secretos; falta worker permanente formal. |
+| Despliegue | MVP | GitHub Actions funciona con secretos y configuracion de worker; faltan backups automaticos. |
 | Seguridad | MVP | Roles, CSRF base y firma webhook; falta 2FA, gestion usuarios y politicas productivas. |
 
 ## Leyenda
@@ -66,7 +66,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | REPORT-001 | Dashboard | Contadores basicos | MVP | P2 | Dashboard con totales | Agregar tendencias, tasa respuesta y filtros avanzados. |
 | REPORT-002 | Reportes | Exportacion de datos | Pendiente | P2 | No implementado | Exportar contactos, conversaciones, auditoria y mensajes. |
 | DEPLOY-001 | Deploy | GitHub Actions a droplet | Operativo | P0 | Workflow usa secretos para host, usuario, puerto y llave; debug retirado | Verificar nuevo run de Actions con secretos configurados. |
-| DEPLOY-002 | Deploy | Worker permanente | Pendiente | P0 | Worker manual probado | Configurar Supervisor/systemd y documentar restart. |
+| DEPLOY-002 | Deploy | Worker permanente | Operativo | P0 | Configuracion Supervisor versionada, deploy reinicia workers y manual operativo creado | Verificar `supervisorctl status noiachat-worker:*` en produccion. |
 | DEPLOY-003 | Deploy | Backups | Pendiente | P0 | No implementado | Programar backup DB y storage. |
 | DEPLOY-004 | Deploy | Monitoreo | Pendiente | P1 | No implementado | Alertar jobs fallidos, disco, errores 500 y webhook. |
 | DOC-001 | Documentacion | README | Operativo | P1 | README actualizado | Mantener con cada release. |
@@ -79,7 +79,6 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 ### P0 - Critico
 
 - Probar envio multimedia real con URL publica HTTPS.
-- Configurar worker permanente.
 - Configurar backups automaticos.
 
 ### P1 - Importante

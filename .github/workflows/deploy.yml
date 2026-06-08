@@ -97,6 +97,17 @@ jobs:
             systemctl restart php8.4-fpm
             systemctl reload nginx
 
+            echo "🔹 Configurando worker permanente"
+            if command -v supervisorctl >/dev/null 2>&1; then
+              cp deploy/supervisor/noiachat-worker.conf /etc/supervisor/conf.d/noiachat-worker.conf
+              supervisorctl reread
+              supervisorctl update
+              supervisorctl restart noiachat-worker:* || supervisorctl start noiachat-worker:*
+            else
+              echo "Supervisor no esta instalado; ejecuta docs/deploy-workers.md para activar el worker permanente."
+              php8.4 artisan queue:restart
+            fi
+
             echo "🔹 Desactivando modo mantenimiento"
             php8.4 artisan up
 

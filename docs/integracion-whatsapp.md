@@ -316,6 +316,8 @@ Si WhatsApp devuelve estados, el webhook `messages` los procesa y actualiza el m
 
 Los webhooks y envios usan colas. Comandos utiles:
 
+En produccion usa Supervisor con la configuracion incluida en [deploy/supervisor/noiachat-worker.conf](../deploy/supervisor/noiachat-worker.conf). El procedimiento completo esta en [docs/deploy-workers.md](deploy-workers.md).
+
 Procesar un trabajo una sola vez:
 
 ```bash
