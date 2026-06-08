@@ -125,6 +125,7 @@ class ConversationController extends Controller
                 'type' => $message->type,
                 'body' => $message->body,
                 'status' => $message->status,
+                'meta' => $message->meta,
                 'created_at' => $message->created_at,
                 'attachments' => $message->attachments,
             ];
@@ -136,6 +137,7 @@ class ConversationController extends Controller
                 'type' => 'text',
                 'body' => $message->body,
                 'status' => null,
+                'meta' => [],
                 'created_at' => $message->created_at,
                 'attachments' => collect(),
             ];

@@ -11,7 +11,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | Autenticacion y acceso | MVP | Login funcional; falta administracion completa de usuarios y endurecimiento. |
 | Contactos | MVP | CRUD y normalizacion funcionan; falta importacion, deduplicacion y fusion. |
 | Consentimientos | MVP | Otorgar/revocar funciona; falta historial mas completo y reglas de expiracion si aplican. |
-| WhatsApp Cloud API | Operativo | Entrantes, salientes, estados reales y firma de webhook validados; falta ventana 24h. |
+| WhatsApp Cloud API | Operativo | Entrantes, salientes, estados reales, firma de webhook y ventana 24h validados. |
 | Conversaciones | MVP | Inbox funcional; falta no leidos, auto-refresh y gestion operativa avanzada. |
 | Mensajeria saliente | MVP | Texto validado; multimedia y plantillas requieren endurecimiento. |
 | Auditoria | MVP | Registro y filtros funcionan; falta detalle expandido/exportacion. |
@@ -43,7 +43,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | CONSENT-004 | Consentimientos | Opt-out automatico por palabra clave | MVP | P0 | `STOP` y `NO ENVIAR` cubiertos por pruebas | Ampliar diccionario y confirmar texto de respuesta operativa. |
 | WA-001 | WhatsApp | Verificacion de webhook | Operativo | P0 | Challenge manual y Meta verificado | Agregar monitoreo periodico del endpoint. |
 | WA-002 | WhatsApp | Recepcion de mensajes entrantes | Operativo | P0 | Mensajes reales visibles en conversaciones | Agregar indicador de no leidos y auto-refresh. |
-| WA-003 | WhatsApp | Envio de texto libre | Operativo | P0 | Mensaje real recibido en WhatsApp | Implementar regla de ventana de 24 horas. |
+| WA-003 | WhatsApp | Envio de texto libre | Operativo | P0 | Mensaje real recibido en WhatsApp; ventana 24h aplicada por compliance | Mostrar sugerencia de plantilla cuando la ventana este cerrada. |
 | WA-004 | WhatsApp | Estados enviado/entregado/leido | Operativo | P0 | Estados reales visibles en conversacion | Agregar panel de fallos y reintentos. |
 | WA-005 | WhatsApp | Firma de webhook `X-Hub-Signature-256` | Operativo | P0 | Validacion HMAC-SHA256 con `WHATSAPP_APP_SECRET` y pruebas automatizadas | Configurar app secret en produccion y verificar evento real. |
 | WA-006 | WhatsApp | Manejo de errores de proveedor | Operativo | P0 | Commit `259b889`; errores se marcan como `failed` | Mostrar codigo/error de Meta en UI. |
@@ -52,7 +52,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | MSG-002 | Mensajeria | Envio de imagen/documento | MVP | P0 | Compliance corregido y cubierto por pruebas; jobs existen | Probar envio multimedia real con URL publica HTTPS. |
 | MSG-003 | Mensajeria | Envio por plantilla | MVP | P0 | Flujo existe; falta sincronizacion/aprobacion Meta | Sincronizar plantillas con Meta y validar variables. |
 | MSG-004 | Mensajeria | Reintento de mensajes fallidos | MVP | P1 | Ruta y prueba existen | Mostrar causa de fallo y permitir reintento con control. |
-| MSG-005 | Mensajeria | Ventana 24h de WhatsApp | Pendiente | P0 | No implementado | Bloquear texto libre fuera de ventana y sugerir plantilla. |
+| MSG-005 | Mensajeria | Ventana 24h de WhatsApp | Operativo | P0 | Texto libre/multimedia bloqueado fuera de ventana; plantillas permitidas; pruebas automatizadas | Agregar aviso preventivo en el formulario de respuesta. |
 | CONV-001 | Conversaciones | Listado de conversaciones | Operativo | P0 | Conversacion real visible | Agregar contador de no leidos. |
 | CONV-002 | Conversaciones | Timeline entrante/saliente | Operativo | P0 | Mensajes reales visibles con estados | Mejorar UI tipo chat y agrupacion por fecha. |
 | CONV-003 | Conversaciones | Asignacion a operador | MVP | P1 | Select y accion existen | Crear accion rapida "Asignar a mi" y filtros por equipo. |
@@ -78,7 +78,6 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 
 ### P0 - Critico
 
-- Implementar regla de ventana 24h.
 - Probar envio multimedia real con URL publica HTTPS.
 - Configurar worker permanente.
 - Configurar backups automaticos.

@@ -42,7 +42,8 @@ class QueueTemplateMessageUseCase
                 'template_version_id' => $template->currentVersion->id,
                 'template_variables' => $variables,
             ],
-            false,
+            dispatch: false,
+            complianceTemplate: $template,
         );
 
         if ($message->status === 'queued') {

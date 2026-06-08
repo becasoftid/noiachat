@@ -36,11 +36,24 @@
             'send_template_failed' => 'Error al enviar plantilla',
             'webhook' => 'Webhook recibido',
         ];
+        $eligibilityLabels = [
+            'allowed' => 'Permitido',
+            'blocked_no_consent' => 'Sin consentimiento',
+            'blocked_blacklist' => 'Contacto excluido',
+            'blocked_invalid_contact' => 'Contacto inválido',
+            'blocked_frequency' => 'Límite de frecuencia',
+            'blocked_channel_inactive' => 'Canal inactivo',
+            'blocked_template_inactive' => 'Plantilla inactiva',
+            'blocked_customer_care_window' => 'Ventana 24h cerrada',
+        ];
     @endphp
     <div class="grid gap-6 lg:grid-cols-[1fr_.9fr]">
         <div class="noia-card">
             <h3 class="text-lg font-semibold">{{ $message->contact->full_name }}</h3>
             <p class="mt-2 text-sm">{{ $typeLabels[$message->type] ?? $message->type }} · {{ $statusLabels[$message->status] ?? $message->status }}</p>
+            @if(data_get($message->meta, 'eligibility_status') && data_get($message->meta, 'eligibility_status') !== 'allowed')
+                <p class="mt-2 text-sm text-amber-700">Motivo: {{ $eligibilityLabels[data_get($message->meta, 'eligibility_status')] ?? data_get($message->meta, 'eligibility_status') }}</p>
+            @endif
 
             @if(filled($message->body))
                 <p class="mt-4 text-sm text-slate-700">{{ $message->body }}</p>

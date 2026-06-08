@@ -284,6 +284,12 @@ php8.4 artisan queue:work --once --verbose
 
 Para un entorno productivo se recomienda usar Supervisor o systemd para mantener el worker activo.
 
+NoiaChat aplica la ventana de atencion de WhatsApp:
+
+- Si el cliente escribio en las ultimas 24 horas, se permite responder con texto libre, imagen o documento.
+- Si pasaron mas de 24 horas desde el ultimo mensaje entrante, el texto libre y los adjuntos quedan bloqueados por politica.
+- Para reabrir una conversacion fuera de esa ventana se debe usar una plantilla aprobada.
+
 ## 13. Validar estados de envio y lectura
 
 Despues de enviar, revisa en NoiaChat:
@@ -390,6 +396,7 @@ Solucion:
 
 - Otorgar consentimiento WhatsApp al contacto.
 - Enviar una nueva respuesta.
+- Si el motivo es `blocked_customer_care_window`, usa una plantilla aprobada para reabrir la conversacion.
 
 ### Recipient phone number not in allowed list
 

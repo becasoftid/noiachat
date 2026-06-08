@@ -23,6 +23,7 @@ use App\Modules\Messaging\Application\UseCases\QueueTextMessageUseCase;
 use App\Modules\Messaging\Domain\Enums\MessageStatus;
 use App\Modules\Messaging\Infrastructure\Jobs\SendWhatsAppDocumentJob;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
+use App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
 use App\Modules\Messaging\Infrastructure\Jobs\SendWhatsAppTextJob;
 use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
@@ -34,6 +35,7 @@ use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class NoiaChatMvpTest extends TestCase
@@ -68,13 +70,26 @@ class NoiaChatMvpTest extends TestCase
     public function test_can_queue_message_for_active_contact_with_consent(): void
     {
         $contact = $this->makeContact('573101000003', true);
+        $this->openCustomerCareWindow($contact);
         $message = app(QueueTextMessageUseCase::class)->execute($contact, $this->channel->id, 'Hola', $this->admin->id);
         $this->assertSame('queued', $message->status);
+    }
+
+    public function test_cannot_send_free_form_message_outside_whatsapp_customer_care_window(): void
+    {
+        $contact = $this->makeContact('573101000016', true);
+        $this->openCustomerCareWindow($contact, now()->subHours(25));
+
+        $message = app(QueueTextMessageUseCase::class)->execute($contact, $this->channel->id, 'Hola', $this->admin->id);
+
+        $this->assertSame('blocked_by_policy', $message->status);
+        $this->assertSame('blocked_customer_care_window', data_get($message->meta, 'eligibility_status'));
     }
 
     public function test_sent_message_creates_message_event(): void
     {
         $contact = $this->makeContact('573101000004', true);
+        $this->openCustomerCareWindow($contact);
         $message = app(QueueTextMessageUseCase::class)->execute($contact, $this->channel->id, 'Hola', $this->admin->id);
         app(MessageStatusService::class)->transition($message, MessageStatus::SENT, ['mock' => true], 'unit_test');
         $this->assertDatabaseHas('message_events', ['message_id' => $message->id, 'status' => 'sent']);
@@ -232,6 +247,7 @@ class NoiaChatMvpTest extends TestCase
         $operator = User::factory()->create();
         $operator->roles()->attach(Role::where('name', 'operator')->firstOrFail()->id);
         $contact = $this->makeContact('573101000010', true);
+        $this->openCustomerCareWindow($contact);
         $conversation = Conversation::create([
             'contact_id' => $contact->id,
             'channel_id' => $this->channel->id,
@@ -268,6 +284,7 @@ class NoiaChatMvpTest extends TestCase
         $operator = User::factory()->create();
         $operator->roles()->attach(Role::where('name', 'operator')->firstOrFail()->id);
         $contact = $this->makeContact('573101000011', true);
+        $this->openCustomerCareWindow($contact);
         $conversation = Conversation::create([
             'contact_id' => $contact->id,
             'channel_id' => $this->channel->id,
@@ -312,6 +329,7 @@ class NoiaChatMvpTest extends TestCase
         $operator = User::factory()->create();
         $operator->roles()->attach(Role::where('name', 'operator')->firstOrFail()->id);
         $contact = $this->makeContact('573101000012', true);
+        $this->openCustomerCareWindow($contact, now()->subHours(25));
         $conversation = Conversation::create([
             'contact_id' => $contact->id,
             'channel_id' => $this->channel->id,
@@ -331,6 +349,19 @@ class NoiaChatMvpTest extends TestCase
             'type' => 'template',
             'message_template_id' => $template->id,
         ]);
+    }
+
+    public function test_template_message_can_be_queued_outside_customer_care_window(): void
+    {
+        $contact = $this->makeContact('573101000017', true);
+        $this->openCustomerCareWindow($contact, now()->subHours(25));
+        $template = MessageTemplate::query()->with('currentVersion')->firstOrFail();
+
+        $message = app(QueueTemplateMessageUseCase::class)->execute($contact, $template, $this->admin->id, ['Carlos']);
+
+        $this->assertSame('queued', $message->status);
+        $this->assertSame('template', $message->type);
+        $this->assertSame('allowed', data_get($message->meta, 'eligibility_status'));
     }
 
     public function test_provider_error_marks_text_message_as_failed(): void
@@ -419,5 +450,26 @@ class NoiaChatMvpTest extends TestCase
             app(GrantConsentUseCase::class)->execute($contact, $this->channel->id, 'manual', $this->admin->id);
         }
         return $contact;
+    }
+
+    private function openCustomerCareWindow(Contact $contact, mixed $createdAt = null): InboundMessage
+    {
+        $createdAt ??= now();
+
+        $message = InboundMessage::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'provider_message_id' => 'wamid-window-'.$contact->primary_phone.'-'.Str::uuid(),
+            'from_phone' => $contact->primary_phone,
+            'body' => 'Mensaje entrante',
+            'payload' => ['type' => 'text'],
+        ]);
+
+        $message->forceFill([
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
+        ])->save();
+
+        return $message;
     }
 }

@@ -11,4 +11,5 @@ enum EligibilityStatus: string
     case BLOCKED_FREQUENCY = 'blocked_frequency';
     case BLOCKED_CHANNEL_INACTIVE = 'blocked_channel_inactive';
     case BLOCKED_TEMPLATE_INACTIVE = 'blocked_template_inactive';
+    case BLOCKED_CUSTOMER_CARE_WINDOW = 'blocked_customer_care_window';
 }

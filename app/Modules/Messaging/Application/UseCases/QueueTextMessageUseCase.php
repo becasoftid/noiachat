@@ -12,6 +12,7 @@ use App\Modules\Messaging\Domain\Enums\MessageStatus;
 use App\Modules\Messaging\Domain\Enums\MessageType;
 use App\Modules\Messaging\Infrastructure\Jobs\SendWhatsAppTextJob;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
+use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
 use App\Modules\Shared\Application\Services\AuditLogger;
 use Illuminate\Http\Request;
 
@@ -34,9 +35,10 @@ class QueueTextMessageUseCase
         ?int $messageTemplateId = null,
         array $meta = [],
         bool $dispatch = true,
+        ?MessageTemplate $complianceTemplate = null,
     ): Message
     {
-        $decision = $this->compliance->decide($contact, $channelId);
+        $decision = $this->compliance->decide($contact, $channelId, $complianceTemplate);
         $conversation = $this->conversations->findOrCreate($contact->id, $channelId);
 
         $message = $this->messages->create([

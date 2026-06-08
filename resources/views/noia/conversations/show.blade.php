@@ -18,6 +18,16 @@
             'cancelled' => 'Cancelado',
             'blocked_by_policy' => 'Bloqueado por política',
         ];
+        $eligibilityLabels = [
+            'allowed' => 'Permitido',
+            'blocked_no_consent' => 'Sin consentimiento',
+            'blocked_blacklist' => 'Contacto excluido',
+            'blocked_invalid_contact' => 'Contacto inválido',
+            'blocked_frequency' => 'Límite de frecuencia',
+            'blocked_channel_inactive' => 'Canal inactivo',
+            'blocked_template_inactive' => 'Plantilla inactiva',
+            'blocked_customer_care_window' => 'Ventana 24h cerrada',
+        ];
     @endphp
     <div class="grid gap-6 lg:grid-cols-[320px_1fr]">
         <aside class="space-y-6">
@@ -72,6 +82,10 @@
 
                         @if($item->status)
                             <p class="mt-2 text-xs opacity-70">Estado: {{ $messageStatusLabels[$item->status] ?? $item->status }}</p>
+                        @endif
+
+                        @if(data_get($item->meta, 'eligibility_status') && data_get($item->meta, 'eligibility_status') !== 'allowed')
+                            <p class="mt-1 text-xs opacity-70">Motivo: {{ $eligibilityLabels[data_get($item->meta, 'eligibility_status')] ?? data_get($item->meta, 'eligibility_status') }}</p>
                         @endif
                     </div>
                 @empty

@@ -9,6 +9,7 @@ use App\Modules\Contacts\Infrastructure\Persistence\Models\Contact;
 use App\Modules\Consents\Domain\Enums\ConsentStatus;
 use App\Modules\Consents\Domain\Repositories\BlacklistRepositoryInterface;
 use App\Modules\Consents\Domain\Repositories\ConsentRepositoryInterface;
+use App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
 
 class ComplianceDecisionService
@@ -48,6 +49,19 @@ class ComplianceDecisionService
             return EligibilityStatus::BLOCKED_TEMPLATE_INACTIVE;
         }
 
+        if (! $template && ! $this->hasOpenCustomerCareWindow($contact->id, $channelId)) {
+            return EligibilityStatus::BLOCKED_CUSTOMER_CARE_WINDOW;
+        }
+
         return EligibilityStatus::ALLOWED;
+    }
+
+    private function hasOpenCustomerCareWindow(string $contactId, int $channelId): bool
+    {
+        return InboundMessage::query()
+            ->where('contact_id', $contactId)
+            ->where('channel_id', $channelId)
+            ->where('created_at', '>=', now()->subHours(24))
+            ->exists();
     }
 }
