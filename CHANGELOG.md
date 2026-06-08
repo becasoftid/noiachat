@@ -8,6 +8,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 
 ### Added
 
+- Gestion documental de funcionalidades con matriz de estado, backlog priorizado y plantilla de registro en `docs/`.
 - Manual paso a paso de integracion con WhatsApp Cloud API en `docs/integracion-whatsapp.md`.
 - Workflow de GitHub Actions para desplegar NoiaChat automaticamente en la droplet cuando se suben cambios a `main` o `master`.
 - Validacion del secreto `DROPLET_SSH_KEY` antes de ejecutar el despliegue por SSH.

@@ -20,6 +20,7 @@ El proyecto esta construido como un MVP funcional sobre Laravel, Breeze, Blade, 
 - [Flujos del MVP](#flujos-del-mvp)
 - [WhatsApp Cloud API](#whatsapp-cloud-api)
 - [Manual de Integracion WhatsApp](#manual-de-integracion-whatsapp)
+- [Gestion Documental](#gestion-documental)
 - [Rutas Relevantes](#rutas-relevantes)
 - [Convenciones de Desarrollo](#convenciones-de-desarrollo)
 - [Despliegue](#despliegue)
@@ -375,6 +376,14 @@ En Meta Developers configura la URL publica del webhook y el token de verificaci
 ## Manual de Integracion WhatsApp
 
 Consulta la guia operativa paso a paso en [docs/integracion-whatsapp.md](docs/integracion-whatsapp.md).
+
+## Gestion Documental
+
+El control documental de funcionalidades, estados, prioridades y tareas pendientes se gestiona desde:
+
+- [docs/gestion-documental.md](docs/gestion-documental.md)
+- [docs/funcionalidades.md](docs/funcionalidades.md)
+- [docs/plantilla-funcionalidad.md](docs/plantilla-funcionalidad.md)
 
 ## Rutas Relevantes
 
