@@ -11,13 +11,13 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | Autenticacion y acceso | MVP | Login funcional; falta administracion completa de usuarios y endurecimiento. |
 | Contactos | MVP | CRUD y normalizacion funcionan; falta importacion, deduplicacion y fusion. |
 | Consentimientos | MVP | Otorgar/revocar funciona; falta historial mas completo y reglas de expiracion si aplican. |
-| WhatsApp Cloud API | Operativo | Entrantes, salientes y estados reales validados; falta firma de webhook y ventana 24h. |
+| WhatsApp Cloud API | Operativo | Entrantes, salientes, estados reales y firma de webhook validados; falta ventana 24h. |
 | Conversaciones | MVP | Inbox funcional; falta no leidos, auto-refresh y gestion operativa avanzada. |
 | Mensajeria saliente | MVP | Texto validado; multimedia y plantillas requieren endurecimiento. |
 | Auditoria | MVP | Registro y filtros funcionan; falta detalle expandido/exportacion. |
 | Reportes | Pendiente | Dashboard basico; faltan metricas operativas y exportaciones. |
 | Despliegue | MVP | GitHub Actions funciona; falta worker permanente formal y secretos completos. |
-| Seguridad | MVP | Roles y CSRF base; falta firma webhook, 2FA, gestion usuarios y politicas productivas. |
+| Seguridad | MVP | Roles, CSRF base y firma webhook; falta 2FA, gestion usuarios y politicas productivas. |
 
 ## Leyenda
 
@@ -45,7 +45,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | WA-002 | WhatsApp | Recepcion de mensajes entrantes | Operativo | P0 | Mensajes reales visibles en conversaciones | Agregar indicador de no leidos y auto-refresh. |
 | WA-003 | WhatsApp | Envio de texto libre | Operativo | P0 | Mensaje real recibido en WhatsApp | Implementar regla de ventana de 24 horas. |
 | WA-004 | WhatsApp | Estados enviado/entregado/leido | Operativo | P0 | Estados reales visibles en conversacion | Agregar panel de fallos y reintentos. |
-| WA-005 | WhatsApp | Firma de webhook `X-Hub-Signature-256` | Pendiente | P0 | No implementado | Validar firma con app secret antes de aceptar POST. |
+| WA-005 | WhatsApp | Firma de webhook `X-Hub-Signature-256` | Operativo | P0 | Validacion HMAC-SHA256 con `WHATSAPP_APP_SECRET` y pruebas automatizadas | Configurar app secret en produccion y verificar evento real. |
 | WA-006 | WhatsApp | Manejo de errores de proveedor | Operativo | P0 | Commit `259b889`; errores se marcan como `failed` | Mostrar codigo/error de Meta en UI. |
 | WA-007 | WhatsApp | Token permanente y rotacion | MVP | P0 | Token funcional configurado manualmente | Documentar fecha de expiracion, rotacion y responsable. |
 | MSG-001 | Mensajeria | Cola de mensajes de texto | Operativo | P0 | Envio real por WhatsApp | Mantener worker permanente. |
@@ -78,7 +78,6 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 
 ### P0 - Critico
 
-- Validar firma de webhooks Meta.
 - Implementar regla de ventana 24h.
 - Probar envio multimedia real con URL publica HTTPS.
 - Configurar worker permanente.

@@ -17,8 +17,29 @@ class WhatsAppWebhookController extends Controller
 
     public function receive(Request $request)
     {
+        abort_unless($this->hasValidSignature($request), 403);
+
         ProcessWhatsAppWebhookJob::dispatch($request->all());
 
         return response()->json(['received' => true]);
+    }
+
+    private function hasValidSignature(Request $request): bool
+    {
+        $appSecret = (string) config('services.whatsapp.app_secret', '');
+
+        if ($appSecret === '') {
+            return true;
+        }
+
+        $signature = (string) $request->header('X-Hub-Signature-256', '');
+
+        if (! str_starts_with($signature, 'sha256=')) {
+            return false;
+        }
+
+        $expectedSignature = 'sha256='.hash_hmac('sha256', $request->getContent(), $appSecret);
+
+        return hash_equals($expectedSignature, $signature);
     }
 }

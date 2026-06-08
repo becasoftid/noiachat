@@ -139,6 +139,7 @@ WHATSAPP_ACCESS_TOKEN=
 WHATSAPP_PHONE_NUMBER_ID=
 WHATSAPP_BUSINESS_ACCOUNT_ID=
 WHATSAPP_WEBHOOK_VERIFY_TOKEN=
+WHATSAPP_APP_SECRET=
 ```
 
 Notas:
@@ -363,6 +364,7 @@ Variables requeridas para integracion real:
 - `WHATSAPP_PHONE_NUMBER_ID`
 - `WHATSAPP_BUSINESS_ACCOUNT_ID`
 - `WHATSAPP_WEBHOOK_VERIFY_TOKEN`
+- `WHATSAPP_APP_SECRET`
 
 Endpoint de webhook:
 
@@ -371,7 +373,7 @@ GET  /webhooks/whatsapp
 POST /webhooks/whatsapp
 ```
 
-En Meta Developers configura la URL publica del webhook y el token de verificacion definido en `WHATSAPP_WEBHOOK_VERIFY_TOKEN`.
+En Meta Developers configura la URL publica del webhook y el token de verificacion definido en `WHATSAPP_WEBHOOK_VERIFY_TOKEN`. Para validar la firma de los POST del webhook, configura tambien `WHATSAPP_APP_SECRET` con el app secret de Meta.
 
 ## Manual de Integracion WhatsApp
 

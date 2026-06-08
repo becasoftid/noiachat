@@ -47,6 +47,7 @@ WHATSAPP_ACCESS_TOKEN=TOKEN_DE_META
 WHATSAPP_PHONE_NUMBER_ID=ID_DEL_NUMERO
 WHATSAPP_BUSINESS_ACCOUNT_ID=ID_DE_LA_CUENTA_WHATSAPP_BUSINESS
 WHATSAPP_WEBHOOK_VERIFY_TOKEN=noiachat_webhook_2026
+WHATSAPP_APP_SECRET=APP_SECRET_DE_META
 ```
 
 El `WHATSAPP_WEBHOOK_VERIFY_TOKEN` no lo entrega Meta. Lo defines tu y debe coincidir exactamente entre NoiaChat y Meta.
@@ -68,6 +69,7 @@ WHATSAPP_ACCESS_TOKEN=TOKEN_DE_META
 WHATSAPP_PHONE_NUMBER_ID=ID_DEL_NUMERO
 WHATSAPP_BUSINESS_ACCOUNT_ID=ID_DE_LA_CUENTA_WHATSAPP_BUSINESS
 WHATSAPP_WEBHOOK_VERIFY_TOKEN=noiachat_webhook_2026
+WHATSAPP_APP_SECRET=APP_SECRET_DE_META
 ```
 
 Guarda el archivo y limpia/cachea configuracion:
@@ -77,6 +79,8 @@ php8.4 artisan optimize:clear
 php8.4 artisan config:cache
 php8.4 artisan queue:restart
 ```
+
+`WHATSAPP_APP_SECRET` activa la validacion de `X-Hub-Signature-256` en los POST del webhook. Si esta variable esta vacia, NoiaChat no bloqueara el POST por firma para mantener compatibilidad en entornos locales.
 
 ## 5. Validar manualmente el webhook
 

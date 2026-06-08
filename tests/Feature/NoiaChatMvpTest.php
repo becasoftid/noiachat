@@ -29,6 +29,7 @@ use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
 use App\Modules\Shared\Domain\Contracts\MessagingProviderInterface;
 use App\Modules\Users\Infrastructure\Persistence\Models\Role;
 use App\Modules\Webhooks\Application\UseCases\ProcessWhatsAppWebhookUseCase;
+use App\Modules\Webhooks\Infrastructure\Jobs\ProcessWhatsAppWebhookJob;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -85,6 +86,33 @@ class NoiaChatMvpTest extends TestCase
         $message = Message::create(['contact_id' => $contact->id, 'channel_id' => $this->channel->id, 'user_id' => $this->admin->id, 'type' => 'text', 'status' => 'sent', 'provider_message_id' => 'wamid-123']);
         app(ProcessWhatsAppWebhookUseCase::class)->execute(['entry' => [['id' => 'entry-delivered', 'changes' => [['value' => ['statuses' => [['id' => 'wamid-123', 'status' => 'delivered']]]]]]]]);
         $this->assertDatabaseHas('messages', ['id' => $message->id, 'status' => 'delivered']);
+    }
+
+    public function test_whatsapp_webhook_accepts_valid_meta_signature(): void
+    {
+        config(['services.whatsapp.app_secret' => 'test-meta-secret']);
+        $json = json_encode(['entry' => [['id' => 'entry-signature-ok']]]) ?: '{}';
+        $signature = 'sha256='.hash_hmac('sha256', $json, 'test-meta-secret');
+
+        $this->call('POST', route('webhooks.whatsapp.receive'), [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_HUB_SIGNATURE_256' => $signature,
+        ], $json)->assertOk();
+
+        Queue::assertPushed(ProcessWhatsAppWebhookJob::class);
+    }
+
+    public function test_whatsapp_webhook_rejects_invalid_meta_signature(): void
+    {
+        config(['services.whatsapp.app_secret' => 'test-meta-secret']);
+        $json = json_encode(['entry' => [['id' => 'entry-signature-bad']]]) ?: '{}';
+
+        $this->call('POST', route('webhooks.whatsapp.receive'), [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_HUB_SIGNATURE_256' => 'sha256=invalid',
+        ], $json)->assertForbidden();
+
+        Queue::assertNotPushed(ProcessWhatsAppWebhookJob::class);
     }
 
     public function test_inbound_stop_creates_opt_out_request(): void

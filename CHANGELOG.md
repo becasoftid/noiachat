@@ -17,6 +17,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 
 ### Changed
 
+- Validacion opcional de firma `X-Hub-Signature-256` para webhooks de Meta usando `WHATSAPP_APP_SECRET`.
 - Ajuste del flujo de mensajes multimedia para respetar compliance antes de subir adjuntos o encolar jobs de WhatsApp.
 - Ajuste del registro de envios WhatsApp para marcar como fallidos los mensajes cuando Meta responde con un error de proveedor, evitando estados `sent` sin `provider_message_id`.
 - Ajuste del webhook de WhatsApp para crear contactos provisionales con numeros entrantes desconocidos, relacionar mensajes recibidos con conversaciones y detectar contactos existentes aunque el telefono tenga formato local o internacional.
