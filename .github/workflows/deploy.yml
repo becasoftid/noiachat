@@ -108,6 +108,10 @@ jobs:
               php8.4 artisan queue:restart
             fi
 
+            echo "🔹 Configurando backups automaticos"
+            cp deploy/cron/noiachat-backup /etc/cron.d/noiachat-backup
+            chmod 644 /etc/cron.d/noiachat-backup
+
             echo "🔹 Desactivando modo mantenimiento"
             php8.4 artisan up
 

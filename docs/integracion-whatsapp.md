@@ -455,6 +455,14 @@ php8.4 artisan config:cache
 php8.4 artisan queue:restart
 ```
 
+Verificar workers y backups:
+
+```bash
+supervisorctl status noiachat-worker:*
+php8.4 artisan noiachat:backup --only=database
+ls -lah storage/app/backups
+```
+
 Si hay cambios de base de datos:
 
 ```bash

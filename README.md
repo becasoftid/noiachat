@@ -438,16 +438,19 @@ El workflow de GitHub Actions usa secretos del repositorio para conectarse al dr
 
 El worker permanente de colas se configura con Supervisor. Consulta [docs/deploy-workers.md](docs/deploy-workers.md).
 
+Los backups automaticos se generan con el comando `noiachat:backup` y el cron versionado en `deploy/cron/noiachat-backup`. Consulta [docs/deploy-backups.md](docs/deploy-backups.md).
+
 Checklist sugerido:
 
 1. Configurar `.env` de produccion.
 2. Definir `APP_ENV=production` y `APP_DEBUG=false`.
 3. Configurar base de datos persistente.
 4. Configurar driver de cola y levantar workers con Supervisor.
-5. Ejecutar `composer install --no-dev --optimize-autoloader`.
-6. Ejecutar `npm ci && npm run build`.
-7. Ejecutar `php artisan migrate --force`.
-8. Ejecutar optimizaciones de Laravel:
+5. Configurar backups automaticos.
+6. Ejecutar `composer install --no-dev --optimize-autoloader`.
+7. Ejecutar `npm ci && npm run build`.
+8. Ejecutar `php artisan migrate --force`.
+9. Ejecutar optimizaciones de Laravel:
 
 ```bash
 php artisan config:cache
@@ -455,8 +458,8 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-9. Configurar el webhook publico en Meta Developers.
-10. Rotar credenciales y revisar permisos del usuario administrador.
+10. Configurar el webhook publico en Meta Developers.
+11. Rotar credenciales y revisar permisos del usuario administrador.
 
 ## Seguridad
 

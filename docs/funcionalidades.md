@@ -16,7 +16,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | Mensajeria saliente | MVP | Texto validado; multimedia y plantillas requieren endurecimiento. |
 | Auditoria | MVP | Registro y filtros funcionan; falta detalle expandido/exportacion. |
 | Reportes | Pendiente | Dashboard basico; faltan metricas operativas y exportaciones. |
-| Despliegue | MVP | GitHub Actions funciona con secretos y configuracion de worker; faltan backups automaticos. |
+| Despliegue | Operativo | GitHub Actions funciona con secretos, worker permanente y backups automaticos locales. |
 | Seguridad | MVP | Roles, CSRF base y firma webhook; falta 2FA, gestion usuarios y politicas productivas. |
 
 ## Leyenda
@@ -67,7 +67,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | REPORT-002 | Reportes | Exportacion de datos | Pendiente | P2 | No implementado | Exportar contactos, conversaciones, auditoria y mensajes. |
 | DEPLOY-001 | Deploy | GitHub Actions a droplet | Operativo | P0 | Workflow usa secretos para host, usuario, puerto y llave; debug retirado | Verificar nuevo run de Actions con secretos configurados. |
 | DEPLOY-002 | Deploy | Worker permanente | Operativo | P0 | Configuracion Supervisor versionada, deploy reinicia workers y manual operativo creado | Verificar `supervisorctl status noiachat-worker:*` en produccion. |
-| DEPLOY-003 | Deploy | Backups | Pendiente | P0 | No implementado | Programar backup DB y storage. |
+| DEPLOY-003 | Deploy | Backups | Operativo | P0 | Comando `noiachat:backup`, cron versionado, deploy instala cron y manual de restauracion | Sincronizar backups a almacenamiento externo. |
 | DEPLOY-004 | Deploy | Monitoreo | Pendiente | P1 | No implementado | Alertar jobs fallidos, disco, errores 500 y webhook. |
 | DOC-001 | Documentacion | README | Operativo | P1 | README actualizado | Mantener con cada release. |
 | DOC-002 | Documentacion | Changelog | Operativo | P1 | CHANGELOG actualizado | Crear version publica inicial. |
@@ -79,7 +79,6 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 ### P0 - Critico
 
 - Probar envio multimedia real con URL publica HTTPS.
-- Configurar backups automaticos.
 
 ### P1 - Importante
 

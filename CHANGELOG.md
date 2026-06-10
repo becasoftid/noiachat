@@ -10,6 +10,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 
 - Gestion documental de funcionalidades con matriz de estado, backlog priorizado y plantilla de registro en `docs/`.
 - Configuracion Supervisor para worker permanente de colas en `deploy/supervisor/noiachat-worker.conf` y manual operativo en `docs/deploy-workers.md`.
+- Comando `noiachat:backup`, cron de backups automaticos y manual operativo/restauracion en `docs/deploy-backups.md`.
 - Manual paso a paso de integracion con WhatsApp Cloud API en `docs/integracion-whatsapp.md`.
 - Workflow de GitHub Actions para desplegar NoiaChat automaticamente en la droplet cuando se suben cambios a `main` o `master`.
 - Validacion del secreto `DROPLET_SSH_KEY` antes de ejecutar el despliegue por SSH.
@@ -22,6 +23,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Visualizacion de errores de Meta en el detalle del mensaje y en el timeline de conversaciones, incluyendo codigo, mensaje, detalle y payload tecnico.
 - Endurecimiento del workflow de despliegue para usar secretos `DROPLET_HOST`, `DROPLET_USERNAME`, `DROPLET_PORT` y `DROPLET_SSH_KEY`, retirando host quemado y debug.
 - Ajuste del workflow de despliegue para instalar o actualizar la configuracion del worker y reiniciar procesos de Supervisor cuando este disponible.
+- Ajuste del workflow de despliegue para instalar el cron de backups automaticos.
 - Validacion opcional de firma `X-Hub-Signature-256` para webhooks de Meta usando `WHATSAPP_APP_SECRET`.
 - Ajuste del flujo de mensajes multimedia para respetar compliance antes de subir adjuntos o encolar jobs de WhatsApp.
 - Ajuste del registro de envios WhatsApp para marcar como fallidos los mensajes cuando Meta responde con un error de proveedor, evitando estados `sent` sin `provider_message_id`.

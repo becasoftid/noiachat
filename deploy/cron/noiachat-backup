@@ -1,0 +1,4 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+15 2 * * * www-data cd /var/www/noiachat && php8.4 artisan noiachat:backup --retention=14 >> storage/logs/backup.log 2>&1
