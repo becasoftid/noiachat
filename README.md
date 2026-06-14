@@ -132,7 +132,7 @@ CACHE_STORE=database
 
 NOIACHAT_ADMIN_NAME="Admin NoiaChat"
 NOIACHAT_ADMIN_EMAIL=admin@noiachat.local
-NOIACHAT_ADMIN_PASSWORD=password
+NOIACHAT_ADMIN_PASSWORD=Password
 
 WHATSAPP_API_BASE_URL=https://graph.facebook.com/v21.0
 WHATSAPP_ACCESS_TOKEN=
@@ -204,7 +204,7 @@ Acceso local habitual:
 Credenciales por defecto despues de ejecutar seeders:
 
 - Email: `admin@noiachat.local`
-- Password: `password`
+- Password: `Password`
 
 ## Pruebas
 

@@ -18,21 +18,21 @@
             'cancelled' => 'Cancelado',
             'blocked_by_policy' => 'Bloqueado por política',
         ];
-        $eligibilityLabels = [
-            'allowed' => 'Permitido',
-            'blocked_no_consent' => 'Sin consentimiento',
-            'blocked_blacklist' => 'Contacto excluido',
-            'blocked_invalid_contact' => 'Contacto inválido',
-            'blocked_frequency' => 'Límite de frecuencia',
-            'blocked_channel_inactive' => 'Canal inactivo',
-            'blocked_template_inactive' => 'Plantilla inactiva',
-            'blocked_customer_care_window' => 'Ventana 24h cerrada',
-        ];
+        $customerCareWindowClosed = $freeFormEligibility->value === 'blocked_customer_care_window';
     @endphp
     <div class="grid gap-6 lg:grid-cols-[320px_1fr]">
         <aside class="space-y-6">
             <div class="noia-card">
                 <h3 class="font-semibold">Gestión</h3>
+                @can('messages.send')
+                    @if($conversation->assigned_user_id !== auth()->id())
+                        <form method="POST" action="{{ route('conversations.assign-me', $conversation) }}" class="mt-4">
+                            @csrf
+                            @method('PUT')
+                            <button class="noia-btn-success w-full">Asignar a mi</button>
+                        </form>
+                    @endif
+                @endcan
                 <form method="POST" action="{{ route('conversations.assign', $conversation) }}" class="mt-4 space-y-3">
                     @csrf
                     @method('PUT')
@@ -84,8 +84,11 @@
                             <p class="mt-2 text-xs opacity-70">Estado: {{ $messageStatusLabels[$item->status] ?? $item->status }}</p>
                         @endif
 
-                        @if(data_get($item->meta, 'eligibility_status') && data_get($item->meta, 'eligibility_status') !== 'allowed')
-                            <p class="mt-1 text-xs opacity-70">Motivo: {{ $eligibilityLabels[data_get($item->meta, 'eligibility_status')] ?? data_get($item->meta, 'eligibility_status') }}</p>
+                        @if($item->compliance_block_label)
+                            <div class="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                                <p class="font-semibold">Envio bloqueado: {{ $item->compliance_block_label }}</p>
+                                <p class="mt-1">{{ $item->compliance_block_description }}</p>
+                            </div>
                         @endif
 
                         @php
@@ -114,23 +117,29 @@
             </div>
 
             <div class="mt-6 grid gap-6 border-t border-slate-200 pt-4 lg:grid-cols-2">
+                @if($customerCareWindowClosed)
+                    <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 lg:col-span-2">
+                        <p class="font-semibold">{{ $freeFormEligibility->label() }}</p>
+                        <p class="mt-1">{{ $freeFormEligibility->description() }}</p>
+                    </div>
+                @endif
                 <form method="POST" action="{{ route('conversations.reply', $conversation) }}" class="space-y-3">
                     @csrf
                     <h3 class="font-semibold">Respuesta de texto</h3>
-                    <textarea class="noia-textarea" name="body" rows="4" placeholder="Responder conversación"></textarea>
-                    <button class="noia-btn-success">Enviar respuesta</button>
+                    <textarea class="noia-textarea" name="body" rows="4" placeholder="Responder conversación" @disabled($customerCareWindowClosed)></textarea>
+                    <button class="noia-btn-success" @disabled($customerCareWindowClosed)>Enviar respuesta</button>
                 </form>
 
                 <form method="POST" enctype="multipart/form-data" action="{{ route('conversations.reply-media', $conversation) }}" class="space-y-3">
                     @csrf
                     <h3 class="font-semibold">Respuesta con adjunto</h3>
-                    <select class="noia-select w-full" name="type">
+                    <select class="noia-select w-full" name="type" @disabled($customerCareWindowClosed)>
                         <option value="image">Imagen</option>
                         <option value="document">Documento</option>
                     </select>
-                    <textarea class="noia-textarea min-h-[96px]" name="body" rows="2" placeholder="Texto opcional"></textarea>
-                    <input class="noia-file-input" type="file" name="file">
-                    <button class="noia-btn-info">Enviar adjunto</button>
+                    <textarea class="noia-textarea min-h-[96px]" name="body" rows="2" placeholder="Texto opcional" @disabled($customerCareWindowClosed)></textarea>
+                    <input class="noia-file-input" type="file" name="file" @disabled($customerCareWindowClosed)>
+                    <button class="noia-btn-info" @disabled($customerCareWindowClosed)>Enviar adjunto</button>
                 </form>
                 <form method="POST" action="{{ route('conversations.reply-template', $conversation) }}" class="space-y-3 lg:col-span-2">
                     @csrf
@@ -139,13 +148,18 @@
                         <select class="noia-select w-full" name="message_template_id">
                             <option value="">Selecciona plantilla</option>
                             @foreach($templates as $template)
-                                <option value="{{ $template->id }}">{{ $template->name }}</option>
+                                <option value="{{ $template->id }}" @selected((int) old('message_template_id') === $template->id)>
+                                    {{ $template->name }} · {{ $template->currentVersion?->expectedVariableCount() ?? 0 }} variables
+                                </option>
                             @endforeach
                         </select>
-                        <input class="noia-input w-full" name="variables" placeholder="Variables separadas por |">
+                        <input class="noia-input w-full" name="variables" value="{{ old('variables') }}" placeholder="Variables separadas por |">
                         <button class="noia-btn-warning">Enviar plantilla</button>
                     </div>
-                    <p class="text-xs text-slate-500">Ejemplo de variables: Juan|12345</p>
+                    @error('variables')
+                        <p class="text-xs font-semibold text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs text-slate-500">Completa exactamente la cantidad de variables indicada. Ejemplo: Juan|12345</p>
                 </form>
             </div>
         </div>

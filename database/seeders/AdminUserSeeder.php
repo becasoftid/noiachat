@@ -13,7 +13,7 @@ class AdminUserSeeder extends Seeder
     {
         $user = User::updateOrCreate(
             ['email' => env('NOIACHAT_ADMIN_EMAIL', env('AUDITCHAT_ADMIN_EMAIL', 'admin@noiachat.local'))],
-            ['name' => env('NOIACHAT_ADMIN_NAME', env('AUDITCHAT_ADMIN_NAME', 'Admin NoiaChat')), 'password' => Hash::make(env('NOIACHAT_ADMIN_PASSWORD', env('AUDITCHAT_ADMIN_PASSWORD', 'password'))), 'is_active' => true],
+            ['name' => env('NOIACHAT_ADMIN_NAME', env('AUDITCHAT_ADMIN_NAME', 'Admin NoiaChat')), 'password' => Hash::make(env('NOIACHAT_ADMIN_PASSWORD', env('AUDITCHAT_ADMIN_PASSWORD', 'Password'))), 'is_active' => true],
         );
 
         $user->roles()->syncWithoutDetaching([Role::where('name', 'admin')->firstOrFail()->id]);

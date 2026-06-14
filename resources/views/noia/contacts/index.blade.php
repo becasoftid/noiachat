@@ -12,7 +12,10 @@
             <input class="noia-input" type="text" name="search" value="{{ request('search') }}" placeholder="Buscar nombre, teléfono o email">
             <button class="noia-btn-primary">Buscar</button>
         </form>
-        <a href="{{ route('contacts.create') }}" class="noia-btn-success">Nuevo contacto</a>
+        <div class="flex gap-2">
+            <a href="{{ route('contacts.import.create') }}" class="noia-btn-secondary">Importar</a>
+            <a href="{{ route('contacts.create') }}" class="noia-btn-success">Nuevo contacto</a>
+        </div>
     </div>
     <div class="noia-table-wrap">
         <table class="noia-table">

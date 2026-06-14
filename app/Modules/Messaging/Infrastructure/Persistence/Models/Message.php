@@ -2,6 +2,7 @@
 
 namespace App\Modules\Messaging\Infrastructure\Persistence\Models;
 
+use App\Modules\Compliance\Domain\Enums\EligibilityStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -58,5 +59,26 @@ class Message extends Model
     public function providerLogs(): HasMany
     {
         return $this->hasMany(ProviderLog::class);
+    }
+
+    public function eligibilityStatus(): ?EligibilityStatus
+    {
+        $value = data_get($this->meta, 'eligibility_status');
+
+        return is_string($value) ? EligibilityStatus::tryFrom($value) : null;
+    }
+
+    public function complianceBlockLabel(): ?string
+    {
+        $status = $this->eligibilityStatus();
+
+        return $status && $status !== EligibilityStatus::ALLOWED ? $status->label() : null;
+    }
+
+    public function complianceBlockDescription(): ?string
+    {
+        $status = $this->eligibilityStatus();
+
+        return $status && $status !== EligibilityStatus::ALLOWED ? $status->description() : null;
     }
 }

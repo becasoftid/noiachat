@@ -12,11 +12,26 @@ class MessageTemplate extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['channel_id', 'name', 'external_template_id', 'is_active', 'current_version_id'];
+    protected $fillable = [
+        'channel_id',
+        'name',
+        'external_template_id',
+        'meta_template_id',
+        'meta_status',
+        'meta_category',
+        'meta_payload',
+        'synced_at',
+        'is_active',
+        'current_version_id',
+    ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+            'is_active' => 'boolean',
+            'meta_payload' => 'array',
+            'synced_at' => 'datetime',
+        ];
     }
 
     public function channel(): BelongsTo

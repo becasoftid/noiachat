@@ -136,7 +136,7 @@ WHATSAPP_WEBHOOK_VERIFY_TOKEN=   # Required: Custom token for webhook verificati
 # Seeded admin user
 NOIACHAT_ADMIN_NAME="Admin NoiaChat"
 NOIACHAT_ADMIN_EMAIL=admin@noiachat.local
-NOIACHAT_ADMIN_PASSWORD=password
+NOIACHAT_ADMIN_PASSWORD=Password
 ```
 
 ---

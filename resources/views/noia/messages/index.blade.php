@@ -55,7 +55,12 @@
                     <tr class="border-t border-slate-100">
                         <td class="px-4 py-3"><a class="noia-link" href="{{ route('messages.show', $message) }}">{{ $message->contact->full_name }}</a></td>
                         <td class="px-4 py-3">{{ $typeLabels[$message->type] ?? $message->type }}</td>
-                        <td class="px-4 py-3">{{ $statusLabels[$message->status] ?? $message->status }}</td>
+                        <td class="px-4 py-3">
+                            <div>{{ $statusLabels[$message->status] ?? $message->status }}</div>
+                            @if($message->complianceBlockLabel())
+                                <div class="mt-1 text-xs font-semibold text-amber-700">{{ $message->complianceBlockLabel() }}</div>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">{{ $message->created_at->format('Y-m-d H:i') }}</td>
                     </tr>
                 @endforeach

@@ -26,6 +26,12 @@ class EloquentConversationRepository implements ConversationRepositoryInterface
     {
         return Conversation::query()
             ->with(['contact', 'assignedUser'])
+            ->withCount(['inboundMessages as unread_count' => function ($query): void {
+                $query->where(function ($unreadQuery): void {
+                    $unreadQuery->whereNull('conversations.last_read_at')
+                        ->orWhereColumn('inbound_messages.created_at', '>', 'conversations.last_read_at');
+                });
+            }])
             ->when($filters['status'] ?? null, fn ($q, $value) => $q->where('status', $value))
             ->when($filters['assigned_user_id'] ?? null, fn ($q, $value) => $q->where('assigned_user_id', $value))
             ->when($filters['date_from'] ?? null, fn ($q, $value) => $q->whereDate('last_message_at', '>=', $value))

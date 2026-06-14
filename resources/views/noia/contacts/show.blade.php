@@ -51,6 +51,21 @@
             <div class="mt-4"><a class="noia-btn-primary text-sm" href="{{ route('contacts.edit', $contact) }}">Editar</a></div>
         </div>
         <div class="space-y-6">
+            @can('admin.access')
+                <div class="noia-card">
+                    <h3 class="font-semibold">Fusionar contacto</h3>
+                    <form method="POST" action="{{ route('contacts.merge', $contact) }}" class="mt-4 grid gap-3">
+                        @csrf
+                        <select class="noia-select" name="target_contact_id">
+                            <option value="">Selecciona contacto destino</option>
+                            @foreach($mergeCandidates as $candidate)
+                                <option value="{{ $candidate->id }}">{{ $candidate->full_name }} · {{ $candidate->primary_phone }}</option>
+                            @endforeach
+                        </select>
+                        <button class="noia-btn-warning">Fusionar en destino</button>
+                    </form>
+                </div>
+            @endcan
             <div class="noia-card">
                 <h3 class="font-semibold">Consentimientos</h3>
                 <form method="POST" action="{{ route('contacts.consents.store', $contact) }}" class="mt-4 grid gap-3 md:grid-cols-3">
@@ -67,20 +82,64 @@
                     </select>
                     <button class="noia-btn-success">Otorgar</button>
                 </form>
-                <ul class="mt-4 space-y-2 text-sm">
-                    @foreach($contact->contactConsents as $consent)
-                        <li class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-                            <span>{{ $consentStatusLabels[$consent->status] ?? $consent->status }} · {{ $consentSourceLabels[$consent->source] ?? $consent->source }} · {{ optional($consent->created_at)->format('Y-m-d H:i') }}</span>
-                            @if($consent->status === 'granted')
-                                <form method="POST" action="{{ route('contacts.consents.revoke', $contact) }}">
-                                    @csrf
-                                    <input type="hidden" name="channel_id" value="{{ $consent->channel_id }}">
-                                    <button class="text-sm text-rose-700">Revocar</button>
-                                </form>
+                <div class="mt-4 space-y-3 text-sm">
+                    @forelse($contact->contactConsents->sortByDesc('created_at') as $consent)
+                        <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="{{ $consent->status === 'granted' ? 'noia-badge-success' : 'noia-badge-neutral' }}">
+                                            {{ $consentStatusLabels[$consent->status] ?? $consent->status }}
+                                        </span>
+                                        <span class="font-semibold text-slate-800">{{ $consent->channel?->name ?? 'Canal eliminado' }}</span>
+                                    </div>
+                                    <p class="mt-2 text-slate-600">Fuente: {{ $consentSourceLabels[$consent->source] ?? $consent->source }}</p>
+                                </div>
+
+                                @if($consent->status === 'granted')
+                                    <form method="POST" action="{{ route('contacts.consents.revoke', $contact) }}">
+                                        @csrf
+                                        <input type="hidden" name="channel_id" value="{{ $consent->channel_id }}">
+                                        <button class="text-sm font-semibold text-rose-700">Revocar</button>
+                                    </form>
+                                @endif
+                            </div>
+
+                            <dl class="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
+                                <div>
+                                    <dt class="font-semibold text-slate-500">Registrado</dt>
+                                    <dd>{{ optional($consent->created_at)->format('Y-m-d H:i') }}</dd>
+                                </div>
+                                @if($consent->granted_at)
+                                    <div>
+                                        <dt class="font-semibold text-slate-500">Otorgado</dt>
+                                        <dd>{{ $consent->granted_at->format('Y-m-d H:i') }} · {{ $consent->grantedBy?->name ?? 'Sistema' }}</dd>
+                                    </div>
+                                @endif
+                                @if($consent->revoked_at)
+                                    <div>
+                                        <dt class="font-semibold text-slate-500">Revocado</dt>
+                                        <dd>{{ $consent->revoked_at->format('Y-m-d H:i') }} · {{ $consent->revokedBy?->name ?? 'Sistema' }}</dd>
+                                    </div>
+                                @endif
+                                @if($consent->expires_at)
+                                    <div>
+                                        <dt class="font-semibold text-slate-500">Expira</dt>
+                                        <dd>{{ $consent->expires_at->format('Y-m-d H:i') }}</dd>
+                                    </div>
+                                @endif
+                            </dl>
+
+                            @if(filled($consent->notes))
+                                <p class="mt-3 rounded-md bg-white px-3 py-2 text-xs text-slate-600">{{ $consent->notes }}</p>
                             @endif
-                        </li>
-                    @endforeach
-                </ul>
+                        </div>
+                    @empty
+                        <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50/70 p-4 text-sm text-slate-500">
+                            Sin historial de consentimiento.
+                        </div>
+                    @endforelse
+                </div>
             </div>
             <div class="noia-card">
                 <h3 class="font-semibold">Lista de exclusión</h3>

@@ -7,7 +7,7 @@
             'closed' => 'Cerrada',
         ];
     @endphp
-    <form method="GET" class="noia-filter-bar mb-4 grid gap-3 md:grid-cols-6">
+    <form method="GET" class="noia-filter-bar mb-4 grid gap-3 md:grid-cols-7">
         <input class="noia-input" name="search" value="{{ request('search') }}" placeholder="Buscar contacto o teléfono">
         <select class="noia-select" name="status">
             <option value="">Estado</option>
@@ -23,24 +23,20 @@
         </select>
         <input class="noia-input" type="date" name="date_from" value="{{ request('date_from') }}">
         <input class="noia-input" type="date" name="date_to" value="{{ request('date_to') }}">
+        <label class="flex h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700">
+            <input class="rounded border-slate-300 text-cyan-700 focus:ring-cyan-100" type="checkbox" name="mine" value="1" @checked(request()->boolean('mine'))>
+            <span>Mis conversaciones</span>
+        </label>
         <button class="noia-btn-primary">Filtrar</button>
     </form>
-    <div class="space-y-3">
-        @foreach($conversations as $conversation)
-            <a href="{{ route('conversations.show', $conversation) }}" class="noia-card block p-4 transition hover:-translate-y-0.5 hover:border-cyan-200">
-                <div class="flex items-center justify-between gap-4">
-                    <div>
-                        <p class="font-semibold">{{ $conversation->contact->full_name }}</p>
-                        <p class="text-sm text-slate-500">{{ $conversation->contact->primary_phone }}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-sm">{{ $statusLabels[$conversation->status] ?? $conversation->status }}</p>
-                        <p class="text-xs text-slate-400">{{ $conversation->assignedUser?->name ?? 'Sin asignar' }}</p>
-                        <p class="text-xs text-slate-400">{{ optional($conversation->last_message_at)->format('Y-m-d H:i') }}</p>
-                    </div>
-                </div>
-            </a>
-        @endforeach
+    <div
+        x-data="App.conversationInbox($el.dataset.refreshUrl)"
+        x-init="start()"
+        x-on:beforeunload.window="stop()"
+        data-refresh-url="{{ route('conversations.refresh', request()->query()) }}"
+    >
+        <div x-ref="list">
+            @include('noia.conversations.partials.list', ['conversations' => $conversations, 'statusLabels' => $statusLabels])
+        </div>
     </div>
-    <div class="mt-4">{{ $conversations->appends(request()->query())->links() }}</div>
 </x-layouts.noia>

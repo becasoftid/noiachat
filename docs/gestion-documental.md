@@ -5,6 +5,7 @@ Este documento define como llevar el control documental de las funcionalidades d
 La gestion documental se apoya en tres archivos:
 
 - [Matriz de funcionalidades](funcionalidades.md): inventario vivo de modulos, funcionalidades, estado y siguientes acciones.
+- [Plan de trabajo y reglas de negocio](plan-trabajo-reglas-negocio.md): orden de desarrollo, reglas de negocio y criterios de aceptacion.
 - [Manual de integracion WhatsApp](integracion-whatsapp.md): guia operativa para conectar, probar y diagnosticar WhatsApp Cloud API.
 - [Plantilla de funcionalidad](plantilla-funcionalidad.md): formato para documentar nuevas funcionalidades, cambios o mejoras.
 
@@ -82,5 +83,6 @@ Usa estos estados de forma consistente:
 - [README](../README.md)
 - [Changelog](../CHANGELOG.md)
 - [Matriz de funcionalidades](funcionalidades.md)
+- [Plan de trabajo y reglas de negocio](plan-trabajo-reglas-negocio.md)
 - [Manual de integracion WhatsApp](integracion-whatsapp.md)
 - [Plantilla de funcionalidad](plantilla-funcionalidad.md)

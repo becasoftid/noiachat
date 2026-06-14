@@ -15,6 +15,7 @@ Route::middleware('auth')->group(function (): void {
     require app_path('Modules/Messaging/Presentation/Routes/web.php');
     require app_path('Modules/Conversations/Presentation/Routes/web.php');
     require app_path('Modules/Audit/Presentation/Routes/web.php');
+    require app_path('Modules/Users/Presentation/Routes/web.php');
     require app_path('Modules/Settings/Presentation/Routes/web.php');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

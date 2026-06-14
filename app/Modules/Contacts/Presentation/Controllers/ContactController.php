@@ -46,10 +46,20 @@ class ContactController extends Controller
 
     public function show(Contact $contact)
     {
-        $contact->load(['contactConsents', 'contactBlacklist', 'messages.events']);
+        $contact->load([
+            'contactConsents.channel',
+            'contactConsents.grantedBy',
+            'contactConsents.revokedBy',
+            'contactBlacklist',
+            'messages.events',
+        ]);
         $channels = Channel::query()->where('is_active', true)->get();
+        $mergeCandidates = Contact::query()
+            ->whereKeyNot($contact->id)
+            ->orderBy('full_name')
+            ->get();
 
-        return view('noia.contacts.show', compact('contact', 'channels'));
+        return view('noia.contacts.show', compact('contact', 'channels', 'mergeCandidates'));
     }
 
     public function edit(Contact $contact)

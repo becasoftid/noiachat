@@ -23,9 +23,16 @@ class QueueTemplateMessageUseCase
         array $variables = [],
         ?Request $request = null,
     ): Message {
-        if (! $template->is_active || ! $template->currentVersion?->is_active) {
+        if (
+            ! $template->is_active
+            || ! $template->currentVersion?->is_active
+            || ($template->meta_status !== null && $template->meta_status !== 'APPROVED')
+        ) {
             throw new BusinessRuleException('La plantilla no está activa.');
         }
+
+        $variables = $this->normalizeVariables($variables);
+        $this->validateVariables($template, $variables);
 
         $body = $this->renderBody($template->currentVersion->body, $variables);
 
@@ -60,5 +67,35 @@ class QueueTemplateMessageUseCase
 
             return (string) ($variables[$index] ?? $matches[0]);
         }, $body) ?? $body;
+    }
+
+    private function normalizeVariables(array $variables): array
+    {
+        return collect($variables)
+            ->map(fn ($value) => trim((string) $value))
+            ->filter(fn ($value) => $value !== '')
+            ->values()
+            ->all();
+    }
+
+    private function validateVariables(MessageTemplate $template, array $variables): void
+    {
+        $expected = $this->expectedVariableCount($template);
+        $provided = count($variables);
+
+        if ($expected === $provided) {
+            return;
+        }
+
+        if ($expected === 0) {
+            throw new BusinessRuleException('Esta plantilla no requiere variables.');
+        }
+
+        throw new BusinessRuleException("Esta plantilla requiere {$expected} variables.");
+    }
+
+    private function expectedVariableCount(MessageTemplate $template): int
+    {
+        return $template->currentVersion?->expectedVariableCount() ?? 0;
     }
 }

@@ -47,7 +47,7 @@ class MessageController extends Controller
         $contact = $this->contacts->findById($request->string('contact_id')->toString()) ?? abort(404);
         $message = $this->queueTextMessage->execute($contact, (int) $request->integer('channel_id'), $request->string('body')->toString(), $request->user()->id, $request);
 
-        return redirect()->route('messages.show', $message)->with('status', 'Mensaje encolado.');
+        return $this->redirectAfterQueue($message, 'Mensaje encolado.');
     }
 
     public function sendImage(SendMediaMessageRequest $request)
@@ -108,6 +108,17 @@ class MessageController extends Controller
             $request,
         );
 
-        return redirect()->route('messages.show', $message)->with('status', 'Mensaje multimedia encolado.');
+        return $this->redirectAfterQueue($message, 'Mensaje multimedia encolado.');
+    }
+
+    private function redirectAfterQueue(Message $message, string $successMessage)
+    {
+        $redirect = redirect()->route('messages.show', $message);
+
+        if ($message->status === MessageStatus::BLOCKED_BY_POLICY->value) {
+            return $redirect->with('error', 'Envio bloqueado: '.$message->complianceBlockDescription());
+        }
+
+        return $redirect->with('status', $successMessage);
     }
 }

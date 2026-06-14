@@ -8,7 +8,22 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 
 ### Added
 
+- CRUD de usuarios desde el panel para administradores, con asignacion de roles, estado activo/inactivo y auditoria de cambios.
+- Accion "Asignar a mi" y filtro "Mis conversaciones" en el inbox de conversaciones.
+- Indicador de mensajes entrantes sin leer en conversaciones y marcado automatico como leida al abrir una conversacion.
+- Auto-refresh simple del inbox de conversaciones mediante polling y endpoint parcial.
+- Motivos visibles de bloqueo por compliance en flashes, listado/detalle de mensajes y timeline de conversaciones.
+- Importacion masiva de contactos desde CSV/XLSX con validacion por fila, resumen de creados/omitidos y auditoria.
+- Descarga CSV de errores de importacion de contactos para corregir archivos con filas invalidas.
+- Deteccion de telefonos duplicados durante importacion, tanto dentro del archivo como contra contactos existentes.
+- Fusion controlada de contactos para administradores, moviendo historial operativo al contacto destino y archivando el origen con auditoria.
+- Historial visible de consentimiento en el detalle de contacto con canal, fuente, fechas, usuarios y notas.
+- Sincronizacion de plantillas WhatsApp desde Meta, con estado real, categoria, fecha de sync, componentes y conteo de variables visibles en configuracion.
+- Validacion de cantidad exacta de variables al enviar plantillas, con errores visibles en conversacion y proteccion en el caso de uso.
+- Aviso preventivo en conversaciones cuando la ventana de atencion WhatsApp de 24h esta cerrada, deshabilitando texto libre y adjuntos para orientar al uso de plantillas.
+- Validacion de URL publica HTTPS para envio multimedia por WhatsApp, con fallos claros cuando el archivo no es accesible para Meta.
 - Gestion documental de funcionalidades con matriz de estado, backlog priorizado y plantilla de registro en `docs/`.
+- Plan de trabajo y reglas de negocio en `docs/plan-trabajo-reglas-negocio.md`.
 - Configuracion Supervisor para worker permanente de colas en `deploy/supervisor/noiachat-worker.conf` y manual operativo en `docs/deploy-workers.md`.
 - Comando `noiachat:backup`, cron de backups automaticos y manual operativo/restauracion en `docs/deploy-backups.md`.
 - Manual paso a paso de integracion con WhatsApp Cloud API en `docs/integracion-whatsapp.md`.
@@ -19,7 +34,9 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 
 ### Changed
 
+- El login ahora rechaza usuarios inactivos mediante el campo `is_active`.
 - Aplicacion de la ventana de atencion de 24 horas de WhatsApp para bloquear texto libre y adjuntos fuera de ventana, permitiendo plantillas aprobadas.
+- El envio por plantilla ahora bloquea plantillas sincronizadas que Meta no reporte como `APPROVED`.
 - Visualizacion de errores de Meta en el detalle del mensaje y en el timeline de conversaciones, incluyendo codigo, mensaje, detalle y payload tecnico.
 - Endurecimiento del workflow de despliegue para usar secretos `DROPLET_HOST`, `DROPLET_USERNAME`, `DROPLET_PORT` y `DROPLET_SSH_KEY`, retirando host quemado y debug.
 - Ajuste del workflow de despliegue para instalar o actualizar la configuracion del worker y reiniciar procesos de Supervisor cuando este disponible.

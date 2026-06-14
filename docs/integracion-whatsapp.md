@@ -289,8 +289,41 @@ NoiaChat aplica la ventana de atencion de WhatsApp:
 - Si el cliente escribio en las ultimas 24 horas, se permite responder con texto libre, imagen o documento.
 - Si pasaron mas de 24 horas desde el ultimo mensaje entrante, el texto libre y los adjuntos quedan bloqueados por politica.
 - Para reabrir una conversacion fuera de esa ventana se debe usar una plantilla aprobada.
+- La pantalla de conversacion muestra el aviso preventivo y deshabilita texto libre/adjuntos cuando la ventana esta cerrada.
 
-## 13. Validar estados de envio y lectura
+Para enviar imagenes o documentos reales por WhatsApp:
+
+- `APP_URL` debe apuntar al dominio publico HTTPS de NoiaChat.
+- `php artisan storage:link` debe estar ejecutado para exponer `/storage`.
+- La URL final del archivo debe comenzar con `https://` y no puede ser `localhost` ni `.local`.
+- Si la URL no es publica HTTPS, NoiaChat marca el mensaje como fallido antes de llamar a Meta.
+
+## 13. Sincronizar plantillas aprobadas
+
+NoiaChat puede traer desde Meta las plantillas de la cuenta WhatsApp Business configurada.
+
+Requisitos:
+
+- `.env` con `WHATSAPP_ACCESS_TOKEN`.
+- `.env` con `WHATSAPP_BUSINESS_ACCOUNT_ID`.
+- Token con permisos `whatsapp_business_messaging` y `whatsapp_business_management`.
+
+Pasos:
+
+1. Entra como admin.
+2. Ve a **Configuracion**.
+3. En **Plantillas**, haz clic en **Sincronizar Meta**.
+4. Revisa estado, categoria, idioma, fecha de sync y cantidad de variables.
+
+Reglas aplicadas por NoiaChat:
+
+- Las plantillas `APPROVED` quedan activas.
+- Las plantillas no aprobadas se guardan con su estado real, pero quedan inactivas para envio.
+- El cuerpo sincronizado sale del componente `BODY` de Meta.
+- Al enviar una plantilla, NoiaChat exige exactamente la cantidad de variables detectadas en el cuerpo.
+- Si Meta no responde o faltan credenciales, la pantalla muestra el motivo.
+
+## 14. Validar estados de envio y lectura
 
 Despues de enviar, revisa en NoiaChat:
 
@@ -312,7 +345,7 @@ DB::table('provider_logs')->latest()->first();
 
 Si WhatsApp devuelve estados, el webhook `messages` los procesa y actualiza el mensaje saliente.
 
-## 14. Worker de colas
+## 15. Worker de colas
 
 Los webhooks y envios usan colas. Comandos utiles:
 
@@ -343,7 +376,7 @@ DB::table('jobs')->count();
 DB::table('failed_jobs')->count();
 ```
 
-## 15. Diagnostico de errores comunes
+## 16. Diagnostico de errores comunes
 
 ### Meta no valida el webhook
 
@@ -443,7 +476,7 @@ supervisorctl status
 supervisorctl restart all
 ```
 
-## 16. Comandos de despliegue despues de cambios
+## 17. Comandos de despliegue despues de cambios
 
 Despues de subir cambios al repositorio y completar el deploy:
 
@@ -469,7 +502,7 @@ Si hay cambios de base de datos:
 php8.4 artisan migrate --force
 ```
 
-## 17. Checklist final de integracion
+## 18. Checklist final de integracion
 
 - App NoiaChat creada en Meta Developers.
 - Caso de uso WhatsApp agregado.

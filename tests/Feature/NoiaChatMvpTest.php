@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Modules\Compliance\Application\Services\ComplianceDecisionService;
 use App\Modules\Compliance\Domain\Enums\EligibilityStatus;
 use App\Modules\Consents\Application\UseCases\GrantConsentUseCase;
+use App\Modules\Consents\Application\UseCases\RevokeConsentUseCase;
 use App\Modules\Consents\Infrastructure\Persistence\Models\ContactBlacklist;
 use App\Modules\Contacts\Application\DTOs\UpsertContactDTO;
 use App\Modules\Contacts\Application\Services\ContactService;
@@ -22,9 +23,11 @@ use App\Modules\Messaging\Application\UseCases\QueueTemplateMessageUseCase;
 use App\Modules\Messaging\Application\UseCases\QueueTextMessageUseCase;
 use App\Modules\Messaging\Domain\Enums\MessageStatus;
 use App\Modules\Messaging\Infrastructure\Jobs\SendWhatsAppDocumentJob;
+use App\Modules\Messaging\Infrastructure\Jobs\SendWhatsAppImageJob;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
+use App\Modules\Shared\Domain\Exceptions\BusinessRuleException;
 use App\Modules\Messaging\Infrastructure\Jobs\SendWhatsAppTextJob;
 use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
 use App\Modules\Shared\Domain\Contracts\MessagingProviderInterface;
@@ -34,6 +37,7 @@ use App\Modules\Webhooks\Infrastructure\Jobs\ProcessWhatsAppWebhookJob;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -175,6 +179,24 @@ class NoiaChatMvpTest extends TestCase
         $this->assertDatabaseHas('contact_blacklist', ['contact_id' => $contact->id, 'channel_id' => $this->channel->id]);
     }
 
+    public function test_contact_detail_shows_consent_history(): void
+    {
+        $contact = $this->makeContact('573101000027');
+        app(GrantConsentUseCase::class)->execute($contact, $this->channel->id, 'whatsapp', $this->admin->id);
+        app(RevokeConsentUseCase::class)->execute($contact, $this->channel->id, $this->admin->id);
+
+        $this->actingAs($this->admin)->get(route('contacts.show', $contact))
+            ->assertOk()
+            ->assertSee('Consentimientos')
+            ->assertSee('WhatsApp')
+            ->assertSee('Otorgado')
+            ->assertSee('Revocado')
+            ->assertSee('Fuente: WhatsApp')
+            ->assertSee('Otorgado')
+            ->assertSee('Revocado')
+            ->assertSee($this->admin->name);
+    }
+
     public function test_auditor_cannot_send_messages(): void
     {
         $auditor = User::factory()->create();
@@ -225,6 +247,176 @@ class NoiaChatMvpTest extends TestCase
         ]);
     }
 
+    public function test_operator_can_assign_conversation_to_self(): void
+    {
+        $operator = User::factory()->create();
+        $operator->roles()->attach(Role::where('name', 'operator')->firstOrFail()->id);
+        $contact = $this->makeContact('573101000017', true);
+        $conversation = Conversation::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'status' => 'open',
+            'last_message_at' => now(),
+        ]);
+
+        $this->actingAs($operator)->put(route('conversations.assign-me', $conversation))->assertRedirect();
+
+        $this->assertDatabaseHas('conversations', [
+            'id' => $conversation->id,
+            'assigned_user_id' => $operator->id,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_operator_can_filter_my_conversations(): void
+    {
+        $operator = User::factory()->create(['name' => 'Operador Propio']);
+        $otherOperator = User::factory()->create(['name' => 'Operador Externo']);
+        $roleId = Role::where('name', 'operator')->firstOrFail()->id;
+        $operator->roles()->attach($roleId);
+        $otherOperator->roles()->attach($roleId);
+
+        $ownContact = $this->makeContact('573101000018', true);
+        $otherContact = $this->makeContact('573101000019', true);
+
+        Conversation::create([
+            'contact_id' => $ownContact->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $operator->id,
+            'status' => 'pending',
+            'last_message_at' => now(),
+        ]);
+
+        Conversation::create([
+            'contact_id' => $otherContact->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $otherOperator->id,
+            'status' => 'pending',
+            'last_message_at' => now()->subMinute(),
+        ]);
+
+        $this->actingAs($operator)
+            ->get(route('conversations.index', ['mine' => 1]))
+            ->assertOk()
+            ->assertSee($ownContact->primary_phone)
+            ->assertDontSee($otherContact->primary_phone);
+    }
+
+    public function test_conversation_inbox_shows_unread_inbound_messages(): void
+    {
+        $operator = User::factory()->create();
+        $operator->roles()->attach(Role::where('name', 'operator')->firstOrFail()->id);
+        $contact = $this->makeContact('573101000020', true);
+        $conversation = Conversation::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $operator->id,
+            'status' => 'pending',
+            'last_message_at' => now(),
+            'last_read_at' => now()->subMinutes(5),
+        ]);
+
+        InboundMessage::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'conversation_id' => $conversation->id,
+            'provider_message_id' => 'wamid-unread-1',
+            'from_phone' => $contact->primary_phone,
+            'body' => 'Necesito ayuda',
+            'payload' => [],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($operator)
+            ->get(route('conversations.index', ['mine' => 1]))
+            ->assertOk()
+            ->assertSee('1 sin leer');
+    }
+
+    public function test_opening_conversation_marks_it_as_read(): void
+    {
+        $operator = User::factory()->create();
+        $operator->roles()->attach(Role::where('name', 'operator')->firstOrFail()->id);
+        $contact = $this->makeContact('573101000021', true);
+        $conversation = Conversation::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $operator->id,
+            'status' => 'pending',
+            'last_message_at' => now(),
+            'last_read_at' => null,
+        ]);
+
+        InboundMessage::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'conversation_id' => $conversation->id,
+            'provider_message_id' => 'wamid-unread-2',
+            'from_phone' => $contact->primary_phone,
+            'body' => 'Hola',
+            'payload' => [],
+        ]);
+
+        $this->actingAs($operator)
+            ->get(route('conversations.show', $conversation))
+            ->assertOk();
+
+        $this->assertNotNull($conversation->refresh()->last_read_at);
+
+        $this->actingAs($operator)
+            ->get(route('conversations.index', ['mine' => 1]))
+            ->assertOk()
+            ->assertDontSee('sin leer');
+    }
+
+    public function test_conversation_inbox_refresh_returns_filtered_partial(): void
+    {
+        $operator = User::factory()->create(['name' => 'Operador Refresh']);
+        $otherOperator = User::factory()->create(['name' => 'Operador Oculto']);
+        $roleId = Role::where('name', 'operator')->firstOrFail()->id;
+        $operator->roles()->attach($roleId);
+        $otherOperator->roles()->attach($roleId);
+
+        $ownContact = $this->makeContact('573101000022', true);
+        $otherContact = $this->makeContact('573101000023', true);
+
+        $ownConversation = Conversation::create([
+            'contact_id' => $ownContact->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $operator->id,
+            'status' => 'pending',
+            'last_message_at' => now(),
+            'last_read_at' => now()->subMinutes(10),
+        ]);
+
+        Conversation::create([
+            'contact_id' => $otherContact->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $otherOperator->id,
+            'status' => 'pending',
+            'last_message_at' => now()->subMinute(),
+        ]);
+
+        InboundMessage::create([
+            'contact_id' => $ownContact->id,
+            'channel_id' => $this->channel->id,
+            'conversation_id' => $ownConversation->id,
+            'provider_message_id' => 'wamid-refresh-1',
+            'from_phone' => $ownContact->primary_phone,
+            'body' => 'Ping refresh',
+            'payload' => [],
+        ]);
+
+        $this->actingAs($operator)
+            ->get(route('conversations.refresh', ['mine' => 1]))
+            ->assertOk()
+            ->assertSee($ownContact->primary_phone)
+            ->assertSee('1 sin leer')
+            ->assertDontSee($otherContact->primary_phone)
+            ->assertDontSee('<html', false);
+    }
+
     public function test_admin_can_create_template_from_settings(): void
     {
         $this->actingAs($this->admin)->post(route('settings.templates.store'), [
@@ -240,6 +432,67 @@ class NoiaChatMvpTest extends TestCase
             'name' => 'bienvenida_mvp',
             'channel_id' => $this->channel->id,
         ]);
+
+        $template = MessageTemplate::query()->where('name', 'bienvenida_mvp')->firstOrFail();
+        $this->assertSame(1, $template->currentVersion->variable_count);
+    }
+
+    public function test_admin_can_sync_whatsapp_templates_from_meta(): void
+    {
+        config([
+            'services.whatsapp.api_base_url' => 'https://graph.facebook.test/v21.0',
+            'services.whatsapp.access_token' => 'test-token',
+            'services.whatsapp.business_account_id' => 'waba-123',
+        ]);
+
+        Http::fake([
+            'graph.facebook.test/v21.0/waba-123/message_templates*' => Http::response([
+                'data' => [[
+                    'id' => 'meta-template-1',
+                    'name' => 'recordatorio_pago_meta',
+                    'language' => 'es',
+                    'status' => 'APPROVED',
+                    'category' => 'UTILITY',
+                    'components' => [
+                        ['type' => 'HEADER', 'format' => 'TEXT', 'text' => 'Recordatorio'],
+                        ['type' => 'BODY', 'text' => 'Hola {{1}}, tu referencia es {{2}}.'],
+                    ],
+                ]],
+            ]),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('settings.templates.sync-whatsapp'))
+            ->assertRedirect()
+            ->assertSessionHas('status', fn (string $message) => str_contains($message, '1 plantillas'));
+
+        $this->assertDatabaseHas('message_templates', [
+            'channel_id' => $this->channel->id,
+            'name' => 'recordatorio_pago_meta',
+            'external_template_id' => 'recordatorio_pago_meta',
+            'meta_template_id' => 'meta-template-1',
+            'meta_status' => 'APPROVED',
+            'meta_category' => 'UTILITY',
+            'is_active' => 1,
+        ]);
+
+        $template = MessageTemplate::query()->where('meta_template_id', 'meta-template-1')->firstOrFail();
+
+        $this->assertSame('Hola {{1}}, tu referencia es {{2}}.', $template->currentVersion->body);
+        $this->assertSame(2, $template->currentVersion->variable_count);
+    }
+
+    public function test_whatsapp_template_sync_reports_missing_credentials(): void
+    {
+        config([
+            'services.whatsapp.access_token' => '',
+            'services.whatsapp.business_account_id' => '',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('settings.templates.sync-whatsapp'))
+            ->assertRedirect()
+            ->assertSessionHas('error', fn (string $message) => str_contains($message, 'WHATSAPP_BUSINESS_ACCOUNT_ID'));
     }
 
     public function test_operator_can_reply_to_conversation(): void
@@ -324,6 +577,181 @@ class NoiaChatMvpTest extends TestCase
         Queue::assertNotPushed(SendWhatsAppDocumentJob::class);
     }
 
+    public function test_whatsapp_image_job_uses_public_https_media_url(): void
+    {
+        config(['filesystems.disks.public.url' => 'https://noiachat.example/storage']);
+
+        $contact = $this->makeContact('573101000029', true);
+        $this->openCustomerCareWindow($contact);
+        $message = app(QueueMediaMessageUseCase::class)->execute(
+            $contact,
+            $this->channel->id,
+            'image',
+            UploadedFile::fake()->create('evidencia.jpg', 100, 'image/jpeg'),
+            'Foto publica',
+            $this->admin->id,
+        );
+
+        $provider = new class implements MessagingProviderInterface {
+            public ?SendImageMessageDTO $imageDto = null;
+
+            public function sendText(SendTextMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function sendImage(SendImageMessageDTO $dto): array
+            {
+                $this->imageDto = $dto;
+
+                return ['messages' => [['id' => 'wamid-image-public']]];
+            }
+
+            public function sendDocument(SendDocumentMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function sendTemplate(SendTemplateMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function uploadMedia(UploadMediaDTO $dto): array
+            {
+                return [];
+            }
+
+            public function parseWebhook(array $payload): array
+            {
+                return $payload;
+            }
+        };
+
+        (new SendWhatsAppImageJob($message->id))->handle($provider, app(MessageStatusService::class), app(\App\Modules\Media\Application\Services\PublicMediaUrlResolver::class));
+
+        $this->assertNotNull($provider->imageDto);
+        $this->assertStringStartsWith('https://noiachat.example/storage/messages/', $provider->imageDto->mediaUrl);
+        $this->assertDatabaseHas('messages', ['id' => $message->id, 'status' => 'sent', 'provider_message_id' => 'wamid-image-public']);
+    }
+
+    public function test_whatsapp_image_job_fails_when_media_url_is_not_public_https(): void
+    {
+        config(['filesystems.disks.public.url' => 'http://localhost/storage']);
+
+        $contact = $this->makeContact('573101000030', true);
+        $this->openCustomerCareWindow($contact);
+        $message = app(QueueMediaMessageUseCase::class)->execute(
+            $contact,
+            $this->channel->id,
+            'image',
+            UploadedFile::fake()->create('evidencia.jpg', 100, 'image/jpeg'),
+            'Foto local',
+            $this->admin->id,
+        );
+
+        $provider = new class implements MessagingProviderInterface {
+            public bool $imageCalled = false;
+
+            public function sendText(SendTextMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function sendImage(SendImageMessageDTO $dto): array
+            {
+                $this->imageCalled = true;
+
+                return ['messages' => [['id' => 'wamid-image-local']]];
+            }
+
+            public function sendDocument(SendDocumentMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function sendTemplate(SendTemplateMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function uploadMedia(UploadMediaDTO $dto): array
+            {
+                return [];
+            }
+
+            public function parseWebhook(array $payload): array
+            {
+                return $payload;
+            }
+        };
+
+        (new SendWhatsAppImageJob($message->id))->handle($provider, app(MessageStatusService::class), app(\App\Modules\Media\Application\Services\PublicMediaUrlResolver::class));
+
+        $this->assertFalse($provider->imageCalled);
+        $this->assertDatabaseHas('messages', ['id' => $message->id, 'status' => 'failed']);
+        $this->assertDatabaseHas('message_events', ['message_id' => $message->id, 'status' => 'failed', 'event_type' => 'media_url_invalid']);
+    }
+
+    public function test_whatsapp_document_job_uses_public_https_media_url(): void
+    {
+        config(['filesystems.disks.public.url' => 'https://noiachat.example/storage']);
+
+        $contact = $this->makeContact('573101000031', true);
+        $this->openCustomerCareWindow($contact);
+        $message = app(QueueMediaMessageUseCase::class)->execute(
+            $contact,
+            $this->channel->id,
+            'document',
+            UploadedFile::fake()->create('manual.pdf', 100, 'application/pdf'),
+            'Documento publico',
+            $this->admin->id,
+        );
+
+        $provider = new class implements MessagingProviderInterface {
+            public ?SendDocumentMessageDTO $documentDto = null;
+
+            public function sendText(SendTextMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function sendImage(SendImageMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function sendDocument(SendDocumentMessageDTO $dto): array
+            {
+                $this->documentDto = $dto;
+
+                return ['messages' => [['id' => 'wamid-document-public']]];
+            }
+
+            public function sendTemplate(SendTemplateMessageDTO $dto): array
+            {
+                return [];
+            }
+
+            public function uploadMedia(UploadMediaDTO $dto): array
+            {
+                return [];
+            }
+
+            public function parseWebhook(array $payload): array
+            {
+                return $payload;
+            }
+        };
+
+        (new SendWhatsAppDocumentJob($message->id))->handle($provider, app(MessageStatusService::class), app(\App\Modules\Media\Application\Services\PublicMediaUrlResolver::class));
+
+        $this->assertNotNull($provider->documentDto);
+        $this->assertStringStartsWith('https://noiachat.example/storage/messages/', $provider->documentDto->mediaUrl);
+        $this->assertSame('manual.pdf', $provider->documentDto->filename);
+        $this->assertDatabaseHas('messages', ['id' => $message->id, 'status' => 'sent', 'provider_message_id' => 'wamid-document-public']);
+    }
+
     public function test_operator_can_reply_to_conversation_with_template(): void
     {
         $operator = User::factory()->create();
@@ -340,7 +768,7 @@ class NoiaChatMvpTest extends TestCase
 
         $this->actingAs($operator)->post(route('conversations.reply-template', $conversation), [
             'message_template_id' => $template->id,
-            'variables' => 'Carlos|9981',
+            'variables' => 'Carlos',
         ])->assertRedirect();
 
         $this->assertDatabaseHas('messages', [
@@ -349,6 +777,46 @@ class NoiaChatMvpTest extends TestCase
             'type' => 'template',
             'message_template_id' => $template->id,
         ]);
+    }
+
+    public function test_template_reply_requires_exact_variable_count(): void
+    {
+        $operator = User::factory()->create();
+        $operator->roles()->attach(Role::where('name', 'operator')->firstOrFail()->id);
+        $contact = $this->makeContact('573101000026', true);
+        $this->openCustomerCareWindow($contact, now()->subHours(25));
+        $conversation = Conversation::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'status' => 'open',
+            'last_message_at' => now(),
+        ]);
+        $template = MessageTemplate::query()->with('currentVersion')->firstOrFail();
+
+        $this->actingAs($operator)->from(route('conversations.show', $conversation))->post(route('conversations.reply-template', $conversation), [
+            'message_template_id' => $template->id,
+            'variables' => '',
+        ])->assertRedirect(route('conversations.show', $conversation))
+            ->assertSessionHasErrors('variables');
+
+        $this->assertDatabaseMissing('messages', [
+            'contact_id' => $contact->id,
+            'conversation_id' => $conversation->id,
+            'type' => 'template',
+            'message_template_id' => $template->id,
+        ]);
+    }
+
+    public function test_template_queue_use_case_rejects_incomplete_variables(): void
+    {
+        $contact = $this->makeContact('573101000027', true);
+        $this->openCustomerCareWindow($contact, now()->subHours(25));
+        $template = MessageTemplate::query()->with('currentVersion')->firstOrFail();
+
+        $this->expectException(BusinessRuleException::class);
+        $this->expectExceptionMessage('Esta plantilla requiere 1 variables.');
+
+        app(QueueTemplateMessageUseCase::class)->execute($contact, $template, $this->admin->id, []);
     }
 
     public function test_template_message_can_be_queued_outside_customer_care_window(): void
@@ -362,6 +830,84 @@ class NoiaChatMvpTest extends TestCase
         $this->assertSame('queued', $message->status);
         $this->assertSame('template', $message->type);
         $this->assertSame('allowed', data_get($message->meta, 'eligibility_status'));
+    }
+
+    public function test_conversation_warns_when_customer_care_window_is_closed(): void
+    {
+        $operator = User::factory()->create();
+        $operator->roles()->attach(Role::where('name', 'operator')->firstOrFail()->id);
+        $contact = $this->makeContact('573101000028', true);
+        $this->openCustomerCareWindow($contact, now()->subHours(25));
+        $conversation = Conversation::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'status' => 'open',
+            'last_message_at' => now(),
+        ]);
+
+        $this->actingAs($operator)
+            ->get(route('conversations.show', $conversation))
+            ->assertOk()
+            ->assertSee('Ventana 24h cerrada')
+            ->assertSee('Usa una plantilla aprobada')
+            ->assertSee('disabled', false);
+    }
+
+    public function test_blocked_message_redirect_shows_compliance_reason(): void
+    {
+        $contact = $this->makeContact('573101000024', false);
+
+        $this->actingAs($this->admin)->post(route('messages.send-text'), [
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'body' => 'Hola sin consentimiento',
+        ])->assertRedirect()
+            ->assertSessionHas('error', fn (string $message) => str_contains($message, 'El contacto no tiene consentimiento vigente'));
+
+        $message = Message::query()->where('contact_id', $contact->id)->latest()->firstOrFail();
+
+        $this->assertSame('blocked_by_policy', $message->status);
+    }
+
+    public function test_message_detail_and_index_show_compliance_reason(): void
+    {
+        $contact = $this->makeContact('573101000025', false);
+        $message = app(QueueTextMessageUseCase::class)->execute($contact, $this->channel->id, 'Hola', $this->admin->id);
+
+        $this->actingAs($this->admin)->get(route('messages.show', $message))
+            ->assertOk()
+            ->assertSee('Envio bloqueado')
+            ->assertSee('Sin consentimiento')
+            ->assertSee('El contacto no tiene consentimiento vigente para este canal.');
+
+        $this->actingAs($this->admin)->get(route('messages.index'))
+            ->assertOk()
+            ->assertSee('Sin consentimiento');
+    }
+
+    public function test_conversation_reply_shows_compliance_reason_when_blocked(): void
+    {
+        $operator = User::factory()->create();
+        $operator->roles()->attach(Role::where('name', 'operator')->firstOrFail()->id);
+        $contact = $this->makeContact('573101000026', false);
+        $conversation = Conversation::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $operator->id,
+            'status' => 'pending',
+            'last_message_at' => now(),
+        ]);
+
+        $this->actingAs($operator)->post(route('conversations.reply', $conversation), [
+            'body' => 'Respuesta bloqueada',
+        ])->assertRedirect()
+            ->assertSessionHas('error', fn (string $message) => str_contains($message, 'El contacto no tiene consentimiento vigente'));
+
+        $this->actingAs($operator)->get(route('conversations.show', $conversation))
+            ->assertOk()
+            ->assertSee('Envio bloqueado')
+            ->assertSee('Sin consentimiento')
+            ->assertSee('El contacto no tiene consentimiento vigente para este canal.');
     }
 
     public function test_provider_error_marks_text_message_as_failed(): void

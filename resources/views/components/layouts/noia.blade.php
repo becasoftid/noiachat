@@ -7,7 +7,8 @@
         ['label' => 'Mensajes', 'route' => 'messages.index', 'active' => 'messages.*'],
         ['label' => 'Conversaciones', 'route' => 'conversations.index', 'active' => 'conversations.*'],
         ['label' => 'Auditoria', 'route' => 'audit-logs.index', 'active' => 'audit-logs.*'],
-        ['label' => 'Configuracion', 'route' => 'settings.index', 'active' => 'settings.*'],
+        ['label' => 'Usuarios', 'route' => 'users.index', 'active' => 'users.*', 'can' => 'admin.access'],
+        ['label' => 'Configuracion', 'route' => 'settings.index', 'active' => 'settings.*', 'can' => 'admin.access'],
     ];
 @endphp
 
@@ -49,6 +50,7 @@
 
             <nav class="mt-6 grid gap-1 text-sm font-medium lg:mt-8">
                 @foreach($navItems as $item)
+                    @continue(isset($item['can']) && ! auth()->user()->can($item['can']))
                     <a
                         href="{{ route($item['route']) }}"
                         class="rounded-lg px-3 py-2.5 transition {{ request()->routeIs($item['active']) ? 'bg-white text-[#10202a] shadow-lg shadow-cyan-950/20' : 'text-cyan-50/75 hover:bg-white/10 hover:text-white' }}"

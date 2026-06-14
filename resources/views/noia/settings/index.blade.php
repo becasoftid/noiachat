@@ -41,10 +41,39 @@
                 <button class="noia-btn-success md:col-span-2">Crear plantilla</button>
             </form>
 
-            <h3 class="mt-8 font-semibold">Plantillas</h3>
+            <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h3 class="font-semibold">Plantillas</h3>
+                    <p class="mt-1 text-sm text-slate-500">Sincroniza nombre, idioma, estado, categoria y variables desde Meta.</p>
+                </div>
+                <form method="POST" action="{{ route('settings.templates.sync-whatsapp') }}">
+                    @csrf
+                    <button class="noia-btn-primary text-sm">Sincronizar Meta</button>
+                </form>
+            </div>
             <div class="mt-4 space-y-4">
                 @foreach($templates as $template)
                     <div class="noia-card-soft">
+                        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
+                            @if($template->meta_status)
+                                <span class="rounded-full px-2 py-1 font-semibold {{ $template->meta_status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
+                                    Meta: {{ $template->meta_status }}
+                                </span>
+                            @endif
+                            @if($template->meta_category)
+                                <span class="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-600">
+                                    {{ $template->meta_category }}
+                                </span>
+                            @endif
+                            @if($template->currentVersion)
+                                <span class="rounded-full bg-cyan-100 px-2 py-1 font-semibold text-cyan-700">
+                                    {{ $template->currentVersion->expectedVariableCount() }} variables
+                                </span>
+                            @endif
+                            @if($template->synced_at)
+                                <span class="text-slate-500">Sync: {{ $template->synced_at->format('Y-m-d H:i') }}</span>
+                            @endif
+                        </div>
                         <form id="template-update-{{ $template->id }}" method="POST" action="{{ route('settings.templates.update', $template) }}">
                             @csrf
                             @method('PUT')
@@ -61,7 +90,7 @@
                                     <input type="checkbox" name="is_active" value="1" @checked($template->is_active)>
                                     Activa
                                 </label>
-                                <div class="text-sm text-slate-500">Versión actual: {{ $template->currentVersion?->version ?? '-' }}</div>
+                                <div class="text-sm text-slate-500">Versión actual: {{ $template->currentVersion?->version ?? '-' }} · Idioma Meta: {{ $template->currentVersion?->language ?? '-' }}</div>
                                 <textarea class="noia-textarea md:col-span-2" name="body" rows="4">{{ $template->currentVersion?->body }}</textarea>
                             </div>
                         </form>

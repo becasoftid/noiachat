@@ -36,23 +36,16 @@
             'send_template_failed' => 'Error al enviar plantilla',
             'webhook' => 'Webhook recibido',
         ];
-        $eligibilityLabels = [
-            'allowed' => 'Permitido',
-            'blocked_no_consent' => 'Sin consentimiento',
-            'blocked_blacklist' => 'Contacto excluido',
-            'blocked_invalid_contact' => 'Contacto inválido',
-            'blocked_frequency' => 'Límite de frecuencia',
-            'blocked_channel_inactive' => 'Canal inactivo',
-            'blocked_template_inactive' => 'Plantilla inactiva',
-            'blocked_customer_care_window' => 'Ventana 24h cerrada',
-        ];
     @endphp
     <div class="grid gap-6 lg:grid-cols-[1fr_.9fr]">
         <div class="noia-card">
             <h3 class="text-lg font-semibold">{{ $message->contact->full_name }}</h3>
             <p class="mt-2 text-sm">{{ $typeLabels[$message->type] ?? $message->type }} · {{ $statusLabels[$message->status] ?? $message->status }}</p>
-            @if(data_get($message->meta, 'eligibility_status') && data_get($message->meta, 'eligibility_status') !== 'allowed')
-                <p class="mt-2 text-sm text-amber-700">Motivo: {{ $eligibilityLabels[data_get($message->meta, 'eligibility_status')] ?? data_get($message->meta, 'eligibility_status') }}</p>
+            @if($message->complianceBlockLabel())
+                <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <p class="font-semibold">Envio bloqueado: {{ $message->complianceBlockLabel() }}</p>
+                    <p class="mt-1">{{ $message->complianceBlockDescription() }}</p>
+                </div>
             @endif
 
             @if(filled($message->body))

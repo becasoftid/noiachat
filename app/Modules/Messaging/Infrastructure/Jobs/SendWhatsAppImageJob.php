@@ -2,11 +2,13 @@
 
 namespace App\Modules\Messaging\Infrastructure\Jobs;
 
+use App\Modules\Media\Application\Services\PublicMediaUrlResolver;
 use App\Modules\Messaging\Application\DTOs\SendImageMessageDTO;
 use App\Modules\Messaging\Application\Services\MessageStatusService;
 use App\Modules\Messaging\Domain\Enums\MessageStatus;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use App\Modules\Shared\Domain\Contracts\MessagingProviderInterface;
+use App\Modules\Shared\Domain\Exceptions\BusinessRuleException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,12 +22,31 @@ class SendWhatsAppImageJob implements ShouldQueue
 
     public function __construct(private readonly string $messageId) {}
 
-    public function handle(MessagingProviderInterface $provider, MessageStatusService $statusService): void
+    public function handle(MessagingProviderInterface $provider, MessageStatusService $statusService, PublicMediaUrlResolver $urlResolver): void
     {
         $message = Message::with('attachments.mediaFile')->findOrFail($this->messageId);
         $media = $message->attachments->first()?->mediaFile;
         $statusService->transition($message, MessageStatus::SENDING, ['job' => self::class], 'sending');
-        $response = $provider->sendImage(new SendImageMessageDTO($message->id, $message->contact->primary_phone, asset('storage/'.$media->path), $message->body));
+
+        if (! $media) {
+            $payload = ['error' => 'El mensaje no tiene archivo multimedia adjunto.'];
+            $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_image_failed', 'payload' => $payload]);
+            $statusService->transition($message->fresh(), MessageStatus::FAILED, $payload, 'media_missing');
+
+            return;
+        }
+
+        try {
+            $mediaUrl = $urlResolver->resolve($media);
+        } catch (BusinessRuleException $exception) {
+            $payload = ['error' => $exception->getMessage(), 'media_file_id' => $media?->id, 'path' => $media?->path];
+            $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_image_failed', 'payload' => $payload]);
+            $statusService->transition($message->fresh(), MessageStatus::FAILED, $payload, 'media_url_invalid');
+
+            return;
+        }
+
+        $response = $provider->sendImage(new SendImageMessageDTO($message->id, $message->contact->primary_phone, $mediaUrl, $message->body));
         $providerId = data_get($response, 'messages.0.id');
         $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_image', 'external_event_id' => $providerId, 'payload' => $response]);
         if (data_get($response, 'error')) {
