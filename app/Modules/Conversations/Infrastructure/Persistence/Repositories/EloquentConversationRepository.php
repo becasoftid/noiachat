@@ -4,6 +4,8 @@ namespace App\Modules\Conversations\Infrastructure\Persistence\Repositories;
 
 use App\Modules\Conversations\Domain\Repositories\ConversationRepositoryInterface;
 use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
+use App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage;
+use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EloquentConversationRepository implements ConversationRepositoryInterface
@@ -25,7 +27,29 @@ class EloquentConversationRepository implements ConversationRepositoryInterface
     public function paginateLatest(int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
         return Conversation::query()
-            ->with(['contact', 'assignedUser', 'latestInboundMessage', 'latestMessage'])
+            ->with(['contact', 'assignedUser'])
+            ->addSelect([
+                'latest_inbound_body' => InboundMessage::query()
+                    ->select('body')
+                    ->whereColumn('conversation_id', 'conversations.id')
+                    ->latest('created_at')
+                    ->limit(1),
+                'latest_inbound_created_at' => InboundMessage::query()
+                    ->select('created_at')
+                    ->whereColumn('conversation_id', 'conversations.id')
+                    ->latest('created_at')
+                    ->limit(1),
+                'latest_outbound_body' => Message::query()
+                    ->select('body')
+                    ->whereColumn('conversation_id', 'conversations.id')
+                    ->latest('created_at')
+                    ->limit(1),
+                'latest_outbound_created_at' => Message::query()
+                    ->select('created_at')
+                    ->whereColumn('conversation_id', 'conversations.id')
+                    ->latest('created_at')
+                    ->limit(1),
+            ])
             ->withCount(['inboundMessages as unread_count' => function ($query): void {
                 $query->where(function ($unreadQuery): void {
                     $unreadQuery->whereNull('conversations.last_read_at')

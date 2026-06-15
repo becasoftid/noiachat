@@ -12,14 +12,15 @@
                 ->map(fn ($part) => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($part, 0, 1)))
                 ->join('');
             $isActive = (string) $activeConversationId === (string) $listConversation->id;
-            $latestInbound = $listConversation->latestInboundMessage;
-            $latestOutbound = $listConversation->latestMessage;
-            $latestItem = collect([$latestInbound, $latestOutbound])
-                ->filter()
-                ->sortByDesc('created_at')
-                ->first();
-            $latestIsOutbound = $latestItem && $latestOutbound && $latestItem->is($latestOutbound);
-            $preview = $latestItem?->body ?: $listConversation->contact->primary_phone;
+            $latestInboundAt = $listConversation->latest_inbound_created_at
+                ? \Illuminate\Support\Carbon::parse($listConversation->latest_inbound_created_at)
+                : null;
+            $latestOutboundAt = $listConversation->latest_outbound_created_at
+                ? \Illuminate\Support\Carbon::parse($listConversation->latest_outbound_created_at)
+                : null;
+            $latestIsOutbound = $latestOutboundAt && (! $latestInboundAt || $latestOutboundAt->gte($latestInboundAt));
+            $preview = $latestIsOutbound ? $listConversation->latest_outbound_body : $listConversation->latest_inbound_body;
+            $preview = $preview ?: $listConversation->contact->primary_phone;
             $previewPrefix = $latestIsOutbound ? 'Tu: ' : '';
             $timestamp = $listConversation->last_message_at;
         @endphp
