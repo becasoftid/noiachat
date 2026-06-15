@@ -31,7 +31,29 @@
                         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">Inbox</p>
                         <h2 class="text-lg font-semibold text-slate-950">Chats</h2>
                     </div>
-                    <span class="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">{{ $conversations->total() }}</span>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-cyan-200 hover:text-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-100"
+                            title="Activar sonido de nuevos mensajes"
+                            x-data="{ enabled: window.App.conversationSound.isEnabled() }"
+                            x-on:click="enabled = window.App.conversationSound.toggle()"
+                            x-bind:title="enabled ? 'Desactivar sonido de nuevos mensajes' : 'Activar sonido de nuevos mensajes'"
+                            x-bind:aria-label="enabled ? 'Desactivar sonido de nuevos mensajes' : 'Activar sonido de nuevos mensajes'"
+                            x-bind:class="enabled ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : ''"
+                        >
+                            <svg x-show="! enabled" x-cloak aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M10 21h4" stroke-linecap="round" />
+                            </svg>
+                            <svg x-show="enabled" x-cloak aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M10 21h4" stroke-linecap="round" />
+                                <path d="M19 2c1.8 1.6 2.8 3.7 2.8 6" stroke-linecap="round" />
+                            </svg>
+                        </button>
+                        <span class="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">{{ $conversations->total() }}</span>
+                    </div>
                 </div>
 
                 <div x-data="{ filtersOpen: false }" class="mt-3">

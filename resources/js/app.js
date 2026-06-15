@@ -6,9 +6,61 @@ window.Alpine = Alpine;
 
 window.App = window.App || {};
 
+window.App.conversationSound = {
+    storageKey: 'noiachat.conversationSound.enabled',
+    isEnabled() {
+        return window.localStorage.getItem(this.storageKey) === '1';
+    },
+    toggle() {
+        const enabled = !this.isEnabled();
+        window.localStorage.setItem(this.storageKey, enabled ? '1' : '0');
+
+        if (enabled) {
+            this.play();
+        }
+
+        return enabled;
+    },
+    play() {
+        if (!this.isEnabled()) {
+            return;
+        }
+
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) {
+                return;
+            }
+
+            const context = new AudioContext();
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, context.currentTime);
+            gain.gain.setValueAtTime(0.0001, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.08, context.currentTime + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.22);
+
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            oscillator.start();
+            oscillator.stop(context.currentTime + 0.24);
+        } catch (error) {
+            // Some browsers block audio until the user interacts with the page.
+        }
+    },
+};
+
 window.App.conversationInbox = (refreshUrl) => ({
     refreshUrl,
     timer: null,
+    unreadTotal: null,
+    unreadCount() {
+        return Array.from(this.$refs.list.querySelectorAll('[data-unread-count]')).reduce((total, element) => {
+            return total + Number.parseInt(element.dataset.unreadCount || '0', 10);
+        }, 0);
+    },
     async refresh() {
         if (!this.refreshUrl || document.hidden) {
             return;
@@ -25,9 +77,19 @@ window.App.conversationInbox = (refreshUrl) => ({
             return;
         }
 
+        const previousUnreadTotal = this.unreadTotal ?? this.unreadCount();
+
         this.$refs.list.innerHTML = await response.text();
+
+        const nextUnreadTotal = this.unreadCount();
+        if (nextUnreadTotal > previousUnreadTotal) {
+            window.App.conversationSound.play();
+        }
+
+        this.unreadTotal = nextUnreadTotal;
     },
     start() {
+        this.unreadTotal = this.unreadCount();
         this.timer = window.setInterval(() => this.refresh(), 10000);
     },
     stop() {

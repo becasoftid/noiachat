@@ -122,6 +122,8 @@ Objetivo: hacer que un equipo pueda trabajar todos los dias con control basico.
 | P1-06 | Motivo visible de bloqueo/compliance | P1 | Implementado: operador ve por que no puede enviar en flash, detalle, listado y conversacion. |
 | P1-17 | Vista operativa tipo WhatsApp | P1 | Implementado: inbox lateral y conversacion activa dentro de `/conversations?conversation=...`, con burbujas, fechas, errores y composer inferior. |
 | P1-18 | Menu lateral colapsable | P1 | Implementado: menu expandible/contraible con iconos y preferencia local. |
+| P1-19 | Indicador visual de lectura | P1 | Implementado: mensajes salientes muestran enviado, entregado o leido con checks y hora de lectura cuando Meta la reporta. |
+| P1-20 | Sonido de mensaje entrante | P1 | Implementado: operador puede activar sonido local y el inbox reproduce alerta cuando aumentan los no leidos por auto-refresh. |
 
 Criterios de aceptacion:
 
@@ -130,6 +132,8 @@ Criterios de aceptacion:
 - Auditor no puede modificar ni enviar.
 - Una conversacion entrante puede asignarse, responderse y marcarse como resuelta.
 - Los no leidos se actualizan al abrir o atender la conversacion.
+- Los estados de mensajes salientes son visibles sin abrir detalle tecnico.
+- El operador puede activar/desactivar alertas sonoras locales para mensajes nuevos.
 
 ### Fase 2 - Contactos y consentimiento robustos
 

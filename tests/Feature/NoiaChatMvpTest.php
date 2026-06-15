@@ -107,6 +107,49 @@ class NoiaChatMvpTest extends TestCase
         $this->assertDatabaseHas('messages', ['id' => $message->id, 'status' => 'delivered']);
     }
 
+    public function test_read_webhook_updates_message_status_and_timestamp(): void
+    {
+        $contact = $this->makeContact('573101000105', true);
+        $message = Message::create(['contact_id' => $contact->id, 'channel_id' => $this->channel->id, 'user_id' => $this->admin->id, 'type' => 'text', 'status' => 'delivered', 'provider_message_id' => 'wamid-read-123']);
+
+        app(ProcessWhatsAppWebhookUseCase::class)->execute(['entry' => [['id' => 'entry-read', 'changes' => [['value' => ['statuses' => [['id' => 'wamid-read-123', 'status' => 'read']]]]]]]]);
+
+        $message->refresh();
+
+        $this->assertSame('read', $message->status);
+        $this->assertNotNull($message->read_at);
+    }
+
+    public function test_conversation_panel_shows_read_indicator_for_outbound_messages(): void
+    {
+        $contact = $this->makeContact('573101000106', true);
+        $conversation = Conversation::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $this->admin->id,
+            'status' => 'open',
+            'last_message_at' => now(),
+        ]);
+
+        Message::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'conversation_id' => $conversation->id,
+            'user_id' => $this->admin->id,
+            'type' => 'text',
+            'status' => 'read',
+            'body' => 'Mensaje leido por el contacto',
+            'provider_message_id' => 'wamid-panel-read',
+            'read_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('conversations.index', ['conversation' => $conversation->id]))
+            ->assertOk()
+            ->assertSee('Leído')
+            ->assertSee('&check;&check;', false);
+    }
+
     public function test_whatsapp_webhook_accepts_valid_meta_signature(): void
     {
         config(['services.whatsapp.app_secret' => 'test-meta-secret']);

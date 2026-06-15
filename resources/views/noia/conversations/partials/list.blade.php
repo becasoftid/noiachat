@@ -27,6 +27,7 @@
         @endphp
         <a
             href="{{ route('conversations.index', array_merge(request()->query(), ['conversation' => $listConversation->id])) }}"
+            data-unread-count="{{ $listConversation->unread_count }}"
             class="@class([
                 'group transition hover:bg-slate-50',
                 'bg-slate-100' => $isActive,

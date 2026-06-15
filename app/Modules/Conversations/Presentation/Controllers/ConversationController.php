@@ -147,6 +147,9 @@ class ConversationController extends Controller
                 'compliance_block_label' => $message->complianceBlockLabel(),
                 'compliance_block_description' => $message->complianceBlockDescription(),
                 'created_at' => $message->created_at,
+                'sent_at' => $message->sent_at,
+                'delivered_at' => $message->delivered_at,
+                'read_at' => $message->read_at,
                 'attachments' => $message->attachments,
                 'provider_logs' => $message->providerLogs,
             ];
@@ -162,6 +165,9 @@ class ConversationController extends Controller
                 'compliance_block_label' => null,
                 'compliance_block_description' => null,
                 'created_at' => $message->created_at,
+                'sent_at' => null,
+                'delivered_at' => null,
+                'read_at' => null,
                 'attachments' => collect(),
                 'provider_logs' => collect(),
             ];

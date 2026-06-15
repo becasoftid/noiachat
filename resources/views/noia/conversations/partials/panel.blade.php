@@ -60,8 +60,21 @@
             @forelse($timeline as $item)
                 @php
                     $createdAt = $item->created_at?->copy()->timezone($displayTimezone);
+                    $readAt = $item->read_at?->copy()->timezone($displayTimezone);
+                    $deliveredAt = $item->delivered_at?->copy()->timezone($displayTimezone);
+                    $sentAt = $item->sent_at?->copy()->timezone($displayTimezone);
                     $dateKey = optional($createdAt)->format('Y-m-d');
                     $providerError = $item->provider_logs->first(fn ($log) => $log->hasError());
+                    $statusHint = match ($item->status) {
+                        'read' => 'Leido'.($readAt ? ' '.$readAt->format('H:i') : ''),
+                        'delivered' => 'Entregado'.($deliveredAt ? ' '.$deliveredAt->format('H:i') : ''),
+                        'sent' => 'Enviado'.($sentAt ? ' '.$sentAt->format('H:i') : ''),
+                        'queued' => 'En cola',
+                        'sending' => 'Enviando',
+                        'failed' => 'Fallido',
+                        'blocked_by_policy' => 'Bloqueado',
+                        default => $item->status ? ($messageStatusLabels[$item->status] ?? $item->status) : null,
+                    };
                 @endphp
 
                 @if($dateKey && $dateKey !== $lastDate)
@@ -94,7 +107,33 @@
                     @endif
 
                     @if($item->status)
-                        <p class="mt-2 text-xs text-slate-500">Estado: {{ $messageStatusLabels[$item->status] ?? $item->status }}</p>
+                        <p class="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
+                            <span>{{ $messageStatusLabels[$item->status] ?? $item->status }}</span>
+                            @if($item->direction === 'outbound')
+                                <span
+                                    title="{{ $statusHint }}"
+                                    class="@class([
+                                        'inline-flex min-w-[22px] justify-end text-sm font-bold leading-none',
+                                        'text-sky-600' => $item->status === 'read',
+                                        'text-slate-400' => $item->status !== 'read',
+                                    ])"
+                                    aria-label="{{ $statusHint }}"
+                                >
+                                    @if($item->status === 'read' || $item->status === 'delivered')
+                                        &check;&check;
+                                    @elseif($item->status === 'sent')
+                                        &check;
+                                    @elseif(in_array($item->status, ['queued', 'sending'], true))
+                                        &middot;&middot;&middot;
+                                    @elseif(in_array($item->status, ['failed', 'bounced', 'blocked_by_policy'], true))
+                                        !
+                                    @endif
+                                </span>
+                                @if($item->status === 'read' && $readAt)
+                                    <span class="text-slate-400">{{ $readAt->format('H:i') }}</span>
+                                @endif
+                            @endif
+                        </p>
                     @endif
 
                     @if($item->compliance_block_label)

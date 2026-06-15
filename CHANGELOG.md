@@ -12,6 +12,8 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Accion "Asignar a mi" y filtro "Mis conversaciones" en el inbox de conversaciones.
 - Indicador de mensajes entrantes sin leer en conversaciones y marcado automatico como leida al abrir una conversacion.
 - Auto-refresh simple del inbox de conversaciones mediante polling y endpoint parcial.
+- Indicadores visuales de estado para mensajes salientes en conversaciones, incluyendo enviado, entregado, leido y hora local de lectura cuando Meta la reporta.
+- Sonido opcional de nuevo mensaje entrante en el inbox, activable por operador y disparado cuando aumenta el contador de no leidos durante el auto-refresh.
 - Motivos visibles de bloqueo por compliance en flashes, listado/detalle de mensajes y timeline de conversaciones.
 - Importacion masiva de contactos desde CSV/XLSX con validacion por fila, resumen de creados/omitidos y auditoria.
 - Descarga CSV de errores de importacion de contactos para corregir archivos con filas invalidas.

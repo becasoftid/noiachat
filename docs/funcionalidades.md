@@ -44,7 +44,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | WA-001 | WhatsApp | Verificacion de webhook | Operativo | P0 | Challenge manual y Meta verificado | Agregar monitoreo periodico del endpoint. |
 | WA-002 | WhatsApp | Recepcion de mensajes entrantes | Operativo | P0 | Mensajes reales visibles en conversaciones | Agregar indicador de no leidos y auto-refresh. |
 | WA-003 | WhatsApp | Envio de texto libre | Operativo | P0 | Mensaje real recibido en WhatsApp; ventana 24h aplicada por compliance y aviso preventivo en conversacion | Mantener prueba real tras cambios de token/proveedor. |
-| WA-004 | WhatsApp | Estados enviado/entregado/leido | Operativo | P0 | Estados reales visibles en conversacion | Agregar panel de fallos consolidado. |
+| WA-004 | WhatsApp | Estados enviado/entregado/leido | Operativo | P0 | Estados reales visibles en conversacion con indicador de checks y hora local de lectura cuando Meta reporta `read` | Agregar panel de fallos consolidado. |
 | WA-005 | WhatsApp | Firma de webhook `X-Hub-Signature-256` | Operativo | P0 | Validacion HMAC-SHA256 con `WHATSAPP_APP_SECRET` y pruebas automatizadas | Configurar app secret en produccion y verificar evento real. |
 | WA-006 | WhatsApp | Manejo de errores de proveedor | Operativo | P0 | Errores se marcan como `failed` y se muestran en detalle/timeline con codigo y payload tecnico | Crear tablero operativo de fallos recientes. |
 | WA-007 | WhatsApp | Token permanente y rotacion | MVP | P0 | Token funcional configurado manualmente | Documentar fecha de expiracion, rotacion y responsable. |
@@ -53,7 +53,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | MSG-003 | Mensajeria | Envio por plantilla | Operativo | P0 | Plantillas sincronizadas con Meta, estado visible, no aprobadas bloqueadas y variables exactas validadas antes de encolar | Probar envio real con plantilla aprobada en Meta. |
 | MSG-004 | Mensajeria | Reintento de mensajes fallidos | MVP | P1 | Ruta y prueba existen | Mostrar causa de fallo y permitir reintento con control. |
 | MSG-005 | Mensajeria | Ventana 24h de WhatsApp | Operativo | P0 | Texto libre/multimedia bloqueado fuera de ventana; motivos visibles; aviso preventivo; plantillas permitidas; pruebas automatizadas | Revisar copy operativo con usuarios finales. |
-| CONV-001 | Conversaciones | Listado de conversaciones | Operativo | P0 | Inbox redisenado como panel de chats con filtros compactos, no leidos, auto-refresh y pruebas automatizadas | Validar con operadores en produccion y ajustar densidad si aumenta el volumen. |
+| CONV-001 | Conversaciones | Listado de conversaciones | Operativo | P0 | Inbox redisenado como panel de chats con filtros compactos, no leidos, auto-refresh, sonido opcional de nuevos mensajes y pruebas automatizadas | Validar con operadores en produccion y ajustar densidad si aumenta el volumen. |
 | CONV-002 | Conversaciones | Timeline entrante/saliente | Operativo | P0 | Vista tipo chat integrada en `/conversations?conversation=...` con lista lateral, cabecera de contacto, burbujas, fechas, estados, errores y compositor inferior | Agregar scroll automatico al ultimo mensaje si el volumen lo exige. |
 | CONV-003 | Conversaciones | Asignacion a operador | MVP | P1 | Select, accion "Asignar a mi" y pruebas en `NoiaChatMvpTest` | Crear filtros por equipo y reglas operativas de reasignacion. |
 | CONV-004 | Conversaciones | Estados abierta/pendiente/resuelta/cerrada | MVP | P1 | Select existe | Definir reglas operativas y automatizaciones. |
@@ -115,4 +115,5 @@ Una funcionalidad solo debe pasar a `Operativo` si cumple:
 | Fecha | Cambio | Responsable |
 | --- | --- | --- |
 | 2026-06-15 | Redisenio operativo de conversaciones, carga del chat activo en `/conversations` y menu lateral colapsable con iconos. | Equipo NoiaChat |
+| 2026-06-15 | Indicadores de lectura en mensajes salientes y sonido opcional para mensajes entrantes nuevos. | Equipo NoiaChat |
 | 2026-06-08 | Creacion de matriz inicial de funcionalidades y backlog priorizado. | Equipo NoiaChat |
