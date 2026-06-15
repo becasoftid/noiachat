@@ -23,7 +23,7 @@
             ->filter(fn ($key) => request()->filled($key))
             ->count() + (request()->boolean('mine') ? 1 : 0);
     @endphp
-    <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:grid lg:h-[calc(100vh-190px)] lg:min-h-[650px] lg:grid-cols-[460px_minmax(0,1fr)]">
+    <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:grid lg:h-[calc(100vh-190px)] lg:min-h-[650px] lg:grid-cols-[390px_minmax(0,1fr)]">
         <aside class="flex min-h-[650px] flex-col border-slate-200 bg-white lg:border-r">
             <div class="border-b border-slate-200 bg-slate-50/80 p-4">
                 <div class="flex items-center justify-between gap-3">
