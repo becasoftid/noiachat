@@ -27,26 +27,24 @@
         <a
             href="{{ route('conversations.index', array_merge(request()->query(), ['conversation' => $listConversation->id])) }}"
             class="@class([
-                'group flex min-h-[72px] items-center gap-3 px-4 py-2.5 transition',
-                'bg-slate-100' => $isActive,
-                'bg-white hover:bg-slate-50' => ! $isActive,
+                'noia-conversation-row group',
+                'is-active' => $isActive,
             ])"
         >
-            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#10202a] text-sm font-bold text-white shadow-sm">
+            <div class="noia-conversation-avatar">
                 {{ $initials ?: 'N' }}
             </div>
 
-            <div class="min-w-0 flex-1">
-                <p class="truncate text-[15px] font-semibold leading-5 text-slate-950">{{ $name }}</p>
+            <div class="noia-conversation-main">
+                <p class="noia-conversation-name">{{ $name }}</p>
                 <span class="sr-only">{{ $listConversation->contact->primary_phone }}</span>
-                <p class="mt-0.5 truncate text-sm leading-5 text-slate-500">{{ $previewPrefix }}{{ $preview }}</p>
+                <p class="noia-conversation-preview">{{ $previewPrefix }}{{ $preview }}</p>
             </div>
 
-            <div class="flex w-16 shrink-0 flex-col items-end justify-center gap-1 text-right">
+            <div class="noia-conversation-meta">
                 <p class="@class([
-                    'text-xs font-medium',
-                    'text-emerald-600' => $listConversation->unread_count > 0,
-                    'text-slate-400' => $listConversation->unread_count < 1,
+                    'noia-conversation-time',
+                    'has-unread' => $listConversation->unread_count > 0,
                 ])">
                     @if($timestamp)
                         {{ $timestamp->isToday() ? $timestamp->format('H:i') : $timestamp->format('d/m/Y') }}
