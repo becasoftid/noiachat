@@ -1,6 +1,6 @@
 # Matriz de funcionalidades NoiaChat
 
-Ultima actualizacion: 2026-06-08
+Ultima actualizacion: 2026-06-15
 
 Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada vez que se implemente, cambie, valide o descarte una funcionalidad.
 
@@ -12,7 +12,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | Contactos | MVP | CRUD y normalizacion funcionan; falta importacion, deduplicacion y fusion. |
 | Consentimientos | MVP | Otorgar/revocar funciona; falta historial mas completo y reglas de expiracion si aplican. |
 | WhatsApp Cloud API | Operativo | Entrantes, salientes, estados reales, firma de webhook y ventana 24h validados. |
-| Conversaciones | MVP | Inbox funcional; falta no leidos, auto-refresh y gestion operativa avanzada. |
+| Conversaciones | Operativo | Inbox, no leidos, auto-refresh y vista tipo chat para atencion diaria. |
 | Mensajeria saliente | MVP | Texto validado; multimedia y plantillas requieren endurecimiento. |
 | Auditoria | MVP | Registro y filtros funcionan; falta detalle expandido/exportacion. |
 | Reportes | Pendiente | Dashboard basico; faltan metricas operativas y exportaciones. |
@@ -53,11 +53,12 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | MSG-003 | Mensajeria | Envio por plantilla | Operativo | P0 | Plantillas sincronizadas con Meta, estado visible, no aprobadas bloqueadas y variables exactas validadas antes de encolar | Probar envio real con plantilla aprobada en Meta. |
 | MSG-004 | Mensajeria | Reintento de mensajes fallidos | MVP | P1 | Ruta y prueba existen | Mostrar causa de fallo y permitir reintento con control. |
 | MSG-005 | Mensajeria | Ventana 24h de WhatsApp | Operativo | P0 | Texto libre/multimedia bloqueado fuera de ventana; motivos visibles; aviso preventivo; plantillas permitidas; pruebas automatizadas | Revisar copy operativo con usuarios finales. |
-| CONV-001 | Conversaciones | Listado de conversaciones | Operativo | P0 | Conversacion real visible; indicador de no leidos y auto-refresh simple cubiertos por pruebas | Mejorar actualizacion visual sin reemplazar todo el listado. |
-| CONV-002 | Conversaciones | Timeline entrante/saliente | Operativo | P0 | Mensajes reales visibles con estados; abrir conversacion marca entrantes como leidos | Mejorar UI tipo chat y agrupacion por fecha. |
+| CONV-001 | Conversaciones | Listado de conversaciones | Operativo | P0 | Inbox redisenado como panel de chats con filtros compactos, no leidos, auto-refresh y pruebas automatizadas | Validar con operadores en produccion y ajustar densidad si aumenta el volumen. |
+| CONV-002 | Conversaciones | Timeline entrante/saliente | Operativo | P0 | Vista tipo chat con lista lateral, cabecera de contacto, burbujas, fechas, estados, errores y compositor inferior | Agregar scroll automatico al ultimo mensaje si el volumen lo exige. |
 | CONV-003 | Conversaciones | Asignacion a operador | MVP | P1 | Select, accion "Asignar a mi" y pruebas en `NoiaChatMvpTest` | Crear filtros por equipo y reglas operativas de reasignacion. |
 | CONV-004 | Conversaciones | Estados abierta/pendiente/resuelta/cerrada | MVP | P1 | Select existe | Definir reglas operativas y automatizaciones. |
 | CONV-005 | Conversaciones | Auto-refresh o tiempo real | MVP | P1 | Polling simple del inbox con endpoint parcial y `NoiaChatMvpTest` | Evaluar tiempo real con Echo/Reverb si el volumen lo exige. |
+| UI-001 | Interfaz | Menu lateral colapsable con iconos | Operativo | P1 | Layout principal permite contraer/expandir, recuerda preferencia local e identifica opciones por icono | Validar usabilidad con usuarios y reemplazar SVG inline por libreria de iconos si se adopta una. |
 | AUDIT-001 | Auditoria | Registro de acciones principales | MVP | P0 | `/audit-logs` muestra contactos y acciones | Agregar auditoria de mas eventos operativos. |
 | AUDIT-002 | Auditoria | Filtros de auditoria | MVP | P1 | Modal de filtros implementado | Agregar exportacion CSV/Excel. |
 | AUDIT-003 | Auditoria | Detalle de cambios old/new | Pendiente | P1 | Datos existen parcialmente | Crear vista detalle del log. |
@@ -85,7 +86,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 - CRUD de usuarios y roles.
 - Importacion masiva de contactos.
 - Deduplicacion y fusion de contactos.
-- No leidos y auto-refresh en conversaciones.
+- Vista tipo WhatsApp para conversaciones.
 - Sincronizacion de plantillas con Meta.
 - Exportacion de auditoria.
 - Documentacion de despliegue final.
@@ -96,7 +97,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 - Reportes por operador/contacto.
 - 2FA.
 - Monitor de salud WhatsApp.
-- Vista de conversacion mas cercana a chat.
+- Panel de fallos recientes.
 
 ## Criterios para marcar una funcionalidad como Operativo
 
@@ -113,4 +114,5 @@ Una funcionalidad solo debe pasar a `Operativo` si cumple:
 
 | Fecha | Cambio | Responsable |
 | --- | --- | --- |
+| 2026-06-15 | Redisenio operativo de conversaciones y menu lateral colapsable con iconos. | Equipo NoiaChat |
 | 2026-06-08 | Creacion de matriz inicial de funcionalidades y backlog priorizado. | Equipo NoiaChat |

@@ -1,6 +1,6 @@
 # Plan de trabajo y reglas de negocio NoiaChat
 
-Ultima actualizacion: 2026-06-14
+Ultima actualizacion: 2026-06-15
 
 Este documento convierte el estado actual del proyecto en un plan de desarrollo por etapas. Su objetivo es ordenar las tareas pendientes, definir reglas de negocio claras y dejar criterios de aceptacion para saber cuando una funcionalidad esta lista.
 
@@ -69,6 +69,8 @@ El sistema debe permitir:
 - Las respuestas desde una conversacion deben quedar asociadas a esa conversacion.
 - La vista de conversacion debe mostrar mensajes entrantes y salientes en orden cronologico.
 - Debe existir una senal visible de conversaciones con mensajes no leidos o sin atender.
+- La operacion diaria de conversaciones debe priorizar una experiencia tipo chat: lista de conversaciones, conversacion activa, cabecera de contacto, errores visibles y composer disponible sin perder contexto.
+- El menu principal debe permitir contraerse en escritorio para ganar espacio operativo y conservar acceso a las secciones mediante iconos reconocibles.
 
 ### Auditoria
 
@@ -118,6 +120,8 @@ Objetivo: hacer que un equipo pueda trabajar todos los dias con control basico.
 | P1-04 | Indicador de no leidos | P1 | Implementado: inbox muestra conversaciones pendientes de atencion. |
 | P1-05 | Auto-refresh simple del inbox | P1 | Implementado: el listado se refresca por polling sin recargar toda la app. |
 | P1-06 | Motivo visible de bloqueo/compliance | P1 | Implementado: operador ve por que no puede enviar en flash, detalle, listado y conversacion. |
+| P1-17 | Vista operativa tipo WhatsApp | P1 | Implementado: inbox lateral, conversacion activa con burbujas, fechas, errores y composer inferior. |
+| P1-18 | Menu lateral colapsable | P1 | Implementado: menu expandible/contraible con iconos y preferencia local. |
 
 Criterios de aceptacion:
 
@@ -213,10 +217,11 @@ Criterios de aceptacion:
 5. Duplicados y fusion.
 6. Plantillas Meta y validacion de variables.
 7. Multimedia real con URL publica HTTPS.
-8. Panel de fallos y reintentos mejorado.
-9. Exportaciones y auditoria detallada.
-10. Dashboard operativo.
-11. Seguridad avanzada y monitoreo.
+8. Vista operativa tipo WhatsApp y menu colapsable.
+9. Panel de fallos y reintentos mejorado.
+10. Exportaciones y auditoria detallada.
+11. Dashboard operativo.
+12. Seguridad avanzada y monitoreo.
 
 ## Definition of Done
 

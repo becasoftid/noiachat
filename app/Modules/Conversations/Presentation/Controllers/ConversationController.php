@@ -60,6 +60,7 @@ class ConversationController extends Controller
                 ->where('is_active', true)
                 ->get(),
             'users' => \App\Models\User::query()->orderBy('name')->get(),
+            'sideConversations' => $this->conversations->paginateLatest(20, []),
         ]);
     }
 

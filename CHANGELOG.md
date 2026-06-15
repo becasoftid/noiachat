@@ -31,6 +31,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Validacion del secreto `DROPLET_SSH_KEY` antes de ejecutar el despliegue por SSH.
 - Script de despliegue remoto con modo mantenimiento, sincronizacion con el remoto, instalacion de dependencias, migraciones, build de frontend, cacheo de Laravel, permisos y reinicio de servicios.
 - Ajuste del despliegue automatico para ejecutarse solo desde `main`, leer host, usuario y puerto desde secretos de GitHub Actions, y sincronizar siempre contra `origin/main`.
+- Menu lateral colapsable/expandible con iconos por seccion y preferencia persistida en el navegador.
 
 ### Changed
 
@@ -48,6 +49,8 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Ajuste de la integracion de WhatsApp para excluir el webhook de la validacion CSRF y leer credenciales desde `config/services.php`, compatible con cache de configuracion en produccion.
 - Estandarizacion visual de las vistas del panel, formularios, tablas, modales, navegacion, pantallas de cuenta y alertas globales para alinearlas con el nuevo lenguaje grafico aplicado al login.
 - Redisenio de la pantalla de login con una interfaz moderna para NoiaChat, panel visual de marca, formulario responsive y estilos enfocados en una aplicacion operativa de mensajeria y compliance.
+- Redisenio operativo de conversaciones con distribucion tipo WhatsApp Web: inbox lateral, filas compactas, conversacion activa, burbujas, agrupacion por fecha y compositor inferior.
+- Ajuste del inbox de conversaciones para operar como panel de trabajo con filtros compactos, listado con scroll y estado vacio cuando no hay conversacion seleccionada.
 - Ajuste inicial del workflow de despliegue para conectar por SSH a la droplet usando autenticacion por secreto.
 - Ajuste del despliegue remoto para validar la disponibilidad de Composer y ejecutar la instalacion de dependencias PHP usando la ruta detectada por `which composer`.
 
