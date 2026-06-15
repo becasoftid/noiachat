@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Conversation extends Model
 {
@@ -47,9 +48,18 @@ class Conversation extends Model
         return $this->hasMany(\App\Modules\Messaging\Infrastructure\Persistence\Models\Message::class);
     }
 
+    public function latestMessage(): HasOne
+    {
+        return $this->hasOne(\App\Modules\Messaging\Infrastructure\Persistence\Models\Message::class)->latestOfMany('created_at');
+    }
+
     public function inboundMessages(): HasMany
     {
         return $this->hasMany(\App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage::class);
     }
 
+    public function latestInboundMessage(): HasOne
+    {
+        return $this->hasOne(\App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage::class)->latestOfMany('created_at');
+    }
 }

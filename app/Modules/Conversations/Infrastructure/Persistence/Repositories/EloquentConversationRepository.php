@@ -25,7 +25,7 @@ class EloquentConversationRepository implements ConversationRepositoryInterface
     public function paginateLatest(int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
         return Conversation::query()
-            ->with(['contact', 'assignedUser'])
+            ->with(['contact', 'assignedUser', 'latestInboundMessage', 'latestMessage'])
             ->withCount(['inboundMessages as unread_count' => function ($query): void {
                 $query->where(function ($unreadQuery): void {
                     $unreadQuery->whereNull('conversations.last_read_at')
