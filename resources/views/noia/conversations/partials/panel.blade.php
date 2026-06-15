@@ -53,17 +53,21 @@
 
     <div class="min-h-0 flex-1 overflow-y-auto px-4 py-5">
         <div class="mx-auto max-w-5xl space-y-3">
-            @php $lastDate = null; @endphp
+            @php
+                $lastDate = null;
+                $displayTimezone = config('app.display_timezone', 'America/Bogota');
+            @endphp
             @forelse($timeline as $item)
                 @php
-                    $dateKey = optional($item->created_at)->format('Y-m-d');
+                    $createdAt = $item->created_at?->copy()->timezone($displayTimezone);
+                    $dateKey = optional($createdAt)->format('Y-m-d');
                     $providerError = $item->provider_logs->first(fn ($log) => $log->hasError());
                 @endphp
 
                 @if($dateKey && $dateKey !== $lastDate)
                     <div class="flex justify-center py-2">
                         <span class="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-500 shadow-sm">
-                            {{ optional($item->created_at)->format('d/m/Y') }}
+                            {{ optional($createdAt)->format('d/m/Y') }}
                         </span>
                     </div>
                     @php $lastDate = $dateKey; @endphp
@@ -72,7 +76,7 @@
                 <div class="@if($item->direction === 'outbound') ml-auto bg-[#d9fdd3] text-slate-950 @else bg-white text-slate-950 @endif max-w-[82%] rounded-lg px-4 py-3 shadow-sm lg:max-w-[68%]">
                     <div class="flex items-start justify-between gap-3">
                         <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{{ $item->direction === 'outbound' ? 'Saliente' : 'Entrante' }}</p>
-                        <p class="shrink-0 text-[11px] text-slate-500">{{ optional($item->created_at)->format('H:i') }}</p>
+                        <p class="shrink-0 text-[11px] text-slate-500">{{ optional($createdAt)->format('H:i') }}</p>
                     </div>
 
                     @if(filled($item->body))

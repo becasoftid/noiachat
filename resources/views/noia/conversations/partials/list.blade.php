@@ -1,5 +1,6 @@
 @php
     $activeConversationId = $activeConversationId ?? null;
+    $displayTimezone = config('app.display_timezone', 'America/Bogota');
 @endphp
 
 <div class="divide-y divide-slate-100">
@@ -13,16 +14,16 @@
                 ->join('');
             $isActive = (string) $activeConversationId === (string) $listConversation->id;
             $latestInboundAt = $listConversation->latest_inbound_created_at
-                ? \Illuminate\Support\Carbon::parse($listConversation->latest_inbound_created_at)
+                ? \Illuminate\Support\Carbon::parse($listConversation->latest_inbound_created_at)->timezone($displayTimezone)
                 : null;
             $latestOutboundAt = $listConversation->latest_outbound_created_at
-                ? \Illuminate\Support\Carbon::parse($listConversation->latest_outbound_created_at)
+                ? \Illuminate\Support\Carbon::parse($listConversation->latest_outbound_created_at)->timezone($displayTimezone)
                 : null;
             $latestIsOutbound = $latestOutboundAt && (! $latestInboundAt || $latestOutboundAt->gte($latestInboundAt));
             $preview = $latestIsOutbound ? $listConversation->latest_outbound_body : $listConversation->latest_inbound_body;
             $preview = $preview ?: $listConversation->contact->primary_phone;
             $previewPrefix = $latestIsOutbound ? 'Tu: ' : '';
-            $timestamp = $listConversation->last_message_at;
+            $timestamp = $listConversation->last_message_at?->copy()->timezone($displayTimezone);
         @endphp
         <a
             href="{{ route('conversations.index', array_merge(request()->query(), ['conversation' => $listConversation->id])) }}"
