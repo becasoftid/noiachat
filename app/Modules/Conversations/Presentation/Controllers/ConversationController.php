@@ -18,6 +18,7 @@ use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
 use App\Modules\Messaging\Presentation\Requests\SendConversationMediaMessageRequest;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 
 class ConversationController extends Controller
 {
@@ -31,9 +32,12 @@ class ConversationController extends Controller
 
     public function index()
     {
+        $conversation = $this->activeConversation();
+
         return view('noia.conversations.index', [
             'conversations' => $this->conversations->paginateLatest(20, $this->filters()),
             'users' => User::query()->orderBy('name')->get(),
+            ...$this->conversationViewData($conversation),
         ]);
     }
 
@@ -51,16 +55,9 @@ class ConversationController extends Controller
         $conversation = $this->conversations->loadDetail($conversation);
 
         return view('noia.conversations.show', [
-            'conversation' => $conversation,
-            'timeline' => $this->buildTimeline($conversation),
-            'freeFormEligibility' => $this->compliance->decide($conversation->contact, $conversation->channel_id),
-            'templates' => MessageTemplate::query()
-                ->with('currentVersion')
-                ->where('channel_id', $conversation->channel_id)
-                ->where('is_active', true)
-                ->get(),
             'users' => \App\Models\User::query()->orderBy('name')->get(),
             'sideConversations' => $this->conversations->paginateLatest(20, []),
+            ...$this->conversationViewData($conversation),
         ]);
     }
 
@@ -183,6 +180,44 @@ class ConversationController extends Controller
         }
 
         return back()->with('status', $successMessage);
+    }
+
+    private function activeConversation(): ?Conversation
+    {
+        if (! request()->filled('conversation')) {
+            return null;
+        }
+
+        $conversation = Conversation::query()->findOrFail(request()->string('conversation')->toString());
+
+        Gate::authorize('view', $conversation);
+
+        $conversation->update(['last_read_at' => now()]);
+
+        return $this->conversations->loadDetail($conversation);
+    }
+
+    private function conversationViewData(?Conversation $conversation): array
+    {
+        if (! $conversation) {
+            return [
+                'conversation' => null,
+                'timeline' => collect(),
+                'freeFormEligibility' => null,
+                'templates' => collect(),
+            ];
+        }
+
+        return [
+            'conversation' => $conversation,
+            'timeline' => $this->buildTimeline($conversation),
+            'freeFormEligibility' => $this->compliance->decide($conversation->contact, $conversation->channel_id),
+            'templates' => MessageTemplate::query()
+                ->with('currentVersion')
+                ->where('channel_id', $conversation->channel_id)
+                ->where('is_active', true)
+                ->get(),
+        ];
     }
 
     private function filters(): array

@@ -370,6 +370,39 @@ class NoiaChatMvpTest extends TestCase
             ->assertDontSee('sin leer');
     }
 
+    public function test_conversation_index_can_show_active_conversation_panel(): void
+    {
+        $operator = User::factory()->create();
+        $operator->roles()->attach(Role::where('name', 'operator')->firstOrFail()->id);
+        $contact = $this->makeContact('573101000024', true);
+        $conversation = Conversation::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $operator->id,
+            'status' => 'pending',
+            'last_message_at' => now(),
+            'last_read_at' => null,
+        ]);
+
+        InboundMessage::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'conversation_id' => $conversation->id,
+            'provider_message_id' => 'wamid-active-panel-1',
+            'from_phone' => $contact->primary_phone,
+            'body' => 'Mensaje visible en panel unico',
+            'payload' => [],
+        ]);
+
+        $this->actingAs($operator)
+            ->get(route('conversations.index', ['conversation' => $conversation->id]))
+            ->assertOk()
+            ->assertSee('Mensaje visible en panel unico')
+            ->assertSee('Respuesta de texto');
+
+        $this->assertNotNull($conversation->refresh()->last_read_at);
+    }
+
     public function test_conversation_inbox_refresh_returns_filtered_partial(): void
     {
         $operator = User::factory()->create(['name' => 'Operador Refresh']);

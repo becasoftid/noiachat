@@ -6,6 +6,19 @@
             'resolved' => 'Resuelta',
             'closed' => 'Cerrada',
         ];
+        $messageStatusLabels = [
+            'draft' => 'Borrador',
+            'queued' => 'En cola',
+            'sending' => 'Enviando',
+            'sent' => 'Enviado',
+            'delivered' => 'Entregado',
+            'read' => 'Leído',
+            'failed' => 'Fallido',
+            'bounced' => 'Rebotado',
+            'cancelled' => 'Cancelado',
+            'blocked_by_policy' => 'Bloqueado por política',
+        ];
+        $customerCareWindowClosed = $freeFormEligibility?->value === 'blocked_customer_care_window';
     @endphp
     <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:grid lg:h-[calc(100vh-190px)] lg:min-h-[650px] lg:grid-cols-[460px_minmax(0,1fr)]">
         <aside class="flex min-h-[650px] flex-col border-slate-200 bg-white lg:border-r">
@@ -56,17 +69,25 @@
                 data-refresh-url="{{ route('conversations.refresh', request()->query()) }}"
             >
                 <div x-ref="list">
-                    @include('noia.conversations.partials.list', ['conversations' => $conversations, 'statusLabels' => $statusLabels])
+                    @include('noia.conversations.partials.list', [
+                        'conversations' => $conversations,
+                        'statusLabels' => $statusLabels,
+                        'activeConversationId' => $conversation?->id,
+                    ])
                 </div>
             </div>
         </aside>
 
-        <section class="hidden bg-[#eef5f7] lg:flex lg:items-center lg:justify-center">
-            <div class="max-w-sm text-center">
-                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white text-2xl font-bold text-[#10202a] shadow-sm">N</div>
-                <h3 class="text-lg font-semibold text-slate-950">Sin conversación seleccionada</h3>
-                <p class="mt-2 text-sm text-slate-500">Elige un chat de la lista para atenderlo.</p>
-            </div>
-        </section>
+        @if($conversation)
+            @include('noia.conversations.partials.panel')
+        @else
+            <section class="hidden bg-[#eef5f7] lg:flex lg:items-center lg:justify-center">
+                <div class="max-w-sm text-center">
+                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white text-2xl font-bold text-[#10202a] shadow-sm">N</div>
+                    <h3 class="text-lg font-semibold text-slate-950">Sin conversación seleccionada</h3>
+                    <p class="mt-2 text-sm text-slate-500">Elige un chat de la lista para atenderlo.</p>
+                </div>
+            </section>
+        @endif
     </div>
 </x-layouts.noia>

@@ -54,7 +54,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | MSG-004 | Mensajeria | Reintento de mensajes fallidos | MVP | P1 | Ruta y prueba existen | Mostrar causa de fallo y permitir reintento con control. |
 | MSG-005 | Mensajeria | Ventana 24h de WhatsApp | Operativo | P0 | Texto libre/multimedia bloqueado fuera de ventana; motivos visibles; aviso preventivo; plantillas permitidas; pruebas automatizadas | Revisar copy operativo con usuarios finales. |
 | CONV-001 | Conversaciones | Listado de conversaciones | Operativo | P0 | Inbox redisenado como panel de chats con filtros compactos, no leidos, auto-refresh y pruebas automatizadas | Validar con operadores en produccion y ajustar densidad si aumenta el volumen. |
-| CONV-002 | Conversaciones | Timeline entrante/saliente | Operativo | P0 | Vista tipo chat con lista lateral, cabecera de contacto, burbujas, fechas, estados, errores y compositor inferior | Agregar scroll automatico al ultimo mensaje si el volumen lo exige. |
+| CONV-002 | Conversaciones | Timeline entrante/saliente | Operativo | P0 | Vista tipo chat integrada en `/conversations?conversation=...` con lista lateral, cabecera de contacto, burbujas, fechas, estados, errores y compositor inferior | Agregar scroll automatico al ultimo mensaje si el volumen lo exige. |
 | CONV-003 | Conversaciones | Asignacion a operador | MVP | P1 | Select, accion "Asignar a mi" y pruebas en `NoiaChatMvpTest` | Crear filtros por equipo y reglas operativas de reasignacion. |
 | CONV-004 | Conversaciones | Estados abierta/pendiente/resuelta/cerrada | MVP | P1 | Select existe | Definir reglas operativas y automatizaciones. |
 | CONV-005 | Conversaciones | Auto-refresh o tiempo real | MVP | P1 | Polling simple del inbox con endpoint parcial y `NoiaChatMvpTest` | Evaluar tiempo real con Echo/Reverb si el volumen lo exige. |
@@ -114,5 +114,5 @@ Una funcionalidad solo debe pasar a `Operativo` si cumple:
 
 | Fecha | Cambio | Responsable |
 | --- | --- | --- |
-| 2026-06-15 | Redisenio operativo de conversaciones y menu lateral colapsable con iconos. | Equipo NoiaChat |
+| 2026-06-15 | Redisenio operativo de conversaciones, carga del chat activo en `/conversations` y menu lateral colapsable con iconos. | Equipo NoiaChat |
 | 2026-06-08 | Creacion de matriz inicial de funcionalidades y backlog priorizado. | Equipo NoiaChat |

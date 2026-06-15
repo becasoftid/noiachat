@@ -51,6 +51,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Redisenio de la pantalla de login con una interfaz moderna para NoiaChat, panel visual de marca, formulario responsive y estilos enfocados en una aplicacion operativa de mensajeria y compliance.
 - Redisenio operativo de conversaciones con distribucion tipo WhatsApp Web: inbox lateral, filas compactas, conversacion activa, burbujas, agrupacion por fecha y compositor inferior.
 - Ajuste del inbox de conversaciones para operar como panel de trabajo con filtros compactos, listado con scroll y estado vacio cuando no hay conversacion seleccionada.
+- Ajuste del flujo de conversaciones para cargar el chat activo dentro de `/conversations?conversation=...`, manteniendo una sola vista operativa.
 - Ajuste inicial del workflow de despliegue para conectar por SSH a la droplet usando autenticacion por secreto.
 - Ajuste del despliegue remoto para validar la disponibilidad de Composer y ejecutar la instalacion de dependencias PHP usando la ruta detectada por `which composer`.
 
