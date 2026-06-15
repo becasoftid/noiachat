@@ -27,7 +27,7 @@
         <a
             href="{{ route('conversations.index', array_merge(request()->query(), ['conversation' => $listConversation->id])) }}"
             class="@class([
-                'group grid min-h-[72px] grid-cols-[48px_minmax(0,1fr)_64px] items-center gap-3 px-4 py-2.5 transition',
+                'group flex min-h-[72px] items-center gap-3 px-4 py-2.5 transition',
                 'bg-slate-100' => $isActive,
                 'bg-white hover:bg-slate-50' => ! $isActive,
             ])"
@@ -36,13 +36,13 @@
                 {{ $initials ?: 'N' }}
             </div>
 
-            <div class="min-w-0">
+            <div class="min-w-0 flex-1">
                 <p class="truncate text-[15px] font-semibold leading-5 text-slate-950">{{ $name }}</p>
                 <span class="sr-only">{{ $listConversation->contact->primary_phone }}</span>
                 <p class="mt-0.5 truncate text-sm leading-5 text-slate-500">{{ $previewPrefix }}{{ $preview }}</p>
             </div>
 
-            <div class="flex h-full min-w-[64px] flex-col items-end justify-center gap-1 text-right">
+            <div class="flex w-16 shrink-0 flex-col items-end justify-center gap-1 text-right">
                 <p class="@class([
                     'text-xs font-medium',
                     'text-emerald-600' => $listConversation->unread_count > 0,
