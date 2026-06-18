@@ -171,6 +171,18 @@
                             <button type="submit" class="flex h-12 w-full items-center justify-center rounded-lg bg-[#10202a] px-5 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-[#173141] focus:outline-none focus:ring-4 focus:ring-cyan-100">
                                 Iniciar sesion
                             </button>
+
+                            @if (Route::has('register'))
+                                <div class="rounded-lg border border-cyan-100 bg-cyan-50 px-4 py-4 text-center">
+                                    <p class="text-sm font-medium text-slate-700">No tienes cuenta?</p>
+                                    <a
+                                        href="{{ route('register') }}"
+                                        class="mt-3 flex h-11 w-full items-center justify-center rounded-lg border border-cyan-700 bg-white px-4 text-sm font-semibold text-cyan-800 transition hover:border-cyan-900 hover:text-cyan-950 focus:outline-none focus:ring-4 focus:ring-cyan-100"
+                                    >
+                                        Crear cuenta de prueba
+                                    </a>
+                                </div>
+                            @endif
                         </form>
                     </div>
                 </div>
