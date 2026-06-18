@@ -5,6 +5,7 @@ namespace App\Modules\Contacts\Presentation\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Audit\Domain\Enums\AuditActionType;
 use App\Modules\Consents\Infrastructure\Persistence\Models\ContactBlacklist;
+use App\Modules\Contacts\Infrastructure\Persistence\Models\Channel;
 use App\Modules\Contacts\Infrastructure\Persistence\Models\Contact;
 use App\Modules\Contacts\Presentation\Requests\StoreBlacklistRequest;
 use App\Modules\Shared\Application\Services\AuditLogger;
@@ -15,8 +16,10 @@ class ContactBlacklistController extends Controller
 
     public function store(StoreBlacklistRequest $request, Contact $contact)
     {
+        $channel = Channel::query()->forTenantContext()->findOrFail((int) $request->integer('channel_id'));
+
         $entry = ContactBlacklist::updateOrCreate(
-            ['contact_id' => $contact->id, 'channel_id' => (int) $request->integer('channel_id')],
+            ['contact_id' => $contact->id, 'channel_id' => $channel->id],
             ['reason' => $request->string('reason')->toString(), 'created_by_user_id' => $request->user()->id, 'created_at' => now()],
         );
 

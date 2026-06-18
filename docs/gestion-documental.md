@@ -7,6 +7,7 @@ La gestion documental se apoya en tres archivos:
 - [Matriz de funcionalidades](funcionalidades.md): inventario vivo de modulos, funcionalidades, estado y siguientes acciones.
 - [Plan de trabajo y reglas de negocio](plan-trabajo-reglas-negocio.md): orden de desarrollo, reglas de negocio y criterios de aceptacion.
 - [Manual de integracion WhatsApp](integracion-whatsapp.md): guia operativa para conectar, probar y diagnosticar WhatsApp Cloud API.
+- [Billing comercial](billing-checklist-comercial.md): matriz de planes/features, estados de suscripcion y checklist operativo comercial.
 - [Plantilla de funcionalidad](plantilla-funcionalidad.md): formato para documentar nuevas funcionalidades, cambios o mejoras.
 
 ## Objetivo
@@ -85,4 +86,5 @@ Usa estos estados de forma consistente:
 - [Matriz de funcionalidades](funcionalidades.md)
 - [Plan de trabajo y reglas de negocio](plan-trabajo-reglas-negocio.md)
 - [Manual de integracion WhatsApp](integracion-whatsapp.md)
+- [Billing comercial](billing-checklist-comercial.md)
 - [Plantilla de funcionalidad](plantilla-funcionalidad.md)

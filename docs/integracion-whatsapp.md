@@ -300,12 +300,11 @@ Para enviar imagenes o documentos reales por WhatsApp:
 
 ## 13. Sincronizar plantillas aprobadas
 
-NoiaChat puede traer desde Meta las plantillas de la cuenta WhatsApp Business configurada.
+NoiaChat puede traer desde Meta las plantillas de la cuenta WhatsApp Business configurada. En instalaciones multiempresa, las credenciales se leen primero desde el canal WhatsApp activo de la empresa/sede; las variables `.env` quedan como fallback de compatibilidad.
 
 Requisitos:
 
-- `.env` con `WHATSAPP_ACCESS_TOKEN`.
-- `.env` con `WHATSAPP_BUSINESS_ACCOUNT_ID`.
+- Canal WhatsApp con `access_token` y `business_account_id`, o `.env` con `WHATSAPP_ACCESS_TOKEN` y `WHATSAPP_BUSINESS_ACCOUNT_ID`.
 - Token con permisos `whatsapp_business_messaging` y `whatsapp_business_management`.
 
 Pasos:
@@ -322,6 +321,40 @@ Reglas aplicadas por NoiaChat:
 - El cuerpo sincronizado sale del componente `BODY` de Meta.
 - Al enviar una plantilla, NoiaChat exige exactamente la cantidad de variables detectadas en el cuerpo.
 - Si Meta no responde o faltan credenciales, la pantalla muestra el motivo.
+
+## 13.1 Canales WhatsApp por empresa/sede
+
+Cada canal WhatsApp puede guardar sus propias credenciales:
+
+- `phone_number_id`
+- `business_account_id`
+- `access_token`
+- `webhook_verify_token`
+- `app_secret`
+- `api_base_url`
+- Fecha de expiracion del token.
+- Fecha de ultima rotacion.
+- Responsable de rotacion.
+- Procedimiento interno de rotacion.
+
+Los envios salientes usan el canal del mensaje para seleccionar token y numero. Los webhooks entrantes resuelven el canal por `metadata.phone_number_id` recibido desde Meta y crean contactos, conversaciones, logs, opt-outs y blacklist dentro de la empresa/sede de ese canal. Si Meta envia un `phone_number_id` no configurado, el evento queda registrado sin asociarse a un canal operativo para evitar mezclar empresas.
+
+### 13.2 Rotacion de token
+
+El token de Meta debe tratarse como secreto productivo. NoiaChat no muestra el valor completo en pantalla; si el campo de token se deja vacio al guardar, conserva el token existente.
+
+Procedimiento recomendado:
+
+1. Crear o renovar el token en Meta Business.
+2. En NoiaChat, ir a **Configuracion > Canales**.
+3. Pegar el nuevo `access_token`.
+4. Registrar fecha de expiracion, fecha de rotacion, responsable y procedimiento interno.
+5. Guardar canal.
+6. Ejecutar **Sincronizar Meta** para validar credenciales.
+7. Enviar una plantilla aprobada de prueba.
+8. Reiniciar workers si el entorno productivo usa cache/configuracion persistente.
+
+El monitor `/health` y el comando `php8.4 artisan noiachat:health-check` alertan si el token esta vencido, por vencer o sin fecha/responsable/procedimiento registrado.
 
 ## 14. Validar estados de envio y lectura
 

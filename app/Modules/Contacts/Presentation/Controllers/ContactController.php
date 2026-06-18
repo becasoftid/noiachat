@@ -10,6 +10,7 @@ use App\Modules\Contacts\Infrastructure\Persistence\Models\Channel;
 use App\Modules\Contacts\Infrastructure\Persistence\Models\Contact;
 use App\Modules\Contacts\Presentation\Requests\StoreContactRequest;
 use App\Modules\Contacts\Presentation\Requests\UpdateContactRequest;
+use App\Modules\Shared\Domain\Exceptions\BusinessRuleException;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
@@ -33,13 +34,17 @@ class ContactController extends Controller
 
     public function store(StoreContactRequest $request)
     {
-        $contact = $this->service->create(new UpsertContactDTO(
-            $request->string('first_name')->toString(),
-            $request->input('last_name'),
-            $request->input('email'),
-            $request->string('primary_phone')->toString(),
-            $request->input('status', 'active'),
-        ), $request->user()->id, $request);
+        try {
+            $contact = $this->service->create(new UpsertContactDTO(
+                $request->string('first_name')->toString(),
+                $request->input('last_name'),
+                $request->input('email'),
+                $request->string('primary_phone')->toString(),
+                $request->input('status', 'active'),
+            ), $request->user()->id, $request);
+        } catch (BusinessRuleException $exception) {
+            return back()->withInput()->withErrors(['primary_phone' => $exception->getMessage()]);
+        }
 
         return redirect()->route('contacts.show', $contact)->with('status', 'Contacto creado.');
     }
@@ -53,8 +58,9 @@ class ContactController extends Controller
             'contactBlacklist',
             'messages.events',
         ]);
-        $channels = Channel::query()->where('is_active', true)->get();
+        $channels = Channel::query()->forTenantContext()->where('is_active', true)->get();
         $mergeCandidates = Contact::query()
+            ->forTenantContext()
             ->whereKeyNot($contact->id)
             ->orderBy('full_name')
             ->get();
@@ -69,13 +75,17 @@ class ContactController extends Controller
 
     public function update(UpdateContactRequest $request, Contact $contact)
     {
-        $this->service->update($contact, new UpsertContactDTO(
-            $request->string('first_name')->toString(),
-            $request->input('last_name'),
-            $request->input('email'),
-            $request->string('primary_phone')->toString(),
-            $request->input('status', 'active'),
-        ), $request->user()->id, $request);
+        try {
+            $this->service->update($contact, new UpsertContactDTO(
+                $request->string('first_name')->toString(),
+                $request->input('last_name'),
+                $request->input('email'),
+                $request->string('primary_phone')->toString(),
+                $request->input('status', 'active'),
+            ), $request->user()->id, $request);
+        } catch (BusinessRuleException $exception) {
+            return back()->withInput()->withErrors(['primary_phone' => $exception->getMessage()]);
+        }
 
         return redirect()->route('contacts.show', $contact)->with('status', 'Contacto actualizado.');
     }

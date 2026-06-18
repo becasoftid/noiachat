@@ -76,6 +76,7 @@ class MessageController extends Controller
         $message->increment('retry_count');
         $message->update(['status' => MessageStatus::QUEUED->value, 'failed_at' => null]);
         $message->events()->create([
+            ...$message->tenantAttributes(),
             'status' => $message->status,
             'event_type' => 'retry_requested',
             'payload' => ['requested_by' => $request->user()->id],

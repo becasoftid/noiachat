@@ -38,7 +38,10 @@
             <input class="noia-input" type="date" name="date_to" value="{{ request('date_to') }}">
             <button class="noia-btn-primary">Filtrar</button>
         </form>
-        <a href="{{ route('messages.create') }}" class="noia-btn-primary">Nuevo envío</a>
+        <div class="flex gap-2">
+            <a href="{{ route('reports.exports.messages', request()->query()) }}" class="noia-btn-secondary">Exportar CSV</a>
+            <a href="{{ route('messages.create') }}" class="noia-btn-primary">Nuevo envío</a>
+        </div>
     </div>
     <div class="noia-table-wrap">
         <table class="noia-table">

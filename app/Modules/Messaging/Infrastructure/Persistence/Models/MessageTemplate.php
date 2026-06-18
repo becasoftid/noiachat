@@ -3,6 +3,7 @@
 namespace App\Modules\Messaging\Infrastructure\Persistence\Models;
 
 use App\Modules\Contacts\Infrastructure\Persistence\Models\Channel;
+use App\Modules\Tenancy\Infrastructure\Persistence\Concerns\BelongsToDefaultTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,9 +11,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MessageTemplate extends Model
 {
-    use SoftDeletes;
+    use BelongsToDefaultTenant, SoftDeletes;
 
     protected $fillable = [
+        'company_id',
+        'branch_id',
         'channel_id',
         'name',
         'external_template_id',

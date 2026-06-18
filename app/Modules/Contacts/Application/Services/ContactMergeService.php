@@ -11,6 +11,7 @@ use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use App\Modules\Shared\Application\Services\AuditLogger;
+use App\Modules\Shared\Domain\Exceptions\BusinessRuleException;
 use App\Modules\Webhooks\Infrastructure\Persistence\Models\OptOutRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,10 @@ class ContactMergeService
     {
         if ($source->is($target)) {
             throw new \InvalidArgumentException('No puedes fusionar un contacto consigo mismo.');
+        }
+
+        if ($source->company_id !== $target->company_id) {
+            throw new BusinessRuleException('No se pueden fusionar contactos de empresas diferentes.');
         }
 
         return DB::transaction(function () use ($source, $target, $userId, $request): Contact {
@@ -66,9 +71,11 @@ class ContactMergeService
     {
         ContactChannel::query()->where('contact_id', $source->id)->get()->each(function (ContactChannel $channel) use ($target): void {
             $exists = ContactChannel::query()
-                ->where('contact_id', $target->id)
+                ->where('company_id', $target->company_id)
                 ->where('channel_id', $channel->channel_id)
                 ->where('phone', $channel->phone)
+                ->where('is_active', true)
+                ->whereKeyNot($channel->id)
                 ->exists();
 
             $exists ? $channel->delete() : $channel->update(['contact_id' => $target->id]);

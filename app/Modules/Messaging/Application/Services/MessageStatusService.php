@@ -28,7 +28,13 @@ class MessageStatusService
         }
 
         $message->update($attributes);
-        $message->events()->create(['status' => $status->value, 'event_type' => $eventType, 'payload' => $payload, 'occurred_at' => now()]);
+        $message->events()->create([
+            ...$message->tenantAttributes(),
+            'status' => $status->value,
+            'event_type' => $eventType,
+            'payload' => $payload,
+            'occurred_at' => now(),
+        ]);
 
         return $message->fresh();
     }

@@ -1,5 +1,13 @@
 <x-layouts.noia title="Tablero" header="Tablero">
-    <form method="GET" class="noia-filter-bar mb-6 grid gap-3 md:grid-cols-3">
+    <form method="GET" class="noia-filter-bar mb-6 grid gap-3 md:grid-cols-4">
+        @if(($branches ?? collect())->isNotEmpty())
+            <select class="noia-select" name="branch_id">
+                <option value="">Todas las sedes</option>
+                @foreach($branches as $branch)
+                    <option value="{{ $branch->id }}" @selected((string) request('branch_id') === (string) $branch->id)>{{ $branch->name }}</option>
+                @endforeach
+            </select>
+        @endif
         <input class="noia-input" type="date" name="date_from" value="{{ request('date_from') }}">
         <input class="noia-input" type="date" name="date_to" value="{{ request('date_to') }}">
         <button class="noia-btn-primary">Filtrar</button>

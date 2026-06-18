@@ -1,6 +1,10 @@
 <?php
 
 use App\Console\Commands\BackupNoiaChatCommand;
+use App\Console\Commands\HealthCheckCommand;
+use App\Console\Commands\SubscriptionsCheckCommand;
+use App\Console\Commands\ValidateTenantReadinessCommand;
+use App\Modules\Billing\Presentation\Middleware\EnsureFeatureEnabled;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,8 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         BackupNoiaChatCommand::class,
+        HealthCheckCommand::class,
+        SubscriptionsCheckCommand::class,
+        ValidateTenantReadinessCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'feature' => EnsureFeatureEnabled::class,
+        ]);
+
         $middleware->validateCsrfTokens(except: [
             'webhooks/whatsapp',
         ]);

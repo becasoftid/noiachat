@@ -27,7 +27,7 @@ class SendWhatsAppTextJob implements ShouldQueue
         $response = $provider->sendText(new SendTextMessageDTO($message->id, $message->contact->primary_phone, (string) $message->body));
         $providerId = data_get($response, 'messages.0.id');
 
-        $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_text', 'external_event_id' => $providerId, 'payload' => $response]);
+        $message->providerLogs()->create([...$message->tenantAttributes(), 'provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_text', 'external_event_id' => $providerId, 'payload' => $response]);
         if (data_get($response, 'error')) {
             $statusService->transition($message->fresh(), MessageStatus::FAILED, $response, 'provider_failed');
 
@@ -42,7 +42,7 @@ class SendWhatsAppTextJob implements ShouldQueue
     {
         if ($message = Message::find($this->messageId)) {
             $message->increment('retry_count');
-            $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_text_failed', 'payload' => ['error' => $exception->getMessage()]]);
+            $message->providerLogs()->create([...$message->tenantAttributes(), 'provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_text_failed', 'payload' => ['error' => $exception->getMessage()]]);
             app(MessageStatusService::class)->transition($message, MessageStatus::FAILED, ['error' => $exception->getMessage()], 'job_failed');
         }
     }

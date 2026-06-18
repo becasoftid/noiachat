@@ -36,6 +36,7 @@ class ReplyConversationTemplateRequest extends FormRequest
             }
 
             $template = MessageTemplate::query()
+                ->forTenantContext()
                 ->with('currentVersion')
                 ->where('channel_id', $conversation->channel_id)
                 ->find((int) $this->integer('message_template_id'));

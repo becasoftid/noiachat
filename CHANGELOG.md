@@ -26,6 +26,35 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Validacion de URL publica HTTPS para envio multimedia por WhatsApp, con fallos claros cuando el archivo no es accesible para Meta.
 - Gestion documental de funcionalidades con matriz de estado, backlog priorizado y plantilla de registro en `docs/`.
 - Plan de trabajo y reglas de negocio en `docs/plan-trabajo-reglas-negocio.md`.
+- Analisis y plan multiempresa/multisede en `docs/multiempresa-multisede.md`, con brecha actual, reglas de negocio y actividades `MT-00` a `MT-10`.
+- Modelo base multiempresa con tablas `companies`, `branches` y `memberships`, relaciones de usuario/rol, empresa/sede por defecto y pruebas iniciales.
+- Columnas tenant `company_id` y `branch_id` en tablas operativas, backfill a empresa/sede por defecto y trait para asignar contexto por defecto a nuevas entidades.
+- Contexto activo multiempresa por request con middleware, sesion, cambio de membresia y selector compacto de empresa/sede en el layout operativo.
+- Aislamiento inicial multiempresa con scope `forTenantContext`, policies por empresa/sede activa, listados filtrados y pruebas de acceso cruzado.
+- Canales WhatsApp por empresa/sede: envios, webhooks, firmas y sincronizacion de plantillas resuelven credenciales desde el canal operativo, con pruebas de aislamiento por `phone_number_id`.
+- Reglas base de contactos por empresa/canal: importacion permite telefonos repetidos en empresas distintas, edicion bloquea duplicados dentro del canal activo y fusion prohibe mezclar empresas.
+- Reglas base de conversaciones por sede: inbox filtrable por sede para alcance de empresa y asignacion validada contra membresias de la sede de la conversacion.
+- Filtros base de auditoria y dashboard por sede para usuarios con alcance de empresa, respetando el scope de empresa/sede activa.
+- Administracion UI global para `super_admin` y del tenant activo para `company_admin`: empresas, sedes y membresias con validacion cross-company, auditoria y sincronizacion de roles desde membresias activas.
+- Roles finales multiempresa `super_admin`, `company_admin`, `branch_manager`, `operator` y `auditor`, con gates y policies que combinan rol con membresia activa y conservan compatibilidad legacy.
+- Comando `noiachat:tenant-validate` para validar preparacion multiempresa antes de despliegue: roles, tablas tenant, filas operativas sin empresa, consistencia de membresias y backup reciente.
+- Checklist productivo multiempresa en `docs/multiempresa-checklist-produccion.md`, con backup obligatorio, validacion en copia, pruebas de aislamiento, deploy, verificacion posterior y rollback.
+- Panel de fallos recientes en `/failures` para administradores, consolidando mensajes reintentables, errores de proveedor y ultimos jobs fallidos.
+- Detalle de auditoria en `/audit-logs/{id}` con contexto operativo, comparacion old/new y JSON tecnico respetando permisos por empresa/sede.
+- Exportaciones CSV de auditoria, contactos, mensajes y conversaciones, aplicando filtros actuales y alcance de empresa/sede.
+- Monitor de salud operativo en `/health` y comando `noiachat:health-check` para revisar jobs fallidos, cola pendiente, disco, webhook, backups y errores recientes.
+- Endurecimiento de settings de canal WhatsApp: secretos enmascarados, preservacion al dejar campos vacios y validaciones HTTPS/Meta ID.
+- Gobierno de rotacion del token WhatsApp por canal: expiracion, ultima rotacion, responsable, procedimiento y alertas en monitor de salud.
+- 2FA OTP por email para roles administrativos (`admin`, `super_admin`, `company_admin` y `branch_manager`) antes de acceder al panel.
+- Onboarding de prueba basica desde `/register`: crea usuario responsable, empresa, sede inicial, membresia `company_admin` y suscripcion `trialing` al plan `basic_trial`.
+- Modelo inicial de planes, suscripciones y features por plan: tablas `plans`, `company_subscriptions`, `features` y `plan_features`, con seeders de `basic_trial`, `basic`, `pro` y `enterprise`.
+- Servicio central de evaluacion de planes y suscripciones para validar estado operativo, features incluidas, limites y dias restantes de trial.
+- Middleware `feature` para bloquear rutas cuando el plan de la empresa no incluye una funcionalidad, aplicado inicialmente a usuarios, sedes/membresias y settings/plantillas.
+- Servicio de limites por plan para impedir exceder usuarios, sedes, contactos y canales WhatsApp activos segun la suscripcion de la empresa.
+- Comando `noiachat:subscriptions-check` para vencer trials expirados, auditar el cambio y mostrar avisos de trial vencido o proximo a vencer en el panel.
+- Panel `/billing` de plan y suscripcion con estado, dias restantes, limites consumidos, features incluidas y cambio manual auditado para `super_admin`.
+- Manual comercial de billing en `docs/billing-checklist-comercial.md` con matriz de planes/features, estados de suscripcion, procedimientos y checklist productivo.
+- Catalogo comercial comparativo en `/billing` usando metadata de planes y flujo interno de solicitudes de upgrade con aprobacion/rechazo auditados.
 - Configuracion Supervisor para worker permanente de colas en `deploy/supervisor/noiachat-worker.conf` y manual operativo en `docs/deploy-workers.md`.
 - Comando `noiachat:backup`, cron de backups automaticos y manual operativo/restauracion en `docs/deploy-backups.md`.
 - Manual paso a paso de integracion con WhatsApp Cloud API en `docs/integracion-whatsapp.md`.
@@ -48,6 +77,12 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Ajuste del flujo de mensajes multimedia para respetar compliance antes de subir adjuntos o encolar jobs de WhatsApp.
 - Ajuste del registro de envios WhatsApp para marcar como fallidos los mensajes cuando Meta responde con un error de proveedor, evitando estados `sent` sin `provider_message_id`.
 - Ajuste del webhook de WhatsApp para crear contactos provisionales con numeros entrantes desconocidos, relacionar mensajes recibidos con conversaciones y detectar contactos existentes aunque el telefono tenga formato local o internacional.
+- Ajuste del webhook de WhatsApp para resolver empresa, sede y canal por `metadata.phone_number_id`, evitando mezclar contactos cuando un mismo telefono existe en varias empresas.
+- Ajuste de jobs y logs de WhatsApp para conservar `company_id` y `branch_id` en envios, errores de proveedor, inbound, opt-outs y blacklist.
+- Ajuste de la fusion de contactos para validar tenant del origen, conservar aislamiento por empresa y evitar colisiones de telefonos activos por canal.
+- Ajuste de asignacion de conversaciones para impedir asignar operadores sin acceso a la empresa/sede de la conversacion.
+- Ajuste de consultas de auditoria y metricas para aplicar filtros de sede solo dentro del alcance permitido por la membresia activa.
+- Ajuste de pruebas de backup para validar que el manifiesto incluye metadatos utiles antes de una migracion productiva.
 - Ajuste de la integracion de WhatsApp para excluir el webhook de la validacion CSRF y leer credenciales desde `config/services.php`, compatible con cache de configuracion en produccion.
 - Estandarizacion visual de las vistas del panel, formularios, tablas, modales, navegacion, pantallas de cuenta y alertas globales para alinearlas con el nuevo lenguaje grafico aplicado al login.
 - Redisenio de la pantalla de login con una interfaz moderna para NoiaChat, panel visual de marca, formulario responsive y estilos enfocados en una aplicacion operativa de mensajeria y compliance.

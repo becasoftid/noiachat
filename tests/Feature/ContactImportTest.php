@@ -3,6 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Modules\Contacts\Infrastructure\Persistence\Models\Channel;
+use App\Modules\Contacts\Infrastructure\Persistence\Models\Contact;
+use App\Modules\Tenancy\Infrastructure\Persistence\Models\Branch;
+use App\Modules\Tenancy\Infrastructure\Persistence\Models\Company;
 use App\Modules\Users\Infrastructure\Persistence\Models\Role;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -150,6 +154,47 @@ class ContactImportTest extends TestCase
             });
     }
 
+    public function test_import_allows_same_phone_in_another_company(): void
+    {
+        $other = $this->createCompanyWithBranch('import-otra-empresa', 'Import otra empresa');
+        $channel = Channel::create([
+            'company_id' => $other['company']->id,
+            'branch_id' => $other['branch']->id,
+            'name' => 'WhatsApp otra importacion',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => ['provider' => 'whatsapp_cloud'],
+        ]);
+        $contact = Contact::create([
+            'company_id' => $other['company']->id,
+            'branch_id' => $other['branch']->id,
+            'first_name' => 'Otra',
+            'full_name' => 'Otra Empresa',
+            'primary_phone' => '573001119999',
+            'status' => 'active',
+        ]);
+        $contact->contactChannels()->create([
+            'company_id' => $other['company']->id,
+            'branch_id' => $other['branch']->id,
+            'channel_id' => $channel->id,
+            'phone' => '573001119999',
+            'is_primary' => true,
+            'is_active' => true,
+        ]);
+
+        $csv = implode("\n", [
+            'nombre,telefono',
+            'Empresa Activa,573001119999',
+        ]);
+
+        $this->actingAs($this->admin)->post(route('contacts.import.store'), [
+            'file' => UploadedFile::fake()->createWithContent('contacts.csv', $csv),
+        ])->assertRedirect()
+            ->assertSessionHas('import_result', fn (array $result): bool => $result['created'] === 1 && $result['skipped'] === 0);
+
+        $this->assertSame(2, Contact::withTrashed()->where('primary_phone', '573001119999')->count());
+    }
+
     private function makeXlsx(array $rows): string
     {
         $path = tempnam(sys_get_temp_dir(), 'contacts-xlsx-');
@@ -186,5 +231,24 @@ class ContactImportTest extends TestCase
         }
 
         return $name;
+    }
+
+    private function createCompanyWithBranch(string $slug, string $name): array
+    {
+        $company = Company::create([
+            'name' => $name,
+            'slug' => $slug,
+            'status' => 'active',
+            'timezone' => 'America/Bogota',
+        ]);
+        $branch = Branch::create([
+            'company_id' => $company->id,
+            'name' => $name.' principal',
+            'code' => 'principal',
+            'timezone' => 'America/Bogota',
+            'is_active' => true,
+        ]);
+
+        return ['company' => $company, 'branch' => $branch];
     }
 }

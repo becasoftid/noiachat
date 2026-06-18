@@ -30,7 +30,7 @@ class SendWhatsAppDocumentJob implements ShouldQueue
 
         if (! $media) {
             $payload = ['error' => 'El mensaje no tiene archivo multimedia adjunto.'];
-            $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_document_failed', 'payload' => $payload]);
+            $message->providerLogs()->create([...$message->tenantAttributes(), 'provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_document_failed', 'payload' => $payload]);
             $statusService->transition($message->fresh(), MessageStatus::FAILED, $payload, 'media_missing');
 
             return;
@@ -40,7 +40,7 @@ class SendWhatsAppDocumentJob implements ShouldQueue
             $mediaUrl = $urlResolver->resolve($media);
         } catch (BusinessRuleException $exception) {
             $payload = ['error' => $exception->getMessage(), 'media_file_id' => $media?->id, 'path' => $media?->path];
-            $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_document_failed', 'payload' => $payload]);
+            $message->providerLogs()->create([...$message->tenantAttributes(), 'provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_document_failed', 'payload' => $payload]);
             $statusService->transition($message->fresh(), MessageStatus::FAILED, $payload, 'media_url_invalid');
 
             return;
@@ -48,7 +48,7 @@ class SendWhatsAppDocumentJob implements ShouldQueue
 
         $response = $provider->sendDocument(new SendDocumentMessageDTO($message->id, $message->contact->primary_phone, $mediaUrl, $media->original_name, $message->body));
         $providerId = data_get($response, 'messages.0.id');
-        $message->providerLogs()->create(['provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_document', 'external_event_id' => $providerId, 'payload' => $response]);
+        $message->providerLogs()->create([...$message->tenantAttributes(), 'provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_document', 'external_event_id' => $providerId, 'payload' => $response]);
         if (data_get($response, 'error')) {
             $statusService->transition($message->fresh(), MessageStatus::FAILED, $response, 'provider_failed');
 
@@ -63,6 +63,7 @@ class SendWhatsAppDocumentJob implements ShouldQueue
     {
         if ($message = Message::find($this->messageId)) {
             $message->increment('retry_count');
+            $message->providerLogs()->create([...$message->tenantAttributes(), 'provider' => 'whatsapp_cloud', 'direction' => 'outbound', 'event_type' => 'send_document_failed', 'payload' => ['error' => $exception->getMessage()]]);
             app(MessageStatusService::class)->transition($message, MessageStatus::FAILED, ['error' => $exception->getMessage()], 'job_failed');
         }
     }

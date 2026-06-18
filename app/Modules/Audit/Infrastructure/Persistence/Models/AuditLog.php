@@ -2,12 +2,15 @@
 
 namespace App\Modules\Audit\Infrastructure\Persistence\Models;
 
+use App\Modules\Tenancy\Infrastructure\Persistence\Concerns\BelongsToDefaultTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuditLog extends Model
 {
-    protected $fillable = ['user_id', 'action', 'module', 'target_type', 'target_id', 'ip_address', 'user_agent', 'old_values_json', 'new_values_json'];
+    use BelongsToDefaultTenant;
+
+    protected $fillable = ['company_id', 'branch_id', 'user_id', 'action', 'module', 'target_type', 'target_id', 'ip_address', 'user_agent', 'old_values_json', 'new_values_json'];
 
     protected function casts(): array
     {

@@ -22,12 +22,13 @@ class UsersAuthServiceProvider extends ServiceProvider
         Gate::policy(Conversation::class, ConversationPolicy::class);
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
 
-        Gate::define('admin.access', fn ($user) => $user->hasRole('admin'));
-        Gate::define('contacts.manage', fn ($user) => $user->hasAnyRole(['admin', 'operator']));
-        Gate::define('contacts.viewAny', fn ($user) => $user->hasAnyRole(['admin', 'operator', 'auditor']));
-        Gate::define('messages.send', fn ($user) => $user->hasAnyRole(['admin', 'operator']));
-        Gate::define('messages.view', fn ($user) => $user->hasAnyRole(['admin', 'operator', 'auditor']));
-        Gate::define('conversations.view', fn ($user) => $user->hasAnyRole(['admin', 'operator', 'auditor']));
-        Gate::define('audit.view', fn ($user) => $user->hasAnyRole(['admin', 'auditor']));
+        Gate::define('admin.access', fn ($user) => $user->canAdministerActiveTenant());
+        Gate::define('super-admin.access', fn ($user) => $user->hasRole('super_admin'));
+        Gate::define('contacts.manage', fn ($user) => $user->canManageActiveTenantContacts());
+        Gate::define('contacts.viewAny', fn ($user) => $user->canViewActiveTenantOperations());
+        Gate::define('messages.send', fn ($user) => $user->canSendActiveTenantMessages());
+        Gate::define('messages.view', fn ($user) => $user->canViewActiveTenantOperations());
+        Gate::define('conversations.view', fn ($user) => $user->canViewActiveTenantOperations());
+        Gate::define('audit.view', fn ($user) => $user->canViewActiveTenantAudit());
     }
 }

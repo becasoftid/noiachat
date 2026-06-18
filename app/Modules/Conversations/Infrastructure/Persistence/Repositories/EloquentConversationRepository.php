@@ -6,13 +6,15 @@ use App\Modules\Conversations\Domain\Repositories\ConversationRepositoryInterfac
 use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
+use App\Modules\Tenancy\Application\Services\TenantContext;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EloquentConversationRepository implements ConversationRepositoryInterface
 {
     public function findReusable(string $contactId, int $channelId, array $statuses): ?Conversation
     {
-        return Conversation::query()
+        return $this->query()
             ->where('contact_id', $contactId)
             ->where('channel_id', $channelId)
             ->whereIn('status', $statuses)
@@ -26,7 +28,7 @@ class EloquentConversationRepository implements ConversationRepositoryInterface
 
     public function paginateLatest(int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
-        return Conversation::query()
+        return $this->query()
             ->with(['contact', 'assignedUser'])
             ->addSelect([
                 'latest_inbound_body' => InboundMessage::query()
@@ -56,6 +58,11 @@ class EloquentConversationRepository implements ConversationRepositoryInterface
                         ->orWhereColumn('inbound_messages.created_at', '>', 'conversations.last_read_at');
                 });
             }])
+            ->when(array_key_exists('branch_id', $filters), function ($q) use ($filters): void {
+                blank($filters['branch_id'])
+                    ? $q->whereNull('branch_id')
+                    : $q->where('branch_id', $filters['branch_id']);
+            })
             ->when($filters['status'] ?? null, fn ($q, $value) => $q->where('status', $value))
             ->when($filters['assigned_user_id'] ?? null, fn ($q, $value) => $q->where('assigned_user_id', $value))
             ->when($filters['date_from'] ?? null, fn ($q, $value) => $q->whereDate('last_message_at', '>=', $value))
@@ -82,5 +89,13 @@ class EloquentConversationRepository implements ConversationRepositoryInterface
         ]);
 
         return $conversation;
+    }
+
+    private function query(): Builder
+    {
+        $query = Conversation::query();
+        $context = app(TenantContext::class);
+
+        return $context->companyId() !== null ? $query->forTenantContext($context) : $query;
     }
 }

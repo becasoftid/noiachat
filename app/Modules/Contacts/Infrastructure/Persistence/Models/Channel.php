@@ -8,12 +8,15 @@ use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
+use App\Modules\Tenancy\Infrastructure\Persistence\Concerns\BelongsToDefaultTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Channel extends Model
 {
-    protected $fillable = ['name', 'slug', 'is_active', 'settings'];
+    use BelongsToDefaultTenant;
+
+    protected $fillable = ['company_id', 'branch_id', 'name', 'slug', 'is_active', 'settings'];
 
     protected function casts(): array
     {

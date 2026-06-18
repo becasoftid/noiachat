@@ -2,12 +2,15 @@
 
 namespace App\Modules\Contacts\Infrastructure\Persistence\Models;
 
+use App\Modules\Tenancy\Infrastructure\Persistence\Concerns\BelongsToDefaultTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ContactChannel extends Model
 {
-    protected $fillable = ['contact_id', 'channel_id', 'phone', 'is_primary', 'is_active'];
+    use BelongsToDefaultTenant;
+
+    protected $fillable = ['company_id', 'branch_id', 'contact_id', 'channel_id', 'phone', 'is_primary', 'is_active'];
 
     protected function casts(): array
     {

@@ -13,6 +13,7 @@
             <button class="noia-btn-primary">Buscar</button>
         </form>
         <div class="flex gap-2">
+            <a href="{{ route('reports.exports.contacts', request()->query()) }}" class="noia-btn-secondary">Exportar CSV</a>
             <a href="{{ route('contacts.import.create') }}" class="noia-btn-secondary">Importar</a>
             <a href="{{ route('contacts.create') }}" class="noia-btn-success">Nuevo contacto</a>
         </div>

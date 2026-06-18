@@ -440,6 +440,8 @@ El worker permanente de colas se configura con Supervisor. Consulta [docs/deploy
 
 Los backups automaticos se generan con el comando `noiachat:backup` y el cron versionado en `deploy/cron/noiachat-backup`. Consulta [docs/deploy-backups.md](docs/deploy-backups.md).
 
+Para la migracion multiempresa/multisede, usa el checklist productivo en [docs/multiempresa-checklist-produccion.md](docs/multiempresa-checklist-produccion.md). Incluye backup obligatorio, validacion en copia, pruebas de aislamiento, deploy, verificacion posterior y rollback.
+
 Checklist sugerido:
 
 1. Configurar `.env` de produccion.
@@ -465,6 +467,8 @@ php artisan view:cache
 
 - `.env` esta ignorado por Git.
 - Cambia `NOIACHAT_ADMIN_PASSWORD` antes de usar el sistema fuera de local.
+- Los roles administrativos (`admin`, `super_admin`, `company_admin`, `branch_manager`) requieren 2FA OTP por email. Configura el mailer real antes de produccion y ajusta `NOIACHAT_2FA_CODE_TTL_MINUTES`, `NOIACHAT_2FA_MAX_ATTEMPTS` o `NOIACHAT_2FA_EXPOSE_CODE_NON_PROD` si necesitas cambiar la politica local.
+- El registro publico crea una empresa, una sede inicial, una membresia `company_admin` limitada a esa empresa y una suscripcion `trialing` al plan `basic_trial` definido en base de datos.
 - Usa tokens de WhatsApp con el menor alcance posible.
 - Revisa logs de proveedor y auditoria para trazabilidad.
 - Protege el endpoint publico de webhooks con verificacion de token.

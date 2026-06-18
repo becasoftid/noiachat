@@ -3,9 +3,11 @@
 namespace App\Modules\Contacts\Application\Services;
 
 use App\Modules\Audit\Domain\Enums\AuditActionType;
+use App\Modules\Billing\Application\Services\PlanLimitService;
 use App\Modules\Contacts\Application\DTOs\UpsertContactDTO;
 use App\Modules\Contacts\Domain\Repositories\ChannelRepositoryInterface;
 use App\Modules\Contacts\Domain\Repositories\ContactRepositoryInterface;
+use App\Modules\Contacts\Infrastructure\Persistence\Models\ContactChannel;
 use App\Modules\Contacts\Infrastructure\Persistence\Models\Contact;
 use App\Modules\Shared\Application\Services\AuditLogger;
 use App\Modules\Shared\Domain\Exceptions\BusinessRuleException;
@@ -19,12 +21,17 @@ class ContactService
         private readonly AuditLogger $auditLogger,
         private readonly ContactRepositoryInterface $contacts,
         private readonly ChannelRepositoryInterface $channels,
+        private readonly PlanLimitService $planLimits,
     ) {}
 
     public function create(UpsertContactDTO $dto, int $userId, ?Request $request = null): Contact
     {
         $phone = PhoneNumber::from($dto->primaryPhone)->value();
         $channel = $this->channels->findBySlug('whatsapp');
+
+        if (! $this->planLimits->canCreate(null, 'contacts', actor: $request?->user())) {
+            throw new BusinessRuleException($this->planLimits->message(null, 'contacts'));
+        }
 
         if (! $channel) {
             throw new BusinessRuleException('WhatsApp channel is not configured.');
@@ -61,6 +68,15 @@ class ContactService
     {
         $oldValues = $contact->toArray();
         $phone = PhoneNumber::from($dto->primaryPhone)->value();
+        $channel = $this->channels->findBySlug('whatsapp');
+
+        if (! $channel) {
+            throw new BusinessRuleException('WhatsApp channel is not configured.');
+        }
+
+        if ($this->phoneIsActiveForAnotherContact($phone, $channel->id, $contact->id)) {
+            throw new BusinessRuleException('The phone number is already active for this channel.');
+        }
 
         $contact = $this->contacts->update($contact, [
             'first_name' => $dto->firstName,
@@ -76,5 +92,15 @@ class ContactService
         $this->auditLogger->log($userId, AuditActionType::UPDATE->value, 'contacts', Contact::class, $contact->id, $oldValues, $contact->toArray(), $request);
 
         return $contact;
+    }
+
+    private function phoneIsActiveForAnotherContact(string $phone, int $channelId, string $contactId): bool
+    {
+        return ContactChannel::query()
+            ->where('channel_id', $channelId)
+            ->where('phone', $phone)
+            ->where('is_active', true)
+            ->where('contact_id', '!=', $contactId)
+            ->exists();
     }
 }

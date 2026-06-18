@@ -19,7 +19,7 @@
             'blocked_by_policy' => 'Bloqueado por política',
         ];
         $customerCareWindowClosed = $freeFormEligibility?->value === 'blocked_customer_care_window';
-        $activeFilterCount = collect(['search', 'status', 'assigned_user_id', 'date_from', 'date_to'])
+        $activeFilterCount = collect(['search', 'status', 'assigned_user_id', 'branch_id', 'date_from', 'date_to'])
             ->filter(fn ($key) => request()->filled($key))
             ->count() + (request()->boolean('mine') ? 1 : 0);
     @endphp
@@ -75,6 +75,7 @@
                         @if($activeFilterCount > 0)
                             <a href="{{ route('conversations.index', request()->filled('conversation') ? ['conversation' => request('conversation')] : []) }}" class="text-sm font-semibold text-slate-500 transition hover:text-slate-900">Limpiar</a>
                         @endif
+                        <a href="{{ route('reports.exports.conversations', request()->except('conversation')) }}" class="text-sm font-semibold text-cyan-700 transition hover:text-cyan-900">Exportar CSV</a>
                     </div>
 
                     <form method="GET" class="mt-3 grid gap-2" x-cloak x-show="filtersOpen" x-transition.opacity>
@@ -82,6 +83,14 @@
                             <input type="hidden" name="conversation" value="{{ request('conversation') }}">
                         @endif
                         <input class="noia-input bg-white" name="search" value="{{ request('search') }}" placeholder="Buscar contacto o teléfono">
+                        @if(($branches ?? collect())->isNotEmpty())
+                            <select class="noia-select bg-white" name="branch_id">
+                                <option value="">Todas las sedes</option>
+                                @foreach($branches as $branch)
+                                    <option value="{{ $branch->id }}" @selected((string) request('branch_id') === (string) $branch->id)>{{ $branch->name }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                         <div class="grid gap-2 sm:grid-cols-2">
                             <select class="noia-select bg-white" name="status">
                                 <option value="">Estado</option>

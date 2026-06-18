@@ -6,10 +6,18 @@
         ['label' => 'Contactos', 'route' => 'contacts.index', 'active' => 'contacts.*', 'icon' => 'contacts'],
         ['label' => 'Mensajes', 'route' => 'messages.index', 'active' => 'messages.*', 'icon' => 'messages'],
         ['label' => 'Conversaciones', 'route' => 'conversations.index', 'active' => 'conversations.*', 'icon' => 'conversations'],
+        ['label' => 'Fallos', 'route' => 'failures.index', 'active' => 'failures.*', 'icon' => 'failures', 'can' => 'admin.access'],
+        ['label' => 'Salud', 'route' => 'health.index', 'active' => 'health.*', 'icon' => 'health', 'can' => 'admin.access'],
         ['label' => 'Auditoria', 'route' => 'audit-logs.index', 'active' => 'audit-logs.*', 'icon' => 'audit'],
+        ['label' => 'Empresa', 'route' => 'tenancy.index', 'active' => 'tenancy.*', 'icon' => 'tenancy', 'can' => 'admin.access'],
+        ['label' => 'Plan', 'route' => 'billing.index', 'active' => 'billing.*', 'icon' => 'billing', 'can' => 'admin.access'],
         ['label' => 'Usuarios', 'route' => 'users.index', 'active' => 'users.*', 'icon' => 'users', 'can' => 'admin.access'],
         ['label' => 'Configuracion', 'route' => 'settings.index', 'active' => 'settings.*', 'icon' => 'settings', 'can' => 'admin.access'],
     ];
+    $tenantContext = $tenantContext ?? app(\App\Modules\Tenancy\Application\Services\TenantContext::class);
+    $tenantMemberships = $tenantContext->memberships();
+    $currentTenantMembership = $tenantContext->membership();
+    $subscriptionNotice = app(\App\Modules\Billing\Application\Services\SubscriptionLifecycleService::class)->notice($tenantContext->companyId());
 @endphp
 
 <!DOCTYPE html>
@@ -119,11 +127,34 @@
                                         <path d="M20 6l-8-3-8 3v6c0 5 3.4 8.7 8 9 4.6-.3 8-4 8-9z" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                     @break
+                                @case('failures')
+                                    <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 9v4M12 17h.01" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M10.3 4.4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4.4a2 2 0 0 0-3.4 0z" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    @break
+                                @case('health')
+                                    <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 12h-4l-3 8-6-16-3 8H2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    @break
                                 @case('users')
                                     <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-linecap="round" />
                                         <circle cx="9" cy="7" r="4" />
                                         <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-linecap="round" />
+                                    </svg>
+                                    @break
+                                @case('tenancy')
+                                    <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 21h18M5 21V7l7-4 7 4v14" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M9 21v-6h6v6M9 9h.01M15 9h.01M9 12h.01M15 12h.01" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    @break
+                                @case('billing')
+                                    <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4 7h16M4 12h16M7 17h10" stroke-linecap="round" />
+                                        <rect x="3" y="4" width="18" height="16" rx="2" stroke-linejoin="round" />
                                     </svg>
                                     @break
                                 @case('settings')
@@ -149,6 +180,34 @@
                     </div>
 
                     <div class="hidden items-center gap-3 lg:flex">
+                        @if($currentTenantMembership)
+                            @if($tenantMemberships->count() > 1)
+                                <form method="POST" action="{{ route('tenant-context.update') }}">
+                                    @csrf
+                                    <label class="sr-only" for="tenant-membership">Empresa y sede activa</label>
+                                    <select
+                                        id="tenant-membership"
+                                        name="membership_id"
+                                        class="h-11 max-w-[280px] rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-cyan-300 focus:outline-none focus:ring-4 focus:ring-cyan-100"
+                                        onchange="this.form.submit()"
+                                    >
+                                        @foreach($tenantMemberships as $membership)
+                                            <option value="{{ $membership->id }}" @selected($currentTenantMembership->id === $membership->id)>
+                                                {{ $membership->company->name }}{{ $membership->branch ? ' / '.$membership->branch->name : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            @else
+                                <div class="max-w-[260px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-right">
+                                    <p class="truncate text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">Empresa activa</p>
+                                    <p class="truncate text-sm font-semibold text-slate-800">
+                                        {{ $currentTenantMembership->company->name }}{{ $currentTenantMembership->branch ? ' / '.$currentTenantMembership->branch->name : '' }}
+                                    </p>
+                                </div>
+                            @endif
+                        @endif
+
                         <div class="text-right">
                             <p class="text-sm font-semibold text-slate-900">{{ auth()->user()->name }}</p>
                             <p class="text-xs text-slate-500">{{ auth()->user()->email }}</p>
@@ -168,6 +227,12 @@
 
                 @if (session('error'))
                     <div class="noia-alert-danger">{{ session('error') }}</div>
+                @endif
+
+                @if ($subscriptionNotice)
+                    <div class="{{ $subscriptionNotice['type'] === 'danger' ? 'noia-alert-danger' : 'noia-alert-warning' }}">
+                        {{ $subscriptionNotice['message'] }}
+                    </div>
                 @endif
 
                 @if ($errors->any())

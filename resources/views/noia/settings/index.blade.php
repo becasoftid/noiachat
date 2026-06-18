@@ -1,4 +1,15 @@
 <x-layouts.noia title="Configuración" header="Configuración">
+    @php
+        $maskSecret = function (?string $value): string {
+            if (! filled($value)) {
+                return 'No configurado';
+            }
+
+            $visible = substr($value, -4);
+
+            return 'Configurado · ****'.$visible;
+        };
+    @endphp
     <div class="grid gap-6 xl:grid-cols-3">
         <div class="noia-card xl:col-span-1">
             <h3 class="font-semibold">Canales</h3>
@@ -14,7 +25,42 @@
                                 Activo
                             </label>
                         </div>
-                        <input class="noia-input mt-3 w-full text-sm" name="settings[provider]" value="{{ data_get($channel->settings, 'provider') }}" placeholder="Proveedor">
+                        <div class="mt-3 grid gap-3">
+                            <input class="noia-input w-full text-sm" name="settings[provider]" value="{{ data_get($channel->settings, 'provider') }}" placeholder="Proveedor">
+                            <input class="noia-input w-full text-sm" name="settings[api_base_url]" value="{{ data_get($channel->settings, 'api_base_url') }}" placeholder="Graph API base URL">
+                            <input class="noia-input w-full text-sm" name="settings[phone_number_id]" value="{{ data_get($channel->settings, 'phone_number_id') }}" placeholder="Phone Number ID">
+                            <input class="noia-input w-full text-sm" name="settings[business_account_id]" value="{{ data_get($channel->settings, 'business_account_id') }}" placeholder="WhatsApp Business Account ID">
+                            <label class="grid gap-1">
+                                <span class="text-xs font-semibold text-slate-500">Access token: {{ $maskSecret(data_get($channel->settings, 'access_token')) }}</span>
+                                <input class="noia-input w-full text-sm" type="password" autocomplete="new-password" name="settings[access_token]" placeholder="Nuevo access token">
+                            </label>
+                            <label class="grid gap-1">
+                                <span class="text-xs font-semibold text-slate-500">Webhook token: {{ $maskSecret(data_get($channel->settings, 'webhook_verify_token')) }}</span>
+                                <input class="noia-input w-full text-sm" type="password" autocomplete="new-password" name="settings[webhook_verify_token]" placeholder="Nuevo webhook verify token">
+                            </label>
+                            <label class="grid gap-1">
+                                <span class="text-xs font-semibold text-slate-500">App secret: {{ $maskSecret(data_get($channel->settings, 'app_secret')) }}</span>
+                                <input class="noia-input w-full text-sm" type="password" autocomplete="new-password" name="settings[app_secret]" placeholder="Nuevo app secret">
+                            </label>
+                            <div class="grid gap-3 border-t border-slate-200 pt-3 md:grid-cols-2">
+                                <label class="grid gap-1">
+                                    <span class="text-xs font-semibold text-slate-500">Expira</span>
+                                    <input class="noia-input w-full text-sm" type="date" name="settings[access_token_expires_at]" value="{{ data_get($channel->settings, 'access_token_expires_at') }}">
+                                </label>
+                                <label class="grid gap-1">
+                                    <span class="text-xs font-semibold text-slate-500">Última rotación</span>
+                                    <input class="noia-input w-full text-sm" type="date" name="settings[access_token_rotated_at]" value="{{ data_get($channel->settings, 'access_token_rotated_at') }}">
+                                </label>
+                                <label class="grid gap-1 md:col-span-2">
+                                    <span class="text-xs font-semibold text-slate-500">Responsable</span>
+                                    <input class="noia-input w-full text-sm" name="settings[access_token_responsible]" value="{{ data_get($channel->settings, 'access_token_responsible') }}" placeholder="Nombre o equipo responsable">
+                                </label>
+                                <label class="grid gap-1 md:col-span-2">
+                                    <span class="text-xs font-semibold text-slate-500">Procedimiento de rotación</span>
+                                    <textarea class="noia-textarea text-sm" name="settings[access_token_rotation_procedure]" rows="3" placeholder="Pasos internos para rotar token, validar envío y reiniciar workers">{{ data_get($channel->settings, 'access_token_rotation_procedure') }}</textarea>
+                                </label>
+                            </div>
+                        </div>
                         <p class="mt-2 text-sm text-slate-500">Mensajes: {{ $channel->messages_count }} · Conversaciones: {{ $channel->conversations_count }}</p>
                         <button class="noia-btn-primary mt-3 text-sm">Guardar canal</button>
                     </form>

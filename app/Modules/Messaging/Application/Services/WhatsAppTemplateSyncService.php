@@ -12,17 +12,19 @@ use RuntimeException;
 
 class WhatsAppTemplateSyncService
 {
-    public function __construct(private readonly HttpFactory $http)
+    public function __construct(
+        private readonly HttpFactory $http,
+        private readonly WhatsAppChannelConfig $channelConfig,
+    )
     {
     }
 
     public function sync(Channel $channel): array
     {
-        $businessAccountId = (string) config('services.whatsapp.business_account_id', '');
-        $accessToken = (string) config('services.whatsapp.access_token', '');
+        $config = $this->channelConfig->forChannel($channel);
 
-        if ($businessAccountId === '' || $accessToken === '') {
-            throw new RuntimeException('Faltan WHATSAPP_BUSINESS_ACCOUNT_ID o WHATSAPP_ACCESS_TOKEN para sincronizar plantillas.');
+        if ($this->channelConfig->missingForTemplateSync($config) !== []) {
+            throw new RuntimeException('Faltan WHATSAPP_BUSINESS_ACCOUNT_ID o WHATSAPP_ACCESS_TOKEN en el canal WhatsApp o en .env para sincronizar plantillas.');
         }
 
         $synced = 0;
@@ -32,7 +34,7 @@ class WhatsAppTemplateSyncService
         $skipped = 0;
         $now = now();
 
-        foreach ($this->fetchTemplates($businessAccountId, $accessToken) as $metaTemplate) {
+        foreach ($this->fetchTemplates($config) as $metaTemplate) {
             $normalized = $this->normalizeTemplate($metaTemplate);
 
             if ($normalized['name'] === '' || $normalized['language'] === '') {
@@ -45,8 +47,9 @@ class WhatsAppTemplateSyncService
                 $exists = $template !== null;
                 $isApproved = $normalized['status'] === 'APPROVED';
 
-                $template ??= new MessageTemplate(['channel_id' => $channel->id]);
+                $template ??= new MessageTemplate([...$channel->tenantAttributes(), 'channel_id' => $channel->id]);
                 $template->fill([
+                    ...$channel->tenantAttributes(),
                     'channel_id' => $channel->id,
                     'name' => $normalized['name'],
                     'external_template_id' => $normalized['name'],
@@ -74,15 +77,15 @@ class WhatsAppTemplateSyncService
         return compact('synced', 'created', 'updated', 'approved', 'skipped');
     }
 
-    private function fetchTemplates(string $businessAccountId, string $accessToken): array
+    private function fetchTemplates(array $config): array
     {
-        $baseUrl = rtrim((string) config('services.whatsapp.api_base_url', 'https://graph.facebook.com/v21.0'), '/');
-        $url = $baseUrl.'/'.$businessAccountId.'/message_templates';
+        $baseUrl = rtrim($config['api_base_url'], '/');
+        $url = $baseUrl.'/'.$config['business_account_id'].'/message_templates';
         $templates = [];
 
         do {
             $response = $this->http
-                ->withToken($accessToken)
+                ->withToken($config['access_token'])
                 ->acceptJson()
                 ->get($url, [
                     'fields' => 'id,name,language,status,category,components',

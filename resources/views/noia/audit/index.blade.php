@@ -32,6 +32,7 @@
             || filled(request('action'))
             || filled(request('target_type'))
             || filled(request('user_id'))
+            || filled(request('branch_id'))
             || filled(request('date_from'))
             || filled(request('date_to'));
     @endphp
@@ -63,6 +64,9 @@
                 >
                     Abrir filtros
                 </button>
+                <a href="{{ route('reports.exports.audit-logs', request()->query()) }}" class="noia-btn-secondary">
+                    Exportar CSV
+                </a>
                 @if($hasFilters)
                     <a href="{{ route('audit-logs.index') }}" class="noia-btn-secondary">
                         Limpiar
@@ -86,6 +90,12 @@
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700 ring-1 ring-slate-200">
                         Usuario:
                         {{ optional($users->firstWhere('id', (int) request('user_id')))->name ?? request('user_id') }}
+                    </span>
+                @endif
+                @if(filled(request('branch_id')))
+                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700 ring-1 ring-slate-200">
+                        Sede:
+                        {{ optional(($branches ?? collect())->firstWhere('id', request('branch_id')))->name ?? request('branch_id') }}
                     </span>
                 @endif
                 @if(filled(request('date_from')))
@@ -125,7 +135,12 @@
                         <td class="px-4 py-3">{{ $log->user?->name ?? 'Sistema' }}</td>
                         <td class="px-4 py-3">{{ $moduleLabels[$log->module] ?? $log->module }}</td>
                         <td class="px-4 py-3">{{ $actionLabels[$log->action] ?? $log->action }}</td>
-                        <td class="px-4 py-3">{{ $targetTypeLabels[class_basename((string) $log->target_type)] ?? class_basename((string) $log->target_type) }} #{{ $log->target_id }}</td>
+                        <td class="px-4 py-3">
+                            <a class="noia-link" href="{{ route('audit-logs.show', $log) }}">
+                                {{ $targetTypeLabels[class_basename((string) $log->target_type)] ?? class_basename((string) $log->target_type) }} #{{ $log->target_id }}
+                            </a>
+                            <p class="mt-1 text-xs text-slate-500">Ver detalle de cambios</p>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -184,6 +199,18 @@
                             @endforeach
                         </select>
                     </label>
+
+                    @if(($branches ?? collect())->isNotEmpty())
+                        <label>
+                            <span class="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Sede</span>
+                            <select class="noia-select" name="branch_id">
+                                <option value="">Todas las sedes</option>
+                                @foreach($branches as $branch)
+                                    <option value="{{ $branch->id }}" @selected((string) request('branch_id') === (string) $branch->id)>{{ $branch->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                    @endif
 
                     <label>
                         <span class="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Desde</span>

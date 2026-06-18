@@ -4,6 +4,7 @@ namespace App\Modules\Conversations\Infrastructure\Persistence\Models;
 
 use App\Models\User;
 use App\Modules\Contacts\Infrastructure\Persistence\Models\Channel;
+use App\Modules\Tenancy\Infrastructure\Persistence\Concerns\BelongsToDefaultTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,13 +12,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Conversation extends Model
 {
-    use HasUuids;
+    use BelongsToDefaultTenant, HasUuids;
 
     public $incrementing = false;
 
     protected $keyType = 'string';
 
-    protected $fillable = ['contact_id', 'channel_id', 'assigned_user_id', 'status', 'last_message_at', 'last_read_at'];
+    protected $fillable = ['company_id', 'branch_id', 'contact_id', 'channel_id', 'assigned_user_id', 'status', 'last_message_at', 'last_read_at'];
 
     protected function casts(): array
     {

@@ -37,6 +37,7 @@ class SendWhatsAppTemplateJob implements ShouldQueue
 
         $providerId = data_get($response, 'messages.0.id');
         $message->providerLogs()->create([
+            ...$message->tenantAttributes(),
             'provider' => 'whatsapp_cloud',
             'direction' => 'outbound',
             'event_type' => 'send_template',
@@ -58,6 +59,7 @@ class SendWhatsAppTemplateJob implements ShouldQueue
         if ($message = Message::find($this->messageId)) {
             $message->increment('retry_count');
             $message->providerLogs()->create([
+                ...$message->tenantAttributes(),
                 'provider' => 'whatsapp_cloud',
                 'direction' => 'outbound',
                 'event_type' => 'send_template_failed',

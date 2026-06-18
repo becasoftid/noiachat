@@ -5,6 +5,8 @@ namespace App\Modules\Messaging\Infrastructure\Persistence\Repositories;
 use App\Modules\Messaging\Domain\Repositories\MessageRepositoryInterface;
 use App\Modules\Messaging\Domain\Enums\MessageStatus;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
+use App\Modules\Tenancy\Application\Services\TenantContext;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EloquentMessageRepository implements MessageRepositoryInterface
@@ -16,7 +18,7 @@ class EloquentMessageRepository implements MessageRepositoryInterface
 
     public function paginateLatest(int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
-        return Message::query()
+        return $this->query()
             ->with(['contact', 'events'])
             ->when($filters['status'] ?? null, fn ($q, $value) => $q->where('status', $value))
             ->when($filters['type'] ?? null, fn ($q, $value) => $q->where('type', $value))
@@ -34,12 +36,12 @@ class EloquentMessageRepository implements MessageRepositoryInterface
 
     public function findByProviderMessageId(string $providerMessageId): ?Message
     {
-        return Message::query()->where('provider_message_id', $providerMessageId)->first();
+        return $this->query()->where('provider_message_id', $providerMessageId)->first();
     }
 
     public function findById(string $id): ?Message
     {
-        return Message::query()->find($id);
+        return $this->query()->find($id);
     }
 
     public function loadDetail(Message $message): Message
@@ -56,5 +58,13 @@ class EloquentMessageRepository implements MessageRepositoryInterface
             MessageStatus::BOUNCED->value,
             MessageStatus::BLOCKED_BY_POLICY->value,
         ];
+    }
+
+    private function query(): Builder
+    {
+        $query = Message::query();
+        $context = app(TenantContext::class);
+
+        return $context->companyId() !== null ? $query->forTenantContext($context) : $query;
     }
 }

@@ -12,6 +12,8 @@ use App\Modules\Contacts\Infrastructure\Persistence\Models\Contact;
 use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
+use App\Modules\Tenancy\Infrastructure\Persistence\Models\Branch;
+use App\Modules\Tenancy\Infrastructure\Persistence\Models\Company;
 use App\Modules\Users\Infrastructure\Persistence\Models\Role;
 use App\Modules\Webhooks\Infrastructure\Persistence\Models\OptOutRequest;
 use Database\Seeders\DatabaseSeeder;
@@ -134,8 +136,79 @@ class ContactMergeTest extends TestCase
         ])->assertSessionHasErrors('target_contact_id');
     }
 
+    public function test_admin_cannot_merge_contact_from_another_company(): void
+    {
+        $source = $this->makeContactInOtherCompany('573009990006');
+        $target = $this->makeContact('573009990007');
+
+        $this->actingAs($this->admin)->post(route('contacts.merge', $source), [
+            'target_contact_id' => $target->id,
+        ])->assertForbidden();
+    }
+
+    public function test_admin_cannot_update_contact_to_phone_active_in_same_company_channel(): void
+    {
+        $source = $this->makeContact('573009990008');
+        $target = $this->makeContact('573009990009');
+
+        $this->actingAs($this->admin)
+            ->from(route('contacts.edit', $source))
+            ->put(route('contacts.update', $source), [
+                'first_name' => 'Contacto',
+                'last_name' => 'Actualizado',
+                'email' => null,
+                'primary_phone' => $target->primary_phone,
+                'status' => 'active',
+            ])
+            ->assertRedirect(route('contacts.edit', $source))
+            ->assertSessionHasErrors('primary_phone');
+    }
+
     private function makeContact(string $phone): Contact
     {
         return app(ContactService::class)->create(new UpsertContactDTO('Contacto', $phone, null, $phone), $this->admin->id);
+    }
+
+    private function makeContactInOtherCompany(string $phone): Contact
+    {
+        $company = Company::create([
+            'name' => 'Merge otra empresa',
+            'slug' => 'merge-otra-empresa',
+            'status' => 'active',
+            'timezone' => 'America/Bogota',
+        ]);
+        $branch = Branch::create([
+            'company_id' => $company->id,
+            'name' => 'Merge otra empresa principal',
+            'code' => 'principal',
+            'timezone' => 'America/Bogota',
+            'is_active' => true,
+        ]);
+        $channel = Channel::create([
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'name' => 'WhatsApp merge otra',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => ['provider' => 'whatsapp_cloud'],
+        ]);
+        $contact = Contact::create([
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'first_name' => 'Contacto',
+            'full_name' => 'Contacto '.$phone,
+            'primary_phone' => $phone,
+            'status' => 'active',
+        ]);
+        $contact->contactChannels()->create([
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'channel_id' => $channel->id,
+            'phone' => $phone,
+            'is_primary' => true,
+            'is_active' => true,
+        ]);
+
+        return $contact;
     }
 }

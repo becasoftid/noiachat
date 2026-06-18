@@ -2,11 +2,15 @@
 
 namespace App\Modules\Messaging\Infrastructure\Persistence\Models;
 
+use App\Modules\Tenancy\Infrastructure\Persistence\Concerns\BelongsToDefaultTenant;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProviderLog extends Model
 {
-    protected $fillable = ['provider', 'direction', 'event_type', 'external_event_id', 'message_id', 'inbound_message_id', 'payload'];
+    use BelongsToDefaultTenant;
+
+    protected $fillable = ['company_id', 'branch_id', 'provider', 'direction', 'event_type', 'external_event_id', 'message_id', 'inbound_message_id', 'payload'];
 
     protected function casts(): array
     {
@@ -46,5 +50,15 @@ class ProviderLog extends Model
         return data_get($this->payload, 'error.error_data.details')
             ?? data_get($this->payload, 'error.details')
             ?? data_get($this->payload, 'details');
+    }
+
+    public function message(): BelongsTo
+    {
+        return $this->belongsTo(Message::class);
+    }
+
+    public function inboundMessage(): BelongsTo
+    {
+        return $this->belongsTo(InboundMessage::class);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Messaging\Infrastructure\Persistence\Models;
 
+use App\Modules\Tenancy\Infrastructure\Persistence\Concerns\BelongsToDefaultTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,13 +10,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class InboundMessage extends Model
 {
-    use HasUuids;
+    use BelongsToDefaultTenant, HasUuids;
 
     public $incrementing = false;
 
     protected $keyType = 'string';
 
-    protected $fillable = ['contact_id', 'channel_id', 'conversation_id', 'provider_message_id', 'from_phone', 'body', 'payload'];
+    protected $fillable = ['company_id', 'branch_id', 'contact_id', 'channel_id', 'conversation_id', 'provider_message_id', 'from_phone', 'body', 'payload'];
 
     protected function casts(): array
     {

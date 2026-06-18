@@ -17,6 +17,9 @@ use App\Modules\Messaging\Domain\Enums\MessageStatus;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
 use App\Modules\Messaging\Presentation\Requests\SendConversationMediaMessageRequest;
+use App\Modules\Tenancy\Application\Services\TenantContext;
+use App\Modules\Tenancy\Infrastructure\Persistence\Models\Branch;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
@@ -33,10 +36,12 @@ class ConversationController extends Controller
     public function index()
     {
         $conversation = $this->activeConversation();
+        $filters = $this->filters();
 
         return view('noia.conversations.index', [
-            'conversations' => $this->conversations->paginateLatest(20, $this->filters()),
-            'users' => User::query()->orderBy('name')->get(),
+            'conversations' => $this->conversations->paginateLatest(20, $filters),
+            'users' => $this->tenantUsersQuery(branchId: $conversation?->branch_id ?? ($filters['branch_id'] ?? null))->get(),
+            'branches' => $this->tenantBranches(),
             ...$this->conversationViewData($conversation),
         ]);
     }
@@ -55,7 +60,7 @@ class ConversationController extends Controller
         $conversation = $this->conversations->loadDetail($conversation);
 
         return view('noia.conversations.show', [
-            'users' => \App\Models\User::query()->orderBy('name')->get(),
+            'users' => $this->tenantUsersQuery(branchId: $conversation->branch_id)->get(),
             'sideConversations' => $this->conversations->paginateLatest(20, []),
             ...$this->conversationViewData($conversation),
         ]);
@@ -63,6 +68,10 @@ class ConversationController extends Controller
 
     public function assign(AssignConversationRequest $request, Conversation $conversation)
     {
+        if ($request->filled('assigned_user_id')) {
+            abort_unless($this->userCanBeAssignedToConversation((int) $request->integer('assigned_user_id'), $conversation), 403);
+        }
+
         $conversation->update([
             'assigned_user_id' => $request->input('assigned_user_id'),
             'status' => $request->string('status')->toString(),
@@ -74,6 +83,7 @@ class ConversationController extends Controller
     public function assignToMe(Conversation $conversation)
     {
         abort_unless(request()->user()?->can('messages.send'), 403);
+        abort_unless($this->userCanBeAssignedToConversation(request()->user()->id, $conversation), 403);
 
         $conversation->update([
             'assigned_user_id' => request()->user()->id,
@@ -118,6 +128,7 @@ class ConversationController extends Controller
     public function replyTemplate(ReplyConversationTemplateRequest $request, Conversation $conversation)
     {
         $template = MessageTemplate::query()
+            ->forTenantContext()
             ->with('currentVersion')
             ->where('channel_id', $conversation->channel_id)
             ->findOrFail((int) $request->integer('message_template_id'));
@@ -219,6 +230,7 @@ class ConversationController extends Controller
             'timeline' => $this->buildTimeline($conversation),
             'freeFormEligibility' => $this->compliance->decide($conversation->contact, $conversation->channel_id),
             'templates' => MessageTemplate::query()
+                ->forTenantContext()
                 ->with('currentVersion')
                 ->where('channel_id', $conversation->channel_id)
                 ->where('is_active', true)
@@ -229,6 +241,11 @@ class ConversationController extends Controller
     private function filters(): array
     {
         $filters = request()->only(['status', 'assigned_user_id', 'search', 'date_from', 'date_to']);
+        $branchId = request()->string('branch_id')->toString();
+
+        if ($this->canFilterByBranch() && $branchId !== '' && $this->tenantBranches()->contains('id', $branchId)) {
+            $filters['branch_id'] = $branchId;
+        }
 
         if (request()->boolean('mine')) {
             $filters['assigned_user_id'] = request()->user()->id;
@@ -245,5 +262,56 @@ class ConversationController extends Controller
             'resolved' => 'Resuelta',
             'closed' => 'Cerrada',
         ];
+    }
+
+    private function tenantUsersQuery(?string $branchId = null): Builder
+    {
+        $context = app(TenantContext::class);
+        $branchId = $branchId !== '' ? $branchId : null;
+
+        return User::query()
+            ->whereHas('memberships', function ($query) use ($context, $branchId): void {
+                $query->where('company_id', $context->companyId())
+                    ->where('is_active', true);
+
+                if ($branchId !== null) {
+                    $query->where(function ($branchQuery) use ($branchId): void {
+                        $branchQuery->where('branch_id', $branchId)
+                            ->orWhereNull('branch_id');
+                    });
+                } elseif ($context->branchId() !== null) {
+                    $query->where(function ($branchQuery) use ($context): void {
+                        $branchQuery->where('branch_id', $context->branchId())
+                            ->orWhereNull('branch_id');
+                    });
+                }
+            })
+            ->orderBy('name');
+    }
+
+    private function userCanBeAssignedToConversation(int $userId, Conversation $conversation): bool
+    {
+        return $this->tenantUsersQuery(branchId: $conversation->branch_id)->whereKey($userId)->exists();
+    }
+
+    private function tenantBranches(): Collection
+    {
+        $context = app(TenantContext::class);
+
+        if (! $this->canFilterByBranch()) {
+            return collect();
+        }
+
+        return Branch::query()
+            ->where('company_id', $context->companyId())
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function canFilterByBranch(): bool
+    {
+        return app(TenantContext::class)->companyId() !== null
+            && app(TenantContext::class)->branchId() === null;
     }
 }

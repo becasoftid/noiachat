@@ -3,6 +3,7 @@
 namespace App\Modules\Messaging\Infrastructure\Persistence\Models;
 
 use App\Modules\Compliance\Domain\Enums\EligibilityStatus;
+use App\Modules\Tenancy\Infrastructure\Persistence\Concerns\BelongsToDefaultTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,13 +12,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Message extends Model
 {
-    use HasUuids, SoftDeletes;
+    use BelongsToDefaultTenant, HasUuids, SoftDeletes;
 
     public $incrementing = false;
 
     protected $keyType = 'string';
 
-    protected $fillable = ['contact_id', 'channel_id', 'conversation_id', 'message_template_id', 'user_id', 'type', 'status', 'provider_message_id', 'body', 'retry_count', 'queued_at', 'sent_at', 'delivered_at', 'read_at', 'failed_at', 'meta'];
+    protected $fillable = ['company_id', 'branch_id', 'contact_id', 'channel_id', 'conversation_id', 'message_template_id', 'user_id', 'type', 'status', 'provider_message_id', 'body', 'retry_count', 'queued_at', 'sent_at', 'delivered_at', 'read_at', 'failed_at', 'meta'];
 
     protected function casts(): array
     {
@@ -34,6 +35,11 @@ class Message extends Model
     public function contact(): BelongsTo
     {
         return $this->belongsTo(\App\Modules\Contacts\Infrastructure\Persistence\Models\Contact::class);
+    }
+
+    public function channel(): BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Contacts\Infrastructure\Persistence\Models\Channel::class);
     }
 
     public function conversation(): BelongsTo
