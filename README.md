@@ -469,6 +469,8 @@ php artisan view:cache
 - Cambia `NOIACHAT_ADMIN_PASSWORD` antes de usar el sistema fuera de local.
 - Los roles administrativos (`admin`, `super_admin`, `company_admin`, `branch_manager`) requieren 2FA OTP por email. Configura el mailer real antes de produccion y ajusta `NOIACHAT_2FA_CODE_TTL_MINUTES`, `NOIACHAT_2FA_MAX_ATTEMPTS` o `NOIACHAT_2FA_EXPOSE_CODE_NON_PROD` si necesitas cambiar la politica local.
 - El registro publico crea una empresa, una sede inicial, una membresia `company_admin` limitada a esa empresa y una suscripcion `trialing` al plan `basic_trial` definido en base de datos.
+- El onboarding publico esta documentado en [docs/onboarding-registro-trial.md](docs/onboarding-registro-trial.md): incluye flujo `/register`, UI de trial, mensajes de validacion en espanol y checklist productivo.
+- Para mensajes de validacion en espanol, usa `APP_LOCALE=es` en produccion y regenera cache de configuracion durante el despliegue.
 - Usa tokens de WhatsApp con el menor alcance posible.
 - Revisa logs de proveedor y auditoria para trazabilidad.
 - Protege el endpoint publico de webhooks con verificacion de token.

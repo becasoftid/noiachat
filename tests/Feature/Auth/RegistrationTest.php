@@ -80,4 +80,22 @@ class RegistrationTest extends TestCase
         $response->assertSessionHasErrors(['company_name', 'branch_name']);
         $this->assertGuest();
     }
+
+    public function test_registration_validation_messages_are_in_spanish(): void
+    {
+        $response = $this->from('/register')->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'company_name' => 'Clinica Aurora',
+            'branch_name' => 'Sede Principal',
+            'password' => 'password',
+            'password_confirmation' => 'different-password',
+        ]);
+
+        $response->assertRedirect('/register');
+        $response->assertSessionHasErrors([
+            'password' => 'La confirmacion de contrasena no coincide.',
+        ]);
+        $this->assertGuest();
+    }
 }

@@ -47,6 +47,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Gobierno de rotacion del token WhatsApp por canal: expiracion, ultima rotacion, responsable, procedimiento y alertas en monitor de salud.
 - 2FA OTP por email para roles administrativos (`admin`, `super_admin`, `company_admin` y `branch_manager`) antes de acceder al panel.
 - Onboarding de prueba basica desde `/register`: crea usuario responsable, empresa, sede inicial, membresia `company_admin` y suscripcion `trialing` al plan `basic_trial`.
+- Manual de onboarding publico en `docs/onboarding-registro-trial.md`, con flujo `/register`, reglas de trial, validaciones en espanol y checklist.
 - Modelo inicial de planes, suscripciones y features por plan: tablas `plans`, `company_subscriptions`, `features` y `plan_features`, con seeders de `basic_trial`, `basic`, `pro` y `enterprise`.
 - Servicio central de evaluacion de planes y suscripciones para validar estado operativo, features incluidas, limites y dias restantes de trial.
 - Middleware `feature` para bloquear rutas cuando el plan de la empresa no incluye una funcionalidad, aplicado inicialmente a usuarios, sedes/membresias y settings/plantillas.
@@ -86,6 +87,10 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Ajuste de la integracion de WhatsApp para excluir el webhook de la validacion CSRF y leer credenciales desde `config/services.php`, compatible con cache de configuracion en produccion.
 - Estandarizacion visual de las vistas del panel, formularios, tablas, modales, navegacion, pantallas de cuenta y alertas globales para alinearlas con el nuevo lenguaje grafico aplicado al login.
 - Redisenio de la pantalla de login con una interfaz moderna para NoiaChat, panel visual de marca, formulario responsive y estilos enfocados en una aplicacion operativa de mensajeria y compliance.
+- Ajuste de la pantalla de login para mostrar la accion `Crear cuenta de prueba`.
+- Redisenio de `/register` como vista dedicada para onboarding trial, con secciones de responsable, empresa, sede inicial y seguridad.
+- Ajuste de los campos de contrasena en `/register` para permitir mostrar/ocultar el valor ingresado.
+- Localizacion de mensajes de validacion a espanol mediante `lang/es/validation.php`, compatibilidad temporal en `lang/en/validation.php` y `APP_LOCALE=es` como base.
 - Redisenio operativo de conversaciones con distribucion tipo WhatsApp Web: inbox lateral, filas compactas, conversacion activa, burbujas, agrupacion por fecha y compositor inferior.
 - Ajuste del inbox de conversaciones para operar como panel de trabajo con filtros compactos, listado con scroll y estado vacio cuando no hay conversacion seleccionada.
 - Ajuste del flujo de conversaciones para cargar el chat activo dentro de `/conversations?conversation=...`, manteniendo una sola vista operativa.

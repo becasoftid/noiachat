@@ -1,12 +1,13 @@
 # Billing: matriz comercial y checklist operativo
 
-Ultima actualizacion: 2026-06-18
+Ultima actualizacion: 2026-06-19
 
 Este documento deja operable el modelo de planes y suscripciones de NoiaChat. Su objetivo es que soporte, comercial y administracion puedan explicar planes, cambiar suscripciones y validar una salida productiva sin tocar base de datos.
 
 ## Estado actual
 
 - El registro publico crea una empresa, sede inicial, usuario `company_admin` y suscripcion `trialing` al plan `basic_trial`.
+- El flujo publico de alta, la vista `/register`, los mensajes de validacion en espanol y el checklist de onboarding estan documentados en `docs/onboarding-registro-trial.md`.
 - Los planes, features y limites viven en base de datos: `plans`, `features`, `plan_features` y `company_subscriptions`.
 - El panel `/billing` muestra plan actual, estado, dias restantes, limites usados/disponibles y features incluidas.
 - El panel `/billing` muestra un catalogo comercial comparativo con metadata de audiencia, etiqueta comercial, precio/nota comercial y limites por plan.
