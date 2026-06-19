@@ -56,6 +56,12 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Panel `/billing` de plan y suscripcion con estado, dias restantes, limites consumidos, features incluidas y cambio manual auditado para `super_admin`.
 - Manual comercial de billing en `docs/billing-checklist-comercial.md` con matriz de planes/features, estados de suscripcion, procedimientos y checklist productivo.
 - Catalogo comercial comparativo en `/billing` usando metadata de planes y flujo interno de solicitudes de upgrade con aprobacion/rechazo auditados.
+- Plan `WA-COM-001` a `WA-COM-010` en `docs/whatsapp-comercial-empresa.md` para construir la configuracion comercial de WhatsApp por empresa/sede separada de `/settings` tecnico.
+- Pantalla comercial `/integrations/whatsapp` para listar canales WhatsApp de la empresa/sede activa con estado, credenciales enmascaradas y acceso desde menu comercial.
+- Alta y edicion comercial de canales WhatsApp desde `/integrations/whatsapp`, con credenciales Meta por empresa/sede, preservacion de secretos vacios, limite por plan y auditoria sin secretos completos.
+- Prueba comercial de conexion con Meta y sincronizacion de plantillas por canal desde `/integrations/whatsapp`.
+- Estado operativo por canal WhatsApp y checklist comercial de datos Meta en `/integrations/whatsapp`.
+- Pruebas de aislamiento para integraciones WhatsApp comerciales entre empresas y comando `noiachat:whatsapp-commercial-validate` para validar canales reales contra Meta.
 - Configuracion Supervisor para worker permanente de colas en `deploy/supervisor/noiachat-worker.conf` y manual operativo en `docs/deploy-workers.md`.
 - Comando `noiachat:backup`, cron de backups automaticos y manual operativo/restauracion en `docs/deploy-backups.md`.
 - Manual paso a paso de integracion con WhatsApp Cloud API en `docs/integracion-whatsapp.md`.
@@ -94,6 +100,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Ajuste del registro trial para inicializar el catalogo base de billing si `basic_trial` no esta activo en el entorno.
 - Ajuste del menu y permisos para que usuarios comerciales de trial no vean ni accedan a modulos tecnicos de plataforma como Fallos, Salud, Auditoria o Configuracion WhatsApp.
 - Ajuste del modulo Usuarios/Empresa para que empresas comerciales no vean administradores globales ni puedan asignar roles `admin` o `super_admin`.
+- Separacion inicial del permiso comercial `whatsapp.integration.manage` para que la futura configuracion WhatsApp empresarial no dependa de `platform.access`.
 - Redisenio operativo de conversaciones con distribucion tipo WhatsApp Web: inbox lateral, filas compactas, conversacion activa, burbujas, agrupacion por fecha y compositor inferior.
 - Ajuste del inbox de conversaciones para operar como panel de trabajo con filtros compactos, listado con scroll y estado vacio cuando no hay conversacion seleccionada.
 - Ajuste del flujo de conversaciones para cargar el chat activo dentro de `/conversations?conversation=...`, manteniendo una sola vista operativa.

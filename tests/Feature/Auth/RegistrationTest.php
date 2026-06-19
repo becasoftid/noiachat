@@ -5,12 +5,16 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use App\Modules\Billing\Infrastructure\Persistence\Models\CompanySubscription;
 use App\Modules\Billing\Infrastructure\Persistence\Models\Plan;
+use App\Modules\Contacts\Infrastructure\Persistence\Models\Channel;
+use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
+use App\Modules\Tenancy\Application\Services\TenantContext;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Branch;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Company;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Membership;
 use App\Modules\Users\Infrastructure\Persistence\Models\Role;
 use Database\Seeders\BillingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -145,6 +149,7 @@ class RegistrationTest extends TestCase
             ->assertSee('Mensajes')
             ->assertSee('Conversaciones')
             ->assertSee('Empresa')
+            ->assertSee('href="'.route('whatsapp.channels.index').'"', false)
             ->assertSee('Plan')
             ->assertSee('Usuarios')
             ->assertDontSee('Fallos')
@@ -317,5 +322,606 @@ class RegistrationTest extends TestCase
                 'is_active' => '1',
             ])
             ->assertSessionHasErrors('role_id');
+    }
+
+    public function test_company_admin_has_commercial_whatsapp_permission_without_platform_access(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-whatsapp@example.com',
+            'company_name' => 'Empresa WhatsApp',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $companyAdmin = User::query()->where('email', 'comercial-whatsapp@example.com')->firstOrFail();
+        app(TenantContext::class)->setMembership($companyAdmin->memberships()->with('role')->firstOrFail());
+
+        $this->assertTrue($companyAdmin->can('admin.access'));
+        $this->assertTrue($companyAdmin->can('whatsapp.integration.manage'));
+        $this->assertFalse($companyAdmin->can('platform.access'));
+    }
+
+    public function test_operator_cannot_manage_commercial_whatsapp_integration(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-operador-whatsapp@example.com',
+            'company_name' => 'Empresa Operador WhatsApp',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $company = Company::query()->where('name', 'Empresa Operador WhatsApp')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+        $operatorRole = Role::query()->firstOrCreate(['name' => 'operator'], ['label' => 'Operator']);
+        $operator = User::factory()->create([
+            'name' => 'Operador WhatsApp',
+            'email' => 'operador-whatsapp@example.com',
+        ]);
+        $operator->roles()->attach($operatorRole->id);
+        $membership = Membership::query()->create([
+            'user_id' => $operator->id,
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'role_id' => $operatorRole->id,
+            'is_default' => true,
+            'is_active' => true,
+        ]);
+
+        app(TenantContext::class)->setMembership($membership->load('role'));
+
+        $this->assertFalse($operator->can('admin.access'));
+        $this->assertFalse($operator->can('whatsapp.integration.manage'));
+        $this->assertFalse($operator->can('platform.access'));
+
+        $this->actingAs($operator)
+            ->get(route('whatsapp.channels.index'))
+            ->assertForbidden();
+    }
+
+    public function test_company_admin_can_open_commercial_whatsapp_channels_screen(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-whatsapp-vista@example.com',
+            'company_name' => 'Empresa WhatsApp Vista',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->get(route('whatsapp.channels.index'))
+            ->assertOk()
+            ->assertSee('Canales WhatsApp')
+            ->assertSee('WhatsApp Cloud API')
+            ->assertSee('Checklist Meta')
+            ->assertSee('Sin canales WhatsApp');
+    }
+
+    public function test_company_admin_can_create_commercial_whatsapp_channel(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-whatsapp-crear@example.com',
+            'company_name' => 'Empresa WhatsApp Crear',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $company = Company::query()->where('name', 'Empresa WhatsApp Crear')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+
+        $this->post(route('whatsapp.channels.store'), [
+            'name' => 'WhatsApp Principal',
+            'branch_id' => $branch->id,
+            'is_active' => '1',
+            'settings' => [
+                'api_base_url' => 'https://graph.facebook.com/v21.0',
+                'phone_number_id' => '123456789012',
+                'business_account_id' => '987654321098',
+                'access_token' => 'token_comercial_1234567890',
+                'webhook_verify_token' => 'verify-token',
+                'app_secret' => 'app_secret_1234567890',
+                'access_token_expires_at' => '2026-12-31',
+                'access_token_rotated_at' => '2026-06-19',
+                'access_token_responsible' => 'Equipo Comercial',
+                'access_token_rotation_procedure' => 'Rotar token y validar envio.',
+            ],
+        ])->assertRedirect(route('whatsapp.channels.index'));
+
+        $channel = Channel::query()
+            ->where('company_id', $company->id)
+            ->where('branch_id', $branch->id)
+            ->where('slug', 'whatsapp')
+            ->firstOrFail();
+
+        $this->assertSame('WhatsApp Principal', $channel->name);
+        $this->assertTrue($channel->is_active);
+        $this->assertSame('whatsapp_cloud', data_get($channel->settings, 'provider'));
+        $this->assertSame('123456789012', data_get($channel->settings, 'phone_number_id'));
+        $this->assertSame('987654321098', data_get($channel->settings, 'business_account_id'));
+        $this->assertSame('token_comercial_1234567890', data_get($channel->settings, 'access_token'));
+        $this->assertSame('verify-token', data_get($channel->settings, 'webhook_verify_token'));
+    }
+
+    public function test_company_admin_can_update_commercial_whatsapp_channel_without_replacing_secrets(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-whatsapp-editar@example.com',
+            'company_name' => 'Empresa WhatsApp Editar',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $company = Company::query()->where('name', 'Empresa WhatsApp Editar')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+        $channel = Channel::query()->create([
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'name' => 'WhatsApp Viejo',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => [
+                'provider' => 'whatsapp_cloud',
+                'access_token' => 'token_original_1234567890',
+                'webhook_verify_token' => 'verify-original',
+                'app_secret' => 'app_secret_original',
+            ],
+        ]);
+
+        $this->patch(route('whatsapp.channels.update', $channel), [
+            'name' => 'WhatsApp Actualizado',
+            'branch_id' => $branch->id,
+            'is_active' => '1',
+            'settings' => [
+                'api_base_url' => 'https://graph.facebook.com/v21.0',
+                'phone_number_id' => '111222333444',
+                'business_account_id' => '444333222111',
+                'access_token' => '',
+                'webhook_verify_token' => '',
+                'app_secret' => '',
+                'access_token_responsible' => 'Mesa de ayuda',
+            ],
+        ])->assertRedirect(route('whatsapp.channels.index'));
+
+        $channel->refresh();
+
+        $this->assertSame('WhatsApp Actualizado', $channel->name);
+        $this->assertSame('111222333444', data_get($channel->settings, 'phone_number_id'));
+        $this->assertSame('444333222111', data_get($channel->settings, 'business_account_id'));
+        $this->assertSame('token_original_1234567890', data_get($channel->settings, 'access_token'));
+        $this->assertSame('verify-original', data_get($channel->settings, 'webhook_verify_token'));
+        $this->assertSame('app_secret_original', data_get($channel->settings, 'app_secret'));
+        $this->assertSame('Mesa de ayuda', data_get($channel->settings, 'access_token_responsible'));
+    }
+
+    public function test_operator_cannot_create_commercial_whatsapp_channel(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-whatsapp-operador-post@example.com',
+            'company_name' => 'Empresa WhatsApp Operador Post',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $company = Company::query()->where('name', 'Empresa WhatsApp Operador Post')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+        $operatorRole = Role::query()->firstOrCreate(['name' => 'operator'], ['label' => 'Operator']);
+        $operator = User::factory()->create(['email' => 'operador-whatsapp-post@example.com']);
+        $operator->roles()->attach($operatorRole->id);
+        Membership::query()->create([
+            'user_id' => $operator->id,
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'role_id' => $operatorRole->id,
+            'is_default' => true,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($operator)
+            ->post(route('whatsapp.channels.store'), [
+                'name' => 'WhatsApp Operador',
+                'branch_id' => $branch->id,
+                'is_active' => '1',
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_company_admin_can_test_commercial_whatsapp_channel_connection(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-whatsapp-test@example.com',
+            'company_name' => 'Empresa WhatsApp Test',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $company = Company::query()->where('name', 'Empresa WhatsApp Test')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+        $channel = Channel::query()->create([
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'name' => 'WhatsApp Test',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => [
+                'provider' => 'whatsapp_cloud',
+                'api_base_url' => 'https://graph.facebook.test/v21.0',
+                'phone_number_id' => '123456789012',
+                'business_account_id' => '987654321098',
+                'access_token' => 'token_test_1234567890',
+            ],
+        ]);
+
+        Http::fake([
+            'graph.facebook.test/v21.0/123456789012*' => Http::response([
+                'id' => '123456789012',
+                'display_phone_number' => '+57 300 000 0000',
+                'verified_name' => 'Empresa Test',
+            ]),
+            'graph.facebook.test/v21.0/987654321098*' => Http::response([
+                'id' => '987654321098',
+                'name' => 'WABA Test',
+            ]),
+        ]);
+
+        $this->post(route('whatsapp.channels.test', $channel))
+            ->assertRedirect(route('whatsapp.channels.index'))
+            ->assertSessionHas('status', 'Conexion con Meta validada.');
+
+        $channel->refresh();
+
+        $this->assertSame('Empresa Test', data_get($channel->settings, 'last_connection_test.verified_name'));
+        $this->assertSame('WABA Test', data_get($channel->settings, 'last_connection_test.business_name'));
+        Http::assertSent(fn ($request): bool => str_contains($request->url(), '/123456789012'));
+        Http::assertSent(fn ($request): bool => str_contains($request->url(), '/987654321098'));
+    }
+
+    public function test_commercial_whatsapp_connection_reports_missing_credentials(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-whatsapp-missing@example.com',
+            'company_name' => 'Empresa WhatsApp Missing',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $company = Company::query()->where('name', 'Empresa WhatsApp Missing')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+        $channel = Channel::query()->create([
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'name' => 'WhatsApp Missing',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => ['provider' => 'whatsapp_cloud'],
+        ]);
+
+        $this->post(route('whatsapp.channels.test', $channel))
+            ->assertRedirect(route('whatsapp.channels.index'))
+            ->assertSessionHas('error', fn (string $message) => str_contains($message, 'Faltan credenciales'));
+    }
+
+    public function test_company_admin_can_sync_templates_from_commercial_whatsapp_channel(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-whatsapp-sync@example.com',
+            'company_name' => 'Empresa WhatsApp Sync',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $company = Company::query()->where('name', 'Empresa WhatsApp Sync')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+        $channel = Channel::query()->create([
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'name' => 'WhatsApp Sync',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => [
+                'provider' => 'whatsapp_cloud',
+                'api_base_url' => 'https://graph.facebook.test/v21.0',
+                'business_account_id' => '987654321098',
+                'access_token' => 'token_sync_1234567890',
+            ],
+        ]);
+
+        Http::fake([
+            'graph.facebook.test/v21.0/987654321098/message_templates*' => Http::response([
+                'data' => [[
+                    'id' => 'meta-template-comercial',
+                    'name' => 'bienvenida_comercial',
+                    'language' => 'es',
+                    'status' => 'APPROVED',
+                    'category' => 'UTILITY',
+                    'components' => [
+                        ['type' => 'BODY', 'text' => 'Hola {{1}}, bienvenido.'],
+                    ],
+                ]],
+            ]),
+        ]);
+
+        $this->post(route('whatsapp.channels.sync-templates', $channel))
+            ->assertRedirect(route('whatsapp.channels.index'))
+            ->assertSessionHas('status', fn (string $message) => str_contains($message, '1 plantillas'));
+
+        $template = MessageTemplate::query()->where('meta_template_id', 'meta-template-comercial')->firstOrFail();
+
+        $this->assertSame($channel->id, $template->channel_id);
+        $this->assertSame($company->id, $template->company_id);
+        $this->assertSame($branch->id, $template->branch_id);
+        $this->assertSame('Hola {{1}}, bienvenido.', $template->currentVersion->body);
+    }
+
+    public function test_commercial_whatsapp_screen_shows_operational_status(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-whatsapp-estado@example.com',
+            'company_name' => 'Empresa WhatsApp Estado',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $company = Company::query()->where('name', 'Empresa WhatsApp Estado')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+        $secondBranch = Branch::query()->create([
+            'company_id' => $company->id,
+            'name' => 'Secundaria',
+            'code' => 'secundaria',
+            'timezone' => 'America/Bogota',
+            'is_active' => true,
+        ]);
+
+        Channel::query()->create([
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'name' => 'WhatsApp Incompleto',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => ['provider' => 'whatsapp_cloud'],
+        ]);
+
+        $readyChannel = Channel::query()->create([
+            'company_id' => $company->id,
+            'branch_id' => $secondBranch->id,
+            'name' => 'WhatsApp Listo',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => [
+                'provider' => 'whatsapp_cloud',
+                'phone_number_id' => '123456789012',
+                'business_account_id' => '987654321098',
+                'access_token' => 'token_estado_1234567890',
+                'webhook_verify_token' => 'verify-estado',
+                'access_token_expires_at' => now()->addDays(60)->format('Y-m-d'),
+                'last_connection_test' => [
+                    'verified_name' => 'Empresa Estado',
+                    'tested_at' => now()->toISOString(),
+                ],
+            ],
+        ]);
+        $readyChannel->update(['branch_id' => null]);
+
+        $this->get(route('whatsapp.channels.index'))
+            ->assertOk()
+            ->assertSee('Configuracion incompleta')
+            ->assertSee('Configurar Phone Number ID')
+            ->assertSee('Falta probar conexion con Meta.')
+            ->assertSee('Listo para operar')
+            ->assertSee('Ultima conexion validada');
+    }
+
+    public function test_commercial_whatsapp_channels_are_isolated_between_companies(): void
+    {
+        [$adminA, $companyA, $branchA] = $this->registerTrialCompany('Admin A', 'admin-a@example.com', 'Empresa A WA');
+        [$adminB, $companyB, $branchB] = $this->registerTrialCompany('Admin B', 'admin-b@example.com', 'Empresa B WA');
+
+        $channelA = Channel::query()->create([
+            'company_id' => $companyA->id,
+            'branch_id' => $branchA->id,
+            'name' => 'WhatsApp Empresa A',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => [
+                'provider' => 'whatsapp_cloud',
+                'phone_number_id' => '111111111111',
+            ],
+        ]);
+
+        $channelB = Channel::query()->create([
+            'company_id' => $companyB->id,
+            'branch_id' => $branchB->id,
+            'name' => 'WhatsApp Empresa B',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => [
+                'provider' => 'whatsapp_cloud',
+                'phone_number_id' => '222222222222',
+            ],
+        ]);
+
+        $this->actingAs($adminA)
+            ->withSession($this->tenantSession($adminA))
+            ->get(route('whatsapp.channels.index'))
+            ->assertOk()
+            ->assertSee('WhatsApp Empresa A')
+            ->assertDontSee('WhatsApp Empresa B')
+            ->assertDontSee('222222222222');
+
+        $this->actingAs($adminB)
+            ->withSession($this->tenantSession($adminB))
+            ->get(route('whatsapp.channels.index'))
+            ->assertOk()
+            ->assertSee('WhatsApp Empresa B')
+            ->assertDontSee('WhatsApp Empresa A')
+            ->assertDontSee('111111111111');
+
+        $this->assertNotSame($channelA->id, $channelB->id);
+    }
+
+    public function test_company_admin_cannot_manage_other_company_whatsapp_channel_by_direct_url(): void
+    {
+        [$adminA] = $this->registerTrialCompany('Admin Cruzado A', 'admin-cruzado-a@example.com', 'Empresa Cruzada A');
+        [, $companyB, $branchB] = $this->registerTrialCompany('Admin Cruzado B', 'admin-cruzado-b@example.com', 'Empresa Cruzada B');
+
+        $foreignChannel = Channel::query()->create([
+            'company_id' => $companyB->id,
+            'branch_id' => $branchB->id,
+            'name' => 'WhatsApp Ajeno',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => [
+                'provider' => 'whatsapp_cloud',
+                'api_base_url' => 'https://graph.facebook.test/v21.0',
+                'phone_number_id' => '333333333333',
+                'business_account_id' => '444444444444',
+                'access_token' => 'token_ajeno_1234567890',
+            ],
+        ]);
+
+        $this->actingAs($adminA)
+            ->withSession($this->tenantSession($adminA))
+            ->patch(route('whatsapp.channels.update', $foreignChannel), [
+                'name' => 'Intento Cruzado',
+                'branch_id' => $branchB->id,
+                'is_active' => '1',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($adminA)
+            ->withSession($this->tenantSession($adminA))
+            ->post(route('whatsapp.channels.test', $foreignChannel))
+            ->assertForbidden();
+
+        $this->actingAs($adminA)
+            ->withSession($this->tenantSession($adminA))
+            ->post(route('whatsapp.channels.sync-templates', $foreignChannel))
+            ->assertForbidden();
+
+        $foreignChannel->refresh();
+
+        $this->assertSame('WhatsApp Ajeno', $foreignChannel->name);
+        $this->assertNull(data_get($foreignChannel->settings, 'last_connection_test'));
+    }
+
+    public function test_company_admin_cannot_create_whatsapp_channel_for_other_company_branch(): void
+    {
+        [$adminA] = $this->registerTrialCompany('Admin Sede A', 'admin-sede-a@example.com', 'Empresa Sede A');
+        [, , $branchB] = $this->registerTrialCompany('Admin Sede B', 'admin-sede-b@example.com', 'Empresa Sede B');
+
+        $this->actingAs($adminA)
+            ->withSession($this->tenantSession($adminA))
+            ->post(route('whatsapp.channels.store'), [
+                'name' => 'WhatsApp Sede Ajena',
+                'branch_id' => $branchB->id,
+                'is_active' => '1',
+            ])
+            ->assertSessionHasErrors('branch_id');
+    }
+
+    public function test_commercial_whatsapp_real_validation_command_succeeds_with_fake_meta(): void
+    {
+        [, $company, $branch] = $this->registerTrialCompany('Admin Comando', 'admin-comando@example.com', 'Empresa Comando WA');
+        $channel = Channel::query()->create([
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'name' => 'WhatsApp Comando',
+            'slug' => 'whatsapp',
+            'is_active' => true,
+            'settings' => [
+                'provider' => 'whatsapp_cloud',
+                'api_base_url' => 'https://graph.facebook.test/v21.0',
+                'phone_number_id' => '555555555555',
+                'business_account_id' => '666666666666',
+                'access_token' => 'token_comando_1234567890',
+            ],
+        ]);
+
+        Http::fake([
+            'graph.facebook.test/v21.0/555555555555*' => Http::response([
+                'id' => '555555555555',
+                'display_phone_number' => '+57 300 555 5555',
+                'verified_name' => 'Empresa Comando',
+            ]),
+            'graph.facebook.test/v21.0/666666666666/message_templates*' => Http::response([
+                'data' => [[
+                    'id' => 'meta-template-command',
+                    'name' => 'validacion_comando',
+                    'language' => 'es',
+                    'status' => 'APPROVED',
+                    'category' => 'UTILITY',
+                    'components' => [
+                        ['type' => 'BODY', 'text' => 'Validacion {{1}}.'],
+                    ],
+                ]],
+            ]),
+            'graph.facebook.test/v21.0/666666666666*' => Http::response([
+                'id' => '666666666666',
+                'name' => 'WABA Comando',
+            ]),
+        ]);
+
+        $this->artisan('noiachat:whatsapp-commercial-validate', [
+            'channel_id' => $channel->id,
+            '--sync-templates' => true,
+        ])->assertExitCode(0);
+
+        $channel->refresh();
+
+        $this->assertSame('Empresa Comando', data_get($channel->settings, 'last_connection_test.verified_name'));
+        $this->assertDatabaseHas('message_templates', [
+            'channel_id' => $channel->id,
+            'meta_template_id' => 'meta-template-command',
+            'name' => 'validacion_comando',
+        ]);
+    }
+
+    private function registerTrialCompany(string $name, string $email, string $companyName): array
+    {
+        auth()->guard()->logout();
+        $this->app['session']->flush();
+
+        $this->post('/register', [
+            'name' => $name,
+            'email' => $email,
+            'company_name' => $companyName,
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $user = User::query()->where('email', $email)->firstOrFail();
+        $company = Company::query()->where('name', $companyName)->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+
+        return [$user, $company, $branch];
+    }
+
+    private function tenantSession(User $user): array
+    {
+        $membership = $user->memberships()->firstOrFail();
+
+        return [
+            'tenant.membership_id' => $membership->id,
+            'tenant.company_id' => $membership->company_id,
+            'tenant.branch_id' => $membership->branch_id,
+        ];
     }
 }

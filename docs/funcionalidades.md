@@ -71,6 +71,16 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | WA-005 | WhatsApp | Firma de webhook `X-Hub-Signature-256` | Operativo | P0 | Validacion HMAC-SHA256 con `WHATSAPP_APP_SECRET` y pruebas automatizadas | Configurar app secret en produccion y verificar evento real. |
 | WA-006 | WhatsApp | Manejo de errores de proveedor | Operativo | P0 | Errores se marcan como `failed`, se muestran en detalle/timeline y se consolidan en `/failures` con codigo, descripcion y accion sugerida | Agregar alertas proactivas si se repite el mismo error. |
 | WA-007 | WhatsApp | Token permanente y rotacion | Operativo | P0 | Settings registra token enmascarado, expiracion, ultima rotacion, responsable y procedimiento; `/health` alerta tokens vencidos o sin gobierno | Conectar alerta externa si se requiere aviso antes del vencimiento. |
+| WA-COM-001 | WhatsApp comercial | Pantalla comercial de canales WhatsApp | MVP | P1 | Ruta `/integrations/whatsapp`, menu comercial `WhatsApp`, listado de canales del tenant activo, credenciales enmascaradas y pruebas en `tests/Feature/Auth/RegistrationTest.php` | Implementar crear/editar canal y credenciales en `WA-COM-003/004`. |
+| WA-COM-002 | WhatsApp comercial | Permisos comerciales para integraciones | MVP | P1 | Gate `whatsapp.integration.manage` aplicado a rutas/controlador comerciales; `company_admin` lo tiene sin `platform.access`, `operator` no; pruebas en `tests/Feature/Auth/RegistrationTest.php` | Mantenerlo separado de `platform.access` al ampliar integraciones comerciales. |
+| WA-COM-003 | WhatsApp comercial | Crear/editar canal por empresa/sede | MVP | P1 | Rutas comerciales `POST/PATCH /integrations/whatsapp/channels`, aislamiento por empresa/sede, limite de plan y pruebas en `tests/Feature/Auth/RegistrationTest.php` | Validar UX con varias sedes y conectar prueba de conexion Meta. |
+| WA-COM-004 | WhatsApp comercial | Formulario seguro de credenciales Meta | MVP | P1 | Formulario captura IDs Meta, secretos, URL Graph API y metadata de rotacion; conserva secretos vacios y audita sin exponer valores completos | Agregar accion de prueba de conexion y mejorar ayudas de captura desde Meta. |
+| WA-COM-005 | WhatsApp comercial | Prueba de conexion con Meta | MVP | P1 | Ruta comercial por canal valida credenciales contra Meta, guarda `last_connection_test`, muestra errores legibles y tiene pruebas en `RegistrationTest` | Validar contra una app/numero real de Meta. |
+| WA-COM-006 | WhatsApp comercial | Sincronizacion comercial de plantillas | MVP | P1 | Boton comercial por canal reutiliza `WhatsAppTemplateSyncService`, sincroniza dentro de empresa/sede y tiene pruebas en `RegistrationTest` | Validar sync con plantillas aprobadas reales. |
+| WA-COM-007 | WhatsApp comercial | Estado operativo del canal | MVP | P2 | Vista comercial muestra `Listo para operar`, `Requiere revision` o `Configuracion incompleta` segun credenciales, prueba de conexion, estado y expiracion | Validar copy con usuario comercial y conectar alertas externas si aplica. |
+| WA-COM-008 | WhatsApp comercial | Guia en pantalla y documentacion operativa | MVP | P2 | Checklist Meta en `/integrations/whatsapp` explica datos necesarios y orden de validacion sin exponer secretos | Convertir checklist en ayuda expandible si la pantalla crece. |
+| WA-COM-009 | WhatsApp comercial | Pruebas de aislamiento y permisos | MVP | P1 | Pruebas cubren listado aislado por empresa, bloqueo de editar/probar/sincronizar canal ajeno y bloqueo de sede ajena en `RegistrationTest` | Mantener estas pruebas al ampliar integraciones comerciales. |
+| WA-COM-010 | WhatsApp comercial | Validacion con numero real | MVP | P1 | Comando `noiachat:whatsapp-commercial-validate {channel_id} --sync-templates` y checklist documentado en `docs/whatsapp-comercial-empresa.md` | Ejecutar en staging/produccion con numero real de Meta y registrar evidencia. |
 | MSG-001 | Mensajeria | Cola de mensajes de texto | Operativo | P0 | Envio real por WhatsApp | Mantener worker permanente. |
 | MSG-002 | Mensajeria | Envio de imagen/documento | Operativo | P0 | Compliance cubierto; jobs usan URL publica HTTPS y fallan con motivo claro si el archivo no es accesible | Validar envio real en produccion con dominio final y certificado vigente. |
 | MSG-003 | Mensajeria | Envio por plantilla | Operativo | P0 | Plantillas sincronizadas con Meta, estado visible, no aprobadas bloqueadas y variables exactas validadas antes de encolar | Probar envio real con plantilla aprobada en Meta. |
@@ -118,6 +128,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 - Validacion productiva de despliegue multiempresa.
 - Reglas de upgrade y conversion comercial del plan basico de prueba.
 - Validar tarifas, copy comercial y flujo de upgrade antes de produccion publica.
+- Crear configuracion comercial de WhatsApp por empresa/sede (`WA-COM-001` a `WA-COM-010`) separada de `/settings` tecnico.
 
 ### P2 - Mejora
 
@@ -172,6 +183,13 @@ Una funcionalidad solo debe pasar a `Operativo` si cumple:
 | 2026-06-19 | ONBOARD-001 ajustado: login enlaza al registro trial, `/register` reorganizado, campos de contrasena con mostrar/ocultar, validaciones en espanol y manual `docs/onboarding-registro-trial.md`. | Equipo NoiaChat |
 | 2026-06-19 | ONBOARD-001 endurecido: usuario comercial de trial ve menu operativo y no accede a modulos tecnicos de plataforma por menu ni URL directa. | Equipo NoiaChat |
 | 2026-06-19 | AUTH-003 endurecido: usuarios comerciales no ven ni editan administradores globales en Usuarios/Membresias y no pueden asignar roles globales. | Equipo NoiaChat |
+| 2026-06-19 | WA-COM-001 a WA-COM-010 documentados: configuracion comercial de WhatsApp por empresa/sede separada de configuracion tecnica de plataforma. | Equipo NoiaChat |
+| 2026-06-19 | WA-COM-002 iniciado: permiso `whatsapp.integration.manage` creado para configuracion WhatsApp empresarial sin conceder acceso tecnico de plataforma. | Equipo NoiaChat |
+| 2026-06-19 | WA-COM-001 implementado como base: pantalla comercial `/integrations/whatsapp` lista canales WhatsApp por empresa/sede y no depende de `/settings`. | Equipo NoiaChat |
+| 2026-06-19 | WA-COM-003/004 implementados como MVP: alta/edicion comercial de canales WhatsApp con credenciales Meta seguras, limites de plan y auditoria. | Equipo NoiaChat |
+| 2026-06-19 | WA-COM-005/006 implementados como MVP: prueba de conexion Meta y sincronizacion comercial de plantillas por canal WhatsApp empresarial. | Equipo NoiaChat |
+| 2026-06-19 | WA-COM-007/008 implementados como MVP: estado operativo por canal y checklist comercial de configuracion Meta en pantalla. | Equipo NoiaChat |
+| 2026-06-19 | WA-COM-009/010 implementados como MVP: pruebas de aislamiento comercial y comando de validacion real de canal WhatsApp Meta. | Equipo NoiaChat |
 | 2026-06-15 | Redisenio operativo de conversaciones, carga del chat activo en `/conversations` y menu lateral colapsable con iconos. | Equipo NoiaChat |
 | 2026-06-15 | Indicadores de lectura en mensajes salientes y sonido opcional para mensajes entrantes nuevos. | Equipo NoiaChat |
 | 2026-06-08 | Creacion de matriz inicial de funcionalidades y backlog priorizado. | Equipo NoiaChat |

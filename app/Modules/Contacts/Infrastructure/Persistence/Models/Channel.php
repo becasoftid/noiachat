@@ -9,7 +9,9 @@ use App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\MessageTemplate;
 use App\Modules\Tenancy\Infrastructure\Persistence\Concerns\BelongsToDefaultTenant;
+use App\Modules\Tenancy\Infrastructure\Persistence\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Channel extends Model
@@ -21,6 +23,11 @@ class Channel extends Model
     protected function casts(): array
     {
         return ['is_active' => 'boolean', 'settings' => 'array'];
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function contactChannels(): HasMany

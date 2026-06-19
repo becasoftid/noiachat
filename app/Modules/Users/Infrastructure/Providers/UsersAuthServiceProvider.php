@@ -25,6 +25,7 @@ class UsersAuthServiceProvider extends ServiceProvider
         Gate::define('admin.access', fn ($user) => $user->canAdministerActiveTenant());
         Gate::define('platform.access', fn ($user) => $user->canAccessPlatformAdministration());
         Gate::define('super-admin.access', fn ($user) => $user->hasRole('super_admin'));
+        Gate::define('whatsapp.integration.manage', fn ($user) => $user->canManageActiveTenantWhatsAppIntegration());
         Gate::define('contacts.manage', fn ($user) => $user->canManageActiveTenantContacts());
         Gate::define('contacts.viewAny', fn ($user) => $user->canViewActiveTenantOperations());
         Gate::define('messages.send', fn ($user) => $user->canSendActiveTenantMessages());

@@ -7,6 +7,7 @@ La gestion documental se apoya en tres archivos:
 - [Matriz de funcionalidades](funcionalidades.md): inventario vivo de modulos, funcionalidades, estado y siguientes acciones.
 - [Plan de trabajo y reglas de negocio](plan-trabajo-reglas-negocio.md): orden de desarrollo, reglas de negocio y criterios de aceptacion.
 - [Manual de integracion WhatsApp](integracion-whatsapp.md): guia operativa para conectar, probar y diagnosticar WhatsApp Cloud API.
+- [WhatsApp comercial por empresa](whatsapp-comercial-empresa.md): plan de actividades para que cada empresa configure su propio canal WhatsApp sin acceder a configuracion tecnica global.
 - [Billing comercial](billing-checklist-comercial.md): matriz de planes/features, estados de suscripcion y checklist operativo comercial.
 - [Onboarding de registro y trial](onboarding-registro-trial.md): flujo publico `/register`, alta de empresa/sede, trial basico, validaciones en espanol y checklist.
 - [Plantilla de funcionalidad](plantilla-funcionalidad.md): formato para documentar nuevas funcionalidades, cambios o mejoras.
@@ -87,6 +88,7 @@ Usa estos estados de forma consistente:
 - [Matriz de funcionalidades](funcionalidades.md)
 - [Plan de trabajo y reglas de negocio](plan-trabajo-reglas-negocio.md)
 - [Manual de integracion WhatsApp](integracion-whatsapp.md)
+- [WhatsApp comercial por empresa](whatsapp-comercial-empresa.md)
 - [Billing comercial](billing-checklist-comercial.md)
 - [Onboarding de registro y trial](onboarding-registro-trial.md)
 - [Plantilla de funcionalidad](plantilla-funcionalidad.md)

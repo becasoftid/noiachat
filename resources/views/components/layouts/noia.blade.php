@@ -10,6 +10,7 @@
         ['label' => 'Salud', 'route' => 'health.index', 'active' => 'health.*', 'icon' => 'health', 'can' => 'platform.access'],
         ['label' => 'Auditoria', 'route' => 'audit-logs.index', 'active' => 'audit-logs.*', 'icon' => 'audit', 'can' => 'audit.view'],
         ['label' => 'Empresa', 'route' => 'tenancy.index', 'active' => 'tenancy.*', 'icon' => 'tenancy', 'can' => 'admin.access'],
+        ['label' => 'WhatsApp', 'route' => 'whatsapp.channels.index', 'active' => 'whatsapp.channels.*', 'icon' => 'whatsapp', 'can' => 'whatsapp.integration.manage', 'feature' => 'settings.whatsapp_channel'],
         ['label' => 'Plan', 'route' => 'billing.index', 'active' => 'billing.*', 'icon' => 'billing', 'can' => 'admin.access'],
         ['label' => 'Usuarios', 'route' => 'users.index', 'active' => 'users.*', 'icon' => 'users', 'can' => 'admin.access'],
         ['label' => 'Configuracion', 'route' => 'settings.index', 'active' => 'settings.*', 'icon' => 'settings', 'can' => 'platform.access', 'feature' => 'settings.whatsapp_channel'],
@@ -157,6 +158,13 @@
                                     <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M4 7h16M4 12h16M7 17h10" stroke-linecap="round" />
                                         <rect x="3" y="4" width="18" height="16" rx="2" stroke-linejoin="round" />
+                                    </svg>
+                                    @break
+                                @case('whatsapp')
+                                    <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M7 8h10M7 12h5" stroke-linecap="round" />
+                                        <path d="M4 18a8 8 0 1 1 3 2.24L3 21z" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M16 14l2 2 3-4" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                     @break
                                 @case('settings')

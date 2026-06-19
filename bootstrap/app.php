@@ -3,6 +3,7 @@
 use App\Console\Commands\BackupNoiaChatCommand;
 use App\Console\Commands\HealthCheckCommand;
 use App\Console\Commands\SubscriptionsCheckCommand;
+use App\Console\Commands\ValidateCommercialWhatsAppChannelCommand;
 use App\Console\Commands\ValidateTenantReadinessCommand;
 use App\Modules\Billing\Presentation\Middleware\EnsureFeatureEnabled;
 use Illuminate\Foundation\Application;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         BackupNoiaChatCommand::class,
         HealthCheckCommand::class,
         SubscriptionsCheckCommand::class,
+        ValidateCommercialWhatsAppChannelCommand::class,
         ValidateTenantReadinessCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
