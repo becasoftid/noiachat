@@ -47,6 +47,7 @@ Permitir que una persona cree una cuenta limitada, registre su empresa, registre
 - El usuario creado por el registro ve un menu comercial/operativo, no el menu tecnico completo de plataforma.
 - En el trial inicial se ocultan y bloquean modulos tecnicos como `Fallos`, `Salud`, `Auditoria` y `Configuracion` de canal WhatsApp.
 - En `Usuarios`, el responsable comercial solo ve usuarios de su empresa y no ve cuentas globales de plataforma como `admin@noiachat.local`.
+- En `Empresa > Membresias`, el responsable comercial tampoco ve ni puede asignar administradores globales o roles `admin`/`super_admin`.
 
 ## Reglas de negocio
 
@@ -114,6 +115,7 @@ Cobertura actual:
 - Recuperacion automatica del catalogo `basic_trial` cuando el plan esta inactivo.
 - Menu comercial para usuario registrado y bloqueo por URL directa de modulos tecnicos.
 - Aislamiento de `Usuarios`: no se listan ni editan administradores globales desde empresas comerciales.
+- Aislamiento de membresias: no se listan ni asignan administradores/roles globales desde empresas comerciales.
 - Validacion de empresa y sede obligatorias.
 - Mensaje de validacion en espanol para confirmacion de contrasena.
 

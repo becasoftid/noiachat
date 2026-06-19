@@ -238,4 +238,84 @@ class RegistrationTest extends TestCase
             'roles' => [$adminRole->id],
         ])->assertSessionHasErrors('roles');
     }
+
+    public function test_registered_trial_user_does_not_see_platform_admin_in_company_memberships(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-membresias@example.com',
+            'company_name' => 'Empresa Membresias',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $companyAdmin = User::query()->where('email', 'comercial-membresias@example.com')->firstOrFail();
+        $company = Company::query()->where('name', 'Empresa Membresias')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+        $adminRole = Role::query()->firstOrCreate(['name' => 'admin'], ['label' => 'Administrator']);
+        $platformAdmin = User::factory()->create([
+            'name' => 'Admin NoiaChat',
+            'email' => 'admin@noiachat.local',
+        ]);
+        $platformAdmin->roles()->attach($adminRole->id);
+
+        Membership::query()->create([
+            'user_id' => $platformAdmin->id,
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'role_id' => $adminRole->id,
+            'is_default' => false,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($companyAdmin)
+            ->get(route('tenancy.index'))
+            ->assertOk()
+            ->assertSee('Usuario Comercial')
+            ->assertDontSee('Admin NoiaChat')
+            ->assertDontSee('admin@noiachat.local')
+            ->assertDontSee('Administrator');
+    }
+
+    public function test_registered_trial_user_cannot_assign_platform_admin_membership(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-asignacion@example.com',
+            'company_name' => 'Empresa Asignacion',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $companyAdmin = User::query()->where('email', 'comercial-asignacion@example.com')->firstOrFail();
+        $company = Company::query()->where('name', 'Empresa Asignacion')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+        $adminRole = Role::query()->firstOrCreate(['name' => 'admin'], ['label' => 'Administrator']);
+        $operatorRole = Role::query()->firstOrCreate(['name' => 'operator'], ['label' => 'Operator']);
+        $platformAdmin = User::factory()->create([
+            'name' => 'Admin NoiaChat',
+            'email' => 'admin-asignacion@noiachat.local',
+        ]);
+        $platformAdmin->roles()->attach($adminRole->id);
+
+        $this->actingAs($companyAdmin)
+            ->post(route('tenancy.memberships.store'), [
+                'user_id' => $platformAdmin->id,
+                'branch_id' => $branch->id,
+                'role_id' => $operatorRole->id,
+                'is_active' => '1',
+            ])
+            ->assertSessionHasErrors('user_id');
+
+        $this->actingAs($companyAdmin)
+            ->post(route('tenancy.memberships.store'), [
+                'user_id' => $companyAdmin->id,
+                'branch_id' => $branch->id,
+                'role_id' => $adminRole->id,
+                'is_active' => '1',
+            ])
+            ->assertSessionHasErrors('role_id');
+    }
 }

@@ -41,10 +41,21 @@ class TenantAdminController extends Controller
             'memberships' => Membership::query()
                 ->with(['user', 'branch', 'role'])
                 ->where('company_id', $company->id)
+                ->when(! auth()->user()?->can('platform.access'), function ($query): void {
+                    $query
+                        ->whereHas('user', fn ($userQuery) => $this->restrictCommercialUsers($userQuery))
+                        ->whereHas('role', fn ($roleQuery) => $this->restrictCommercialRoles($roleQuery));
+                })
                 ->orderBy(User::select('name')->whereColumn('users.id', 'memberships.user_id'))
                 ->paginate(25),
-            'users' => User::query()->orderBy('name')->get(['id', 'name', 'email']),
-            'roles' => Role::query()->orderBy('label')->get(),
+            'users' => User::query()
+                ->when(! auth()->user()?->can('platform.access'), fn ($query) => $this->restrictCommercialUsers($query))
+                ->orderBy('name')
+                ->get(['id', 'name', 'email']),
+            'roles' => Role::query()
+                ->when(! auth()->user()?->can('platform.access'), fn ($query) => $this->restrictCommercialRoles($query))
+                ->orderBy('label')
+                ->get(),
         ]);
     }
 
@@ -198,6 +209,7 @@ class TenantAdminController extends Controller
     {
         $company = $this->activeCompany();
         $validated = $request->validate($this->membershipRules($company));
+        $this->ensureCommercialMembershipIsAssignable((int) $validated['user_id'], (int) $validated['role_id'], $request);
         $branchId = $validated['branch_id'] ?? null;
 
         $membership = Membership::updateOrCreate(
@@ -238,6 +250,7 @@ class TenantAdminController extends Controller
         $oldUserId = $membership->user_id;
 
         $validated = $request->validate($this->membershipRules($company));
+        $this->ensureCommercialMembershipIsAssignable((int) $validated['user_id'], (int) $validated['role_id'], $request);
 
         $membership->update([
             'user_id' => $validated['user_id'],
@@ -317,6 +330,49 @@ class TenantAdminController extends Controller
             'is_default' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
         ];
+    }
+
+    private function restrictCommercialUsers($query)
+    {
+        return $query->whereDoesntHave('roles', function ($roleQuery): void {
+            $roleQuery->whereIn('name', ['admin', 'super_admin']);
+        });
+    }
+
+    private function restrictCommercialRoles($query)
+    {
+        return $query->whereNotIn('name', ['admin', 'super_admin']);
+    }
+
+    private function ensureCommercialMembershipIsAssignable(int $userId, int $roleId, Request $request): void
+    {
+        if ($request->user()?->can('platform.access')) {
+            return;
+        }
+
+        $userHasGlobalRole = User::query()
+            ->whereKey($userId)
+            ->whereHas('roles', function ($query): void {
+                $query->whereIn('name', ['admin', 'super_admin']);
+            })
+            ->exists();
+
+        if ($userHasGlobalRole) {
+            throw ValidationException::withMessages([
+                'user_id' => 'No puedes asignar administradores globales a esta empresa.',
+            ]);
+        }
+
+        $roleIsGlobal = Role::query()
+            ->whereKey($roleId)
+            ->whereIn('name', ['admin', 'super_admin'])
+            ->exists();
+
+        if ($roleIsGlobal) {
+            throw ValidationException::withMessages([
+                'role_id' => 'No puedes asignar roles de administracion global.',
+            ]);
+        }
     }
 
     private function ensureBranchBelongsToActiveCompany(Branch $branch): void
