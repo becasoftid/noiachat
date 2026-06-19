@@ -51,6 +51,7 @@ Permitir que una persona cree una cuenta limitada, registre su empresa, registre
 - El primer usuario queda como `company_admin` limitado a su propia empresa.
 - La sede inicial queda asociada a la empresa creada.
 - El trial se define desde la base de datos mediante el plan `basic_trial`; no debe depender de `.env` como fuente principal de negocio.
+- Si el plan `basic_trial` no esta activo en la base de datos, el registro inicializa el catalogo base de billing y vuelve a intentar resolver el plan antes de crear la empresa.
 - Los roles no habilitan funcionalidades por si solos: las features y limites aplican segun el plan de la empresa.
 - Si el trial vence, el usuario puede iniciar sesion, pero las acciones operativas quedan bloqueadas segun las reglas de billing.
 
@@ -107,6 +108,7 @@ Cobertura actual:
 
 - Render de pantalla de registro.
 - Creacion de usuario, empresa, sede, membresia y suscripcion trial.
+- Recuperacion automatica del catalogo `basic_trial` cuando el plan esta inactivo.
 - Validacion de empresa y sede obligatorias.
 - Mensaje de validacion en espanol para confirmacion de contrasena.
 

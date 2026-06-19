@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use App\Modules\Billing\Infrastructure\Persistence\Models\CompanySubscription;
+use App\Modules\Billing\Infrastructure\Persistence\Models\Plan;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Branch;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Company;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Membership;
@@ -97,5 +98,32 @@ class RegistrationTest extends TestCase
             'password' => 'La confirmacion de contrasena no coincide.',
         ]);
         $this->assertGuest();
+    }
+
+    public function test_registration_recovers_when_trial_plan_is_inactive(): void
+    {
+        Plan::query()->where('code', 'basic_trial')->update(['is_active' => false]);
+
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'trial-recovery@example.com',
+            'company_name' => 'Clinica Recovery',
+            'company_legal_name' => 'Clinica Recovery SAS',
+            'company_tax_id' => '901234567',
+            'branch_name' => 'Principal',
+            'branch_city' => 'Bogota',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertAuthenticated();
+        $this->assertDatabaseHas('plans', [
+            'code' => 'basic_trial',
+            'is_active' => true,
+        ]);
+        $this->assertDatabaseHas('companies', [
+            'name' => 'Clinica Recovery',
+        ]);
     }
 }

@@ -9,6 +9,7 @@ use App\Modules\Tenancy\Infrastructure\Persistence\Models\Branch;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Company;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Membership;
 use App\Modules\Users\Infrastructure\Persistence\Models\Role;
+use Database\Seeders\BillingSeeder;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -70,6 +71,15 @@ class TrialCompanyRegistration
             ->where('code', 'basic_trial')
             ->where('is_active', true)
             ->first();
+
+        if ($plan === null) {
+            app(BillingSeeder::class)->run();
+
+            $plan = Plan::query()
+                ->where('code', 'basic_trial')
+                ->where('is_active', true)
+                ->first();
+        }
 
         if ($plan === null) {
             throw new RuntimeException('No existe un plan basic_trial activo para registrar nuevas empresas.');
