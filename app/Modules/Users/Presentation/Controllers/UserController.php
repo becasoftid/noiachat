@@ -46,7 +46,7 @@ class UserController extends Controller
     public function create()
     {
         return view('noia.users.create', [
-            'roles' => Role::query()->orderBy('label')->get(),
+            'roles' => $this->availableRolesForActor(),
         ]);
     }
 
@@ -59,6 +59,8 @@ class UserController extends Controller
                 'email' => $this->planLimits->message($companyId, 'users'),
             ]);
         }
+
+        $this->validateAssignableRoles($request->input('roles', []), $request->user());
 
         $user = User::create([
             'name' => $request->string('name')->toString(),
@@ -93,7 +95,7 @@ class UserController extends Controller
 
         return view('noia.users.edit', [
             'managedUser' => $user->load('roles'),
-            'roles' => Role::query()->orderBy('label')->get(),
+            'roles' => $this->availableRolesForActor(),
         ]);
     }
 
@@ -105,6 +107,8 @@ class UserController extends Controller
 
         $oldValues = $this->auditSnapshot($user->load('roles'));
         $roleIds = $request->input('roles', []);
+
+        $this->validateAssignableRoles($roleIds, $request->user());
 
         if ($request->user()->is($user) && ! $request->boolean('is_active')) {
             throw ValidationException::withMessages([
@@ -180,6 +184,11 @@ class UserController extends Controller
                             ->orWhereNull('branch_id');
                     });
                 }
+            })
+            ->when(! auth()->user()?->can('platform.access'), function ($query): void {
+                $query->whereDoesntHave('roles', function ($roleQuery): void {
+                    $roleQuery->whereIn('name', ['admin', 'super_admin']);
+                });
             });
     }
 
@@ -213,6 +222,10 @@ class UserController extends Controller
 
     private function adoptLegacyUsersInActiveTenant(): void
     {
+        if (! $this->canAdoptLegacyUsersInActiveTenant()) {
+            return;
+        }
+
         User::query()
             ->whereDoesntHave('memberships')
             ->whereHas('roles')
@@ -223,6 +236,10 @@ class UserController extends Controller
 
     private function adoptLegacyUserInActiveTenant(User $user): void
     {
+        if (! $this->canAdoptLegacyUsersInActiveTenant()) {
+            return;
+        }
+
         if ($user->memberships()->exists()) {
             return;
         }
@@ -231,6 +248,45 @@ class UserController extends Controller
 
         if ($roleIds !== []) {
             $this->syncTenantMemberships($user, $roleIds);
+        }
+    }
+
+    private function canAdoptLegacyUsersInActiveTenant(): bool
+    {
+        if (! auth()->user()?->can('platform.access')) {
+            return false;
+        }
+
+        $company = app(TenantContext::class)->company();
+
+        return $company?->slug === env('NOIACHAT_DEFAULT_COMPANY_SLUG', 'default');
+    }
+
+    private function availableRolesForActor()
+    {
+        return Role::query()
+            ->when(! auth()->user()?->can('platform.access'), function ($query): void {
+                $query->whereNotIn('name', ['admin', 'super_admin']);
+            })
+            ->orderBy('label')
+            ->get();
+    }
+
+    private function validateAssignableRoles(array $roleIds, User $actor): void
+    {
+        if ($actor->can('platform.access')) {
+            return;
+        }
+
+        $invalid = Role::query()
+            ->whereIn('id', $roleIds)
+            ->whereIn('name', ['admin', 'super_admin'])
+            ->exists();
+
+        if ($invalid) {
+            throw ValidationException::withMessages([
+                'roles' => 'No puedes asignar roles de administracion global.',
+            ]);
         }
     }
 }

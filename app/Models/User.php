@@ -142,6 +142,6 @@ class User extends Authenticatable
 
     public function canViewActiveTenantAudit(): bool
     {
-        return $this->hasActiveTenantRole(['admin', 'company_admin', 'branch_manager', 'auditor']);
+        return $this->hasActiveTenantRole(['admin', 'branch_manager', 'auditor']);
     }
 }

@@ -8,7 +8,7 @@
         ['label' => 'Conversaciones', 'route' => 'conversations.index', 'active' => 'conversations.*', 'icon' => 'conversations'],
         ['label' => 'Fallos', 'route' => 'failures.index', 'active' => 'failures.*', 'icon' => 'failures', 'can' => 'platform.access'],
         ['label' => 'Salud', 'route' => 'health.index', 'active' => 'health.*', 'icon' => 'health', 'can' => 'platform.access'],
-        ['label' => 'Auditoria', 'route' => 'audit-logs.index', 'active' => 'audit-logs.*', 'icon' => 'audit', 'can' => 'audit.view', 'feature' => 'audit.view'],
+        ['label' => 'Auditoria', 'route' => 'audit-logs.index', 'active' => 'audit-logs.*', 'icon' => 'audit', 'can' => 'audit.view'],
         ['label' => 'Empresa', 'route' => 'tenancy.index', 'active' => 'tenancy.*', 'icon' => 'tenancy', 'can' => 'admin.access'],
         ['label' => 'Plan', 'route' => 'billing.index', 'active' => 'billing.*', 'icon' => 'billing', 'can' => 'admin.access'],
         ['label' => 'Usuarios', 'route' => 'users.index', 'active' => 'users.*', 'icon' => 'users', 'can' => 'admin.access'],

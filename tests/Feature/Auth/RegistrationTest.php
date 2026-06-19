@@ -8,6 +8,7 @@ use App\Modules\Billing\Infrastructure\Persistence\Models\Plan;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Branch;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Company;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Membership;
+use App\Modules\Users\Infrastructure\Persistence\Models\Role;
 use Database\Seeders\BillingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -167,5 +168,74 @@ class RegistrationTest extends TestCase
         $this->get(route('failures.index'))->assertForbidden();
         $this->get(route('health.index'))->assertForbidden();
         $this->get(route('audit-logs.index'))->assertForbidden();
+    }
+
+    public function test_registered_trial_user_does_not_see_platform_admin_in_users(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-usuarios@example.com',
+            'company_name' => 'Empresa Usuarios',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $companyAdmin = User::query()->where('email', 'comercial-usuarios@example.com')->firstOrFail();
+        $company = Company::query()->where('name', 'Empresa Usuarios')->firstOrFail();
+        $branch = Branch::query()->where('company_id', $company->id)->firstOrFail();
+        $adminRole = Role::query()->firstOrCreate(['name' => 'admin'], ['label' => 'Administrator']);
+        $platformAdmin = User::factory()->create([
+            'name' => 'Admin NoiaChat',
+            'email' => 'admin@noiachat.local',
+        ]);
+        $platformAdmin->roles()->attach($adminRole->id);
+
+        Membership::query()->create([
+            'user_id' => $platformAdmin->id,
+            'company_id' => $company->id,
+            'branch_id' => $branch->id,
+            'role_id' => $adminRole->id,
+            'is_default' => false,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($companyAdmin)
+            ->get(route('users.index'))
+            ->assertOk()
+            ->assertSee('Usuario Comercial')
+            ->assertDontSee('Admin NoiaChat')
+            ->assertDontSee('admin@noiachat.local');
+
+        $this->actingAs($companyAdmin)
+            ->get(route('users.edit', $platformAdmin))
+            ->assertForbidden();
+    }
+
+    public function test_registered_trial_user_cannot_assign_global_roles(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-roles@example.com',
+            'company_name' => 'Empresa Roles',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $adminRole = Role::query()->firstOrCreate(['name' => 'admin'], ['label' => 'Administrator']);
+
+        $this->get(route('users.create'))
+            ->assertOk()
+            ->assertDontSee('Administrator');
+
+        $this->post(route('users.store'), [
+            'name' => 'Usuario Admin Prohibido',
+            'email' => 'admin-prohibido@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'is_active' => '1',
+            'roles' => [$adminRole->id],
+        ])->assertSessionHasErrors('roles');
     }
 }
