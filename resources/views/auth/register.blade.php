@@ -190,15 +190,71 @@
                                         </div>
 
                                         <div class="space-y-4">
-                                            <div>
+                                            <div x-data="{ showPassword: false }">
                                                 <x-input-label for="password" :value="__('Contrasena')" />
-                                                <x-text-input id="password" class="mt-1 block h-12 w-full" type="password" name="password" required autocomplete="new-password" />
+                                                <div class="relative mt-1">
+                                                    <x-text-input
+                                                        id="password"
+                                                        class="block h-12 w-full pr-12"
+                                                        x-bind:type="showPassword ? 'text' : 'password'"
+                                                        type="password"
+                                                        name="password"
+                                                        required
+                                                        autocomplete="new-password"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        class="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-lg text-slate-500 transition hover:text-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-100"
+                                                        x-on:click="showPassword = !showPassword"
+                                                        x-bind:title="showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'"
+                                                        x-bind:aria-label="showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'"
+                                                    >
+                                                        <svg x-show="!showPassword" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                                            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                                        </svg>
+                                                        <svg x-show="showPassword" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                            <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                                            <path d="M10.7 5.2A9.7 9.7 0 0 1 12 5c6 0 9.5 7 9.5 7a16.9 16.9 0 0 1-3 3.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                                            <path d="M14.1 14.1A3 3 0 0 1 9.9 9.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                                            <path d="M6.6 6.6C3.8 8.5 2.5 12 2.5 12s3.5 7 9.5 7a9.4 9.4 0 0 0 4.2-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                                 <x-input-error :messages="$errors->get('password')" class="mt-2" />
                                             </div>
 
-                                            <div>
+                                            <div x-data="{ showPassword: false }">
                                                 <x-input-label for="password_confirmation" :value="__('Confirmar contrasena')" />
-                                                <x-text-input id="password_confirmation" class="mt-1 block h-12 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
+                                                <div class="relative mt-1">
+                                                    <x-text-input
+                                                        id="password_confirmation"
+                                                        class="block h-12 w-full pr-12"
+                                                        x-bind:type="showPassword ? 'text' : 'password'"
+                                                        type="password"
+                                                        name="password_confirmation"
+                                                        required
+                                                        autocomplete="new-password"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        class="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-lg text-slate-500 transition hover:text-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-100"
+                                                        x-on:click="showPassword = !showPassword"
+                                                        x-bind:title="showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'"
+                                                        x-bind:aria-label="showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'"
+                                                    >
+                                                        <svg x-show="!showPassword" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                                            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                                        </svg>
+                                                        <svg x-show="showPassword" class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                            <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                                            <path d="M10.7 5.2A9.7 9.7 0 0 1 12 5c6 0 9.5 7 9.5 7a16.9 16.9 0 0 1-3 3.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                                            <path d="M14.1 14.1A3 3 0 0 1 9.9 9.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                                            <path d="M6.6 6.6C3.8 8.5 2.5 12 2.5 12s3.5 7 9.5 7a9.4 9.4 0 0 0 4.2-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                                 <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
                                             </div>
                                         </div>
