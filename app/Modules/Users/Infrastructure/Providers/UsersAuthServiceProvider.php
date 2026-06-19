@@ -23,6 +23,7 @@ class UsersAuthServiceProvider extends ServiceProvider
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
 
         Gate::define('admin.access', fn ($user) => $user->canAdministerActiveTenant());
+        Gate::define('platform.access', fn ($user) => $user->canAccessPlatformAdministration());
         Gate::define('super-admin.access', fn ($user) => $user->hasRole('super_admin'));
         Gate::define('contacts.manage', fn ($user) => $user->canManageActiveTenantContacts());
         Gate::define('contacts.viewAny', fn ($user) => $user->canViewActiveTenantOperations());

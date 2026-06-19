@@ -6,17 +6,18 @@
         ['label' => 'Contactos', 'route' => 'contacts.index', 'active' => 'contacts.*', 'icon' => 'contacts'],
         ['label' => 'Mensajes', 'route' => 'messages.index', 'active' => 'messages.*', 'icon' => 'messages'],
         ['label' => 'Conversaciones', 'route' => 'conversations.index', 'active' => 'conversations.*', 'icon' => 'conversations'],
-        ['label' => 'Fallos', 'route' => 'failures.index', 'active' => 'failures.*', 'icon' => 'failures', 'can' => 'admin.access'],
-        ['label' => 'Salud', 'route' => 'health.index', 'active' => 'health.*', 'icon' => 'health', 'can' => 'admin.access'],
-        ['label' => 'Auditoria', 'route' => 'audit-logs.index', 'active' => 'audit-logs.*', 'icon' => 'audit'],
+        ['label' => 'Fallos', 'route' => 'failures.index', 'active' => 'failures.*', 'icon' => 'failures', 'can' => 'platform.access'],
+        ['label' => 'Salud', 'route' => 'health.index', 'active' => 'health.*', 'icon' => 'health', 'can' => 'platform.access'],
+        ['label' => 'Auditoria', 'route' => 'audit-logs.index', 'active' => 'audit-logs.*', 'icon' => 'audit', 'can' => 'audit.view', 'feature' => 'audit.view'],
         ['label' => 'Empresa', 'route' => 'tenancy.index', 'active' => 'tenancy.*', 'icon' => 'tenancy', 'can' => 'admin.access'],
         ['label' => 'Plan', 'route' => 'billing.index', 'active' => 'billing.*', 'icon' => 'billing', 'can' => 'admin.access'],
         ['label' => 'Usuarios', 'route' => 'users.index', 'active' => 'users.*', 'icon' => 'users', 'can' => 'admin.access'],
-        ['label' => 'Configuracion', 'route' => 'settings.index', 'active' => 'settings.*', 'icon' => 'settings', 'can' => 'admin.access'],
+        ['label' => 'Configuracion', 'route' => 'settings.index', 'active' => 'settings.*', 'icon' => 'settings', 'can' => 'platform.access', 'feature' => 'settings.whatsapp_channel'],
     ];
     $tenantContext = $tenantContext ?? app(\App\Modules\Tenancy\Application\Services\TenantContext::class);
     $tenantMemberships = $tenantContext->memberships();
     $currentTenantMembership = $tenantContext->membership();
+    $subscriptionFeatures = app(\App\Modules\Billing\Application\Services\SubscriptionFeatureService::class);
     $subscriptionNotice = app(\App\Modules\Billing\Application\Services\SubscriptionLifecycleService::class)->notice($tenantContext->companyId());
 @endphp
 
@@ -90,6 +91,7 @@
             <nav class="mt-6 grid gap-1 text-sm font-medium lg:mt-8">
                 @foreach($navItems as $item)
                     @continue(isset($item['can']) && ! auth()->user()->can($item['can']))
+                    @continue(isset($item['feature']) && ! auth()->user()->hasRole('super_admin') && ! $subscriptionFeatures->allows($tenantContext->companyId(), $item['feature']))
                     <a
                         href="{{ route($item['route']) }}"
                         title="{{ $item['label'] }}"

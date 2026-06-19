@@ -44,6 +44,8 @@ Permitir que una persona cree una cuenta limitada, registre su empresa, registre
 - Las acciones principales son:
   - `Empezar prueba`.
   - `Ya tienes cuenta?`.
+- El usuario creado por el registro ve un menu comercial/operativo, no el menu tecnico completo de plataforma.
+- En el trial inicial se ocultan y bloquean modulos tecnicos como `Fallos`, `Salud`, `Auditoria` y `Configuracion` de canal WhatsApp.
 
 ## Reglas de negocio
 
@@ -109,6 +111,7 @@ Cobertura actual:
 - Render de pantalla de registro.
 - Creacion de usuario, empresa, sede, membresia y suscripcion trial.
 - Recuperacion automatica del catalogo `basic_trial` cuando el plan esta inactivo.
+- Menu comercial para usuario registrado y bloqueo por URL directa de modulos tecnicos.
 - Validacion de empresa y sede obligatorias.
 - Mensaje de validacion en espanol para confirmacion de contrasena.
 

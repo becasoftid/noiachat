@@ -9,7 +9,7 @@ class UpdateChannelRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('admin.access') ?? false;
+        return $this->user()?->can('platform.access') ?? false;
     }
 
     public function rules(): array

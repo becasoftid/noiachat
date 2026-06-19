@@ -92,6 +92,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Ajuste de los campos de contrasena en `/register` para permitir mostrar/ocultar el valor ingresado.
 - Localizacion de mensajes de validacion a espanol mediante `lang/es/validation.php`, compatibilidad temporal en `lang/en/validation.php` y `APP_LOCALE=es` como base.
 - Ajuste del registro trial para inicializar el catalogo base de billing si `basic_trial` no esta activo en el entorno.
+- Ajuste del menu y permisos para que usuarios comerciales de trial no vean ni accedan a modulos tecnicos de plataforma como Fallos, Salud, Auditoria o Configuracion WhatsApp.
 - Redisenio operativo de conversaciones con distribucion tipo WhatsApp Web: inbox lateral, filas compactas, conversacion activa, burbujas, agrupacion por fecha y compositor inferior.
 - Ajuste del inbox de conversaciones para operar como panel de trabajo con filtros compactos, listado con scroll y estado vacio cuando no hay conversacion seleccionada.
 - Ajuste del flujo de conversaciones para cargar el chat activo dentro de `/conversations?conversation=...`, manteniendo una sola vista operativa.

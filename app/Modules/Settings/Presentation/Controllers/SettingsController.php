@@ -21,7 +21,7 @@ class SettingsController extends Controller
 {
     public function index()
     {
-        abort_unless(auth()->user()?->can('admin.access'), 403);
+        abort_unless(auth()->user()?->can('platform.access'), 403);
 
         return view('noia.settings.index', [
             'channels' => Channel::query()->forTenantContext()->withCount(['messages', 'conversations'])->get(),
@@ -53,7 +53,7 @@ class SettingsController extends Controller
 
     public function syncWhatsAppTemplates(WhatsAppTemplateSyncService $syncService, AuditLogger $auditLogger)
     {
-        abort_unless(auth()->user()?->can('admin.access'), 403);
+        abort_unless(auth()->user()?->can('platform.access'), 403);
 
         $channel = Channel::query()->forTenantContext()->where('slug', 'whatsapp')->firstOrFail();
 

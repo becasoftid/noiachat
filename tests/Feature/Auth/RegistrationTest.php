@@ -126,4 +126,46 @@ class RegistrationTest extends TestCase
             'name' => 'Clinica Recovery',
         ]);
     }
+
+    public function test_registered_trial_user_sees_commercial_menu_only(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial@example.com',
+            'company_name' => 'Empresa Comercial',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Contactos')
+            ->assertSee('Mensajes')
+            ->assertSee('Conversaciones')
+            ->assertSee('Empresa')
+            ->assertSee('Plan')
+            ->assertSee('Usuarios')
+            ->assertDontSee('Fallos')
+            ->assertDontSee('Salud')
+            ->assertDontSee('Auditoria')
+            ->assertDontSee('Configuracion');
+    }
+
+    public function test_registered_trial_user_cannot_access_platform_modules_directly(): void
+    {
+        $this->post('/register', [
+            'name' => 'Usuario Comercial',
+            'email' => 'comercial-directo@example.com',
+            'company_name' => 'Empresa Comercial Directa',
+            'branch_name' => 'Principal',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->get(route('settings.index'))->assertForbidden();
+        $this->get(route('failures.index'))->assertForbidden();
+        $this->get(route('health.index'))->assertForbidden();
+        $this->get(route('audit-logs.index'))->assertForbidden();
+    }
 }

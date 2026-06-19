@@ -110,6 +110,11 @@ class User extends Authenticatable
         return $this->hasActiveTenantRole(['admin', 'company_admin']);
     }
 
+    public function canAccessPlatformAdministration(): bool
+    {
+        return $this->hasRole('super_admin') || $this->hasActiveTenantRole(['admin']);
+    }
+
     public function requiresTwoFactorAuthentication(): bool
     {
         return $this->hasAnyRole(config('noiachat.two_factor.admin_roles', [
