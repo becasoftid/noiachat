@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/conversations', [ConversationController::class, 'index'])->name('conversations.index')->middleware('can:viewAny,'.\App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation::class);
 Route::get('/conversations/refresh', [ConversationController::class, 'refresh'])->name('conversations.refresh')->middleware('can:viewAny,'.\App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation::class);
+Route::post('/conversations/start', [ConversationController::class, 'start'])->name('conversations.start')->middleware('can:viewAny,'.\App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation::class);
 Route::get('/conversations/{conversation}', [ConversationController::class, 'show'])->name('conversations.show')->middleware('can:view,conversation');
 Route::put('/conversations/{conversation}/assign', [ConversationController::class, 'assign'])->name('conversations.assign')->middleware('can:view,conversation');
 Route::put('/conversations/{conversation}/assign-me', [ConversationController::class, 'assignToMe'])->name('conversations.assign-me')->middleware('can:view,conversation');

@@ -57,7 +57,27 @@
                 </div>
 
                 <div x-data="{ filtersOpen: false }" class="mt-3">
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                        @can('messages.send')
+                            @if(request()->boolean('new'))
+                                <a
+                                    href="{{ route('conversations.index', request()->except('new')) }}"
+                                    class="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-100"
+                                >
+                                    Cerrar nuevo chat
+                                </a>
+                            @else
+                                <a
+                                    href="{{ route('conversations.index', array_merge(request()->query(), ['new' => 1])) }}"
+                                    class="inline-flex h-10 items-center gap-2 rounded-lg bg-emerald-600 px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+                                >
+                                    <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+                                    </svg>
+                                    <span>Nuevo chat</span>
+                                </a>
+                            @endif
+                        @endcan
                         <button
                             type="button"
                             class="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-cyan-200 hover:text-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-100"
@@ -77,6 +97,33 @@
                         @endif
                         <a href="{{ route('reports.exports.conversations', request()->except('conversation')) }}" class="text-sm font-semibold text-cyan-700 transition hover:text-cyan-900">Exportar CSV</a>
                     </div>
+
+                    @can('messages.send')
+                        @if(request()->boolean('new'))
+                        <form method="POST" action="{{ route('conversations.start') }}" class="mt-3 grid gap-2 rounded-lg border border-emerald-100 bg-emerald-50/70 p-3">
+                            @csrf
+                            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Iniciar conversación</p>
+                            <select class="noia-select bg-white" name="contact_id" required>
+                                <option value="">Selecciona contacto</option>
+                                @foreach($contacts as $contact)
+                                    <option value="{{ $contact->id }}" @selected(old('contact_id') === $contact->id)>
+                                        {{ $contact->full_name }} · {{ $contact->primary_phone }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <select class="noia-select bg-white" name="channel_id" required>
+                                <option value="">Selecciona canal</option>
+                                @foreach($channels as $channel)
+                                    <option value="{{ $channel->id }}" @selected((string) old('channel_id') === (string) $channel->id)>
+                                        {{ $channel->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <button class="noia-btn-success">Abrir chat</button>
+                            <p class="text-xs text-emerald-900/75">Se reutiliza una conversación abierta, pendiente o resuelta; si no existe, se crea una nueva.</p>
+                        </form>
+                        @endif
+                    @endcan
 
                     <form method="GET" class="mt-3 grid gap-2" x-cloak x-show="filtersOpen" x-transition.opacity>
                         @if(request()->filled('conversation'))

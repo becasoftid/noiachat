@@ -150,6 +150,63 @@ class NoiaChatMvpTest extends TestCase
             ->assertSee('&check;&check;', false);
     }
 
+    public function test_messages_new_send_button_opens_conversation_new_chat_flow(): void
+    {
+        $this->actingAs($this->admin)
+            ->get(route('messages.index'))
+            ->assertOk()
+            ->assertSee(route('conversations.index', ['new' => 1]), false)
+            ->assertSee('Nuevo envío');
+    }
+
+    public function test_operator_can_start_new_chat_from_conversations(): void
+    {
+        $contact = $this->makeContact('573101000107', true);
+
+        $response = $this->actingAs($this->admin)->post(route('conversations.start'), [
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+        ]);
+
+        $conversation = Conversation::query()
+            ->where('contact_id', $contact->id)
+            ->where('channel_id', $this->channel->id)
+            ->firstOrFail();
+
+        $response
+            ->assertRedirect(route('conversations.index', ['conversation' => $conversation->id]))
+            ->assertSessionHas('status', 'Conversacion lista para operar.');
+
+        $this->assertDatabaseHas('conversations', [
+            'id' => $conversation->id,
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'status' => 'open',
+        ]);
+    }
+
+    public function test_start_new_chat_reuses_existing_operational_conversation(): void
+    {
+        $contact = $this->makeContact('573101000108', true);
+        $conversation = Conversation::create([
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+            'assigned_user_id' => $this->admin->id,
+            'status' => 'pending',
+            'last_message_at' => now()->subMinutes(5),
+        ]);
+
+        $this->actingAs($this->admin)->post(route('conversations.start'), [
+            'contact_id' => $contact->id,
+            'channel_id' => $this->channel->id,
+        ])->assertRedirect(route('conversations.index', ['conversation' => $conversation->id]));
+
+        $this->assertSame(1, Conversation::query()
+            ->where('contact_id', $contact->id)
+            ->where('channel_id', $this->channel->id)
+            ->count());
+    }
+
     public function test_whatsapp_webhook_accepts_valid_meta_signature(): void
     {
         config(['services.whatsapp.app_secret' => 'test-meta-secret']);

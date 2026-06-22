@@ -1,6 +1,6 @@
 # Matriz de funcionalidades NoiaChat
 
-Ultima actualizacion: 2026-06-19
+Ultima actualizacion: 2026-06-22
 
 Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada vez que se implemente, cambie, valide o descarte una funcionalidad.
 
@@ -91,6 +91,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | CONV-003 | Conversaciones | Asignacion a operador | MVP | P1 | Select, accion "Asignar a mi" y pruebas en `NoiaChatMvpTest` | Crear filtros por equipo y reglas operativas de reasignacion. |
 | CONV-004 | Conversaciones | Estados abierta/pendiente/resuelta/cerrada | MVP | P1 | Select existe | Definir reglas operativas y automatizaciones. |
 | CONV-005 | Conversaciones | Auto-refresh o tiempo real | MVP | P1 | Polling simple del inbox con endpoint parcial y `NoiaChatMvpTest` | Evaluar tiempo real con Echo/Reverb si el volumen lo exige. |
+| CONV-006 | Conversaciones | Nuevo chat como flujo principal de envio | MVP | P1 | `/messages` lleva a `/conversations?new=1`; `POST /conversations/start` crea o reutiliza conversacion por contacto/canal; documentado en `docs/conversaciones-flujo-operativo.md` | Mejorar selector con busqueda/autocomplete cuando crezca el volumen de contactos. |
 | UI-001 | Interfaz | Menu lateral colapsable con iconos | Operativo | P1 | Layout principal permite contraer/expandir, recuerda preferencia local e identifica opciones por icono | Validar usabilidad con usuarios y reemplazar SVG inline por libreria de iconos si se adopta una. |
 | AUDIT-001 | Auditoria | Registro de acciones principales | MVP | P0 | `/audit-logs` muestra contactos y acciones | Agregar auditoria de mas eventos operativos. |
 | AUDIT-002 | Auditoria | Filtros de auditoria | MVP | P1 | Modal de filtros implementado con sede disponible para alcance de empresa | Agregar exportacion CSV/Excel. |
@@ -190,6 +191,7 @@ Una funcionalidad solo debe pasar a `Operativo` si cumple:
 | 2026-06-19 | WA-COM-005/006 implementados como MVP: prueba de conexion Meta y sincronizacion comercial de plantillas por canal WhatsApp empresarial. | Equipo NoiaChat |
 | 2026-06-19 | WA-COM-007/008 implementados como MVP: estado operativo por canal y checklist comercial de configuracion Meta en pantalla. | Equipo NoiaChat |
 | 2026-06-19 | WA-COM-009/010 implementados como MVP: pruebas de aislamiento comercial y comando de validacion real de canal WhatsApp Meta. | Equipo NoiaChat |
+| 2026-06-22 | CONV-006 implementado como MVP: el inicio de nuevos envios pasa a `/conversations` mediante Nuevo chat, reutilizando o creando conversaciones por contacto/canal. | Equipo NoiaChat |
 | 2026-06-15 | Redisenio operativo de conversaciones, carga del chat activo en `/conversations` y menu lateral colapsable con iconos. | Equipo NoiaChat |
 | 2026-06-15 | Indicadores de lectura en mensajes salientes y sonido opcional para mensajes entrantes nuevos. | Equipo NoiaChat |
 | 2026-06-08 | Creacion de matriz inicial de funcionalidades y backlog priorizado. | Equipo NoiaChat |

@@ -5,6 +5,8 @@ namespace App\Modules\Conversations\Presentation\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\Compliance\Application\Services\ComplianceDecisionService;
+use App\Modules\Contacts\Domain\Repositories\ChannelRepositoryInterface;
+use App\Modules\Contacts\Domain\Repositories\ContactRepositoryInterface;
 use App\Modules\Conversations\Domain\Repositories\ConversationRepositoryInterface;
 use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
 use App\Modules\Conversations\Presentation\Requests\AssignConversationRequest;
@@ -22,11 +24,14 @@ use App\Modules\Tenancy\Infrastructure\Persistence\Models\Branch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\Request;
 
 class ConversationController extends Controller
 {
     public function __construct(
         private readonly ConversationRepositoryInterface $conversations,
+        private readonly ContactRepositoryInterface $contacts,
+        private readonly ChannelRepositoryInterface $channels,
         private readonly QueueTextMessageUseCase $queueTextMessage,
         private readonly QueueMediaMessageUseCase $queueMediaMessage,
         private readonly QueueTemplateMessageUseCase $queueTemplateMessage,
@@ -42,8 +47,34 @@ class ConversationController extends Controller
             'conversations' => $this->conversations->paginateLatest(20, $filters),
             'users' => $this->tenantUsersQuery(branchId: $conversation?->branch_id ?? ($filters['branch_id'] ?? null))->get(),
             'branches' => $this->tenantBranches(),
+            'contacts' => $this->contacts->ordered(),
+            'channels' => $this->channels->active(),
             ...$this->conversationViewData($conversation),
         ]);
+    }
+
+    public function start(Request $request)
+    {
+        abort_unless($request->user()?->can('messages.send'), 403);
+
+        $validated = $request->validate([
+            'contact_id' => ['required', 'uuid'],
+            'channel_id' => ['required', 'integer'],
+        ], [
+            'contact_id.required' => 'Selecciona un contacto.',
+            'contact_id.uuid' => 'El contacto seleccionado no es valido.',
+            'channel_id.required' => 'Selecciona un canal.',
+            'channel_id.integer' => 'El canal seleccionado no es valido.',
+        ]);
+
+        $contact = $this->contacts->findById($validated['contact_id']) ?? abort(404);
+        $channel = $this->channels->active()->firstWhere('id', (int) $validated['channel_id']) ?? abort(404);
+        $conversation = app(\App\Modules\Conversations\Application\Services\ConversationService::class)
+            ->findOrCreate($contact->id, $channel->id);
+
+        return redirect()
+            ->route('conversations.index', ['conversation' => $conversation->id])
+            ->with('status', 'Conversacion lista para operar.');
     }
 
     public function refresh()

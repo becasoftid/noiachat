@@ -40,7 +40,7 @@
         </form>
         <div class="flex gap-2">
             <a href="{{ route('reports.exports.messages', request()->query()) }}" class="noia-btn-secondary">Exportar CSV</a>
-            <a href="{{ route('messages.create') }}" class="noia-btn-primary">Nuevo envío</a>
+            <a href="{{ route('conversations.index', ['new' => 1]) }}" class="noia-btn-primary">Nuevo envío</a>
         </div>
     </div>
     <div class="noia-table-wrap">
