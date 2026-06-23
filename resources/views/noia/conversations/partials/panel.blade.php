@@ -79,8 +79,8 @@
         </div>
     </header>
 
-    <div class="min-h-0 flex-1 overflow-y-auto bg-[#f7fbfc] px-4 py-5">
-        <div class="mx-auto max-w-4xl space-y-3">
+    <div class="min-h-0 flex-1 overflow-y-auto bg-[#f7fbfc] px-4 py-5 2xl:px-6">
+        <div class="w-full space-y-3">
             @php $lastDate = null; @endphp
             @forelse($timeline as $item)
                 @php
@@ -113,13 +113,13 @@
                 @endif
 
                 @if($isBlocked)
-                    <div class="mx-auto max-w-xl rounded-lg border border-amber-100 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+                    <div class="mx-auto max-w-3xl rounded-lg border border-amber-100 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
                         <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Sistema · {{ optional($createdAt)->format('H:i') }}</p>
                         <p class="mt-2 font-semibold text-slate-900">Envío bloqueado: {{ $item->compliance_block_label }}</p>
                         <p class="mt-1">{{ $item->compliance_block_description }}</p>
                     </div>
                 @else
-                    <div class="@if($item->direction === 'outbound') ml-auto rounded-br-sm bg-[#d9fdd3] @else rounded-bl-sm bg-white @endif max-w-[88%] rounded-lg px-4 py-3 text-slate-950 shadow-sm ring-1 ring-black/5 lg:max-w-[72%]">
+                    <div class="@if($item->direction === 'outbound') ml-auto rounded-br-sm bg-[#d9fdd3] @else rounded-bl-sm bg-white @endif max-w-[92%] rounded-lg px-4 py-3 text-slate-950 shadow-sm ring-1 ring-black/5 lg:max-w-[78%] 2xl:max-w-[72%]">
                         <div class="flex items-start justify-between gap-3">
                             <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{{ $item->direction === 'outbound' ? 'Saliente' : 'Entrante' }}</p>
                             <p class="shrink-0 text-[11px] text-slate-500">{{ optional($createdAt)->format('H:i') }}</p>
@@ -191,7 +191,7 @@
     </div>
 
     <footer class="border-t border-slate-200 bg-white px-4 py-4 shadow-[0_-16px_40px_rgba(15,23,42,0.06)]">
-        <div class="mx-auto max-w-4xl">
+        <div class="w-full">
             @if($customerCareWindowClosed)
                 <textarea class="sr-only" disabled aria-hidden="true"></textarea>
                 <form

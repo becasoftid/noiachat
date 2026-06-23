@@ -23,11 +23,12 @@
             ->filter(fn ($key) => request()->filled($key))
             ->count() + (request()->boolean('mine') ? 1 : 0);
         $baseQuery = request()->except(['page', 'mine', 'quick', 'assigned_user_id']);
+        $closeNewChatQuery = request()->except(['new', 'contact_id']);
     @endphp
 
     <div
         class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:grid lg:h-[calc(100vh-190px)] lg:min-h-[660px]"
-        :class="{ 'xl:grid-cols-[390px_minmax(0,1fr)_320px]': true }"
+        :class="{ 'xl:grid-cols-[340px_minmax(0,1fr)_280px] 2xl:grid-cols-[360px_minmax(0,1fr)_300px]': true }"
         x-data="{ filtersOpen: false, detailsOpen: false }"
     >
         <aside class="flex min-h-[660px] flex-col border-slate-200 bg-white lg:border-r">
@@ -97,7 +98,17 @@
                     @if(request()->boolean('new'))
                         <form method="POST" action="{{ route('conversations.start') }}" class="mt-3 grid gap-2 rounded-lg border border-emerald-100 bg-emerald-50/70 p-3">
                             @csrf
-                            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Iniciar conversación</p>
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Iniciar conversación</p>
+                                <a
+                                    href="{{ route('conversations.index', $closeNewChatQuery) }}"
+                                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+                                    aria-label="Ocultar inicio de conversación"
+                                    title="Ocultar inicio de conversación"
+                                >
+                                    &times;
+                                </a>
+                            </div>
                             <label class="sr-only" for="new-contact">Contacto</label>
                             <select id="new-contact" class="noia-select bg-white" name="contact_id" required>
                                 <option value="">Selecciona contacto</option>
@@ -122,6 +133,18 @@
                 @endcan
 
                 <form method="GET" class="mt-3 grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3" x-cloak x-show="filtersOpen" x-transition.opacity>
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Filtros avanzados</p>
+                        <button
+                            type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-cyan-100"
+                            x-on:click="filtersOpen = false"
+                            aria-label="Ocultar filtros"
+                            title="Ocultar filtros"
+                        >
+                            &times;
+                        </button>
+                    </div>
                     @if(request()->filled('conversation'))
                         <input type="hidden" name="conversation" value="{{ request('conversation') }}">
                     @endif
