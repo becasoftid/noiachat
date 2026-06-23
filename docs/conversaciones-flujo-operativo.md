@@ -21,12 +21,13 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
 ## Flujo objetivo
 
 1. El usuario entra a **Mensajes** o **Conversaciones**.
-2. Si quiere iniciar una conversacion, usa **Nuevo chat** dentro del inbox de `/conversations`.
-3. Selecciona contacto y canal.
-4. NoiaChat reutiliza una conversacion abierta, pendiente o resuelta si existe.
-5. Si no existe, NoiaChat crea una conversacion nueva.
-6. El usuario queda en `/conversations?conversation={id}`.
-7. Desde el panel de conversacion puede:
+2. Si ya sabe a quien va a escribir, en `/messages` puede seleccionar contacto/canal en **Abrir chat directo**.
+3. Si prefiere operar desde el inbox, usa **Nuevo chat** dentro de `/conversations`.
+4. Selecciona contacto y canal.
+5. NoiaChat reutiliza una conversacion abierta, pendiente o resuelta si existe.
+6. Si no existe, NoiaChat crea una conversacion nueva.
+7. El usuario queda en `/conversations?conversation={id}`.
+8. Desde el panel de conversacion puede:
    - Responder con texto libre si la ventana de 24h lo permite.
    - Enviar una plantilla aprobada si la ventana de 24h esta cerrada.
    - Enviar adjuntos cuando el flujo de compliance lo permita.
@@ -59,7 +60,7 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
 | `GET /conversations` | Inbox operativo y panel de chat. |
 | `POST /conversations/start` | Inicia o reutiliza una conversacion por contacto/canal. |
 | `GET /conversations?conversation={id}` | Abre una conversacion dentro del inbox. |
-| `GET /messages` | Bitacora/listado de mensajes salientes. |
+| `GET /messages` | Bitacora/listado de mensajes salientes y acceso rapido para abrir chat por contacto/canal. |
 | `GET /messages/create` | Respaldo tecnico legado para envio directo por tipo. |
 
 ## Criterios de aceptacion
@@ -67,7 +68,8 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
 - El inbox muestra una accion **Nuevo chat** para usuarios con permiso de envio.
 - El formulario de nuevo chat permite seleccionar contacto y canal activo del tenant actual.
 - Al enviar el formulario, se crea o reutiliza una conversacion y se redirige al panel del chat.
-- El boton **Nuevo envio** de `/messages` abre `/conversations?new=1`.
+- El bloque **Nuevo envio** de `/messages` permite seleccionar contacto/canal y abre directamente `/conversations?conversation={id}`.
+- El enlace secundario de `/messages` conserva acceso a `/conversations?new=1` como flujo completo.
 - Un usuario sin permiso `messages.send` no puede iniciar conversaciones.
 - No se crean conversaciones para contactos o canales fuera del tenant activo.
 - Las pruebas automatizadas cubren creacion/reutilizacion del chat y el cambio del boton de nuevo envio.
@@ -77,11 +79,10 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
 - Pruebas en `tests/Feature/NoiaChatMvpTest.php`.
 - Validacion manual:
   1. Ir a `/messages`.
-  2. Clic en **Nuevo envio**.
-  3. Confirmar que abre `/conversations?new=1`.
-  4. Seleccionar contacto y canal.
-  5. Confirmar que abre `/conversations?conversation={id}`.
-  6. Enviar plantilla o texto segun ventana de 24h.
+  2. En **Nuevo envio**, seleccionar contacto y canal.
+  3. Clic en **Abrir chat**.
+  4. Confirmar que abre `/conversations?conversation={id}`.
+  5. Enviar plantilla o texto segun ventana de 24h.
 
 ## Estado
 

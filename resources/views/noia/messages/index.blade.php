@@ -19,8 +19,8 @@
             'blocked_by_policy' => 'Bloqueado por política',
         ];
     @endphp
-    <div class="mb-4 flex items-center justify-between gap-4">
-        <form method="GET" class="noia-filter-bar grid flex-1 gap-3 md:grid-cols-6">
+    <div class="mb-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <form method="GET" class="noia-filter-bar grid gap-3 md:grid-cols-6">
             <input class="noia-input" name="search" value="{{ request('search') }}" placeholder="Buscar contacto o teléfono">
             <select class="noia-select" name="type">
                 <option value="">Tipo</option>
@@ -38,9 +38,41 @@
             <input class="noia-input" type="date" name="date_to" value="{{ request('date_to') }}">
             <button class="noia-btn-primary">Filtrar</button>
         </form>
-        <div class="flex gap-2">
-            <a href="{{ route('reports.exports.messages', request()->query()) }}" class="noia-btn-secondary">Exportar CSV</a>
-            <a href="{{ route('conversations.index', ['new' => 1]) }}" class="noia-btn-primary">Nuevo envío</a>
+
+        <div class="noia-filter-bar">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">Nuevo envío</p>
+                    <h2 class="text-base font-semibold text-slate-950">Abrir chat directo</h2>
+                </div>
+                <a href="{{ route('reports.exports.messages', request()->query()) }}" class="noia-btn-secondary h-10 px-3">Exportar CSV</a>
+            </div>
+
+            @can('messages.send')
+                <form method="POST" action="{{ route('conversations.start') }}" class="mt-3 grid gap-2">
+                    @csrf
+                    <select class="noia-select bg-white" name="contact_id" required>
+                        <option value="">Selecciona contacto</option>
+                        @foreach($contacts as $contact)
+                            <option value="{{ $contact->id }}" @selected(old('contact_id') === $contact->id)>
+                                {{ $contact->full_name }} · {{ $contact->primary_phone }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <select class="noia-select bg-white" name="channel_id" required>
+                        <option value="">Selecciona canal</option>
+                        @foreach($channels as $channel)
+                            <option value="{{ $channel->id }}" @selected((string) old('channel_id') === (string) $channel->id)>
+                                {{ $channel->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <button class="noia-btn-primary">Abrir chat</button>
+                    <a href="{{ route('conversations.index', ['new' => 1]) }}" class="text-center text-sm font-semibold text-cyan-700 transition hover:text-cyan-900">Ver flujo completo en conversaciones</a>
+                </form>
+            @else
+                <p class="mt-3 text-sm text-slate-500">No tienes permiso para iniciar conversaciones.</p>
+            @endcan
         </div>
     </div>
     <div class="noia-table-wrap">

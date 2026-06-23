@@ -155,8 +155,11 @@ class NoiaChatMvpTest extends TestCase
         $this->actingAs($this->admin)
             ->get(route('messages.index'))
             ->assertOk()
+            ->assertSee(route('conversations.start'), false)
             ->assertSee(route('conversations.index', ['new' => 1]), false)
-            ->assertSee('Nuevo envío');
+            ->assertSee('Nuevo envío')
+            ->assertSee('Abrir chat directo')
+            ->assertSee('Abrir chat');
     }
 
     public function test_operator_can_start_new_chat_from_conversations(): void
