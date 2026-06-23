@@ -1,6 +1,6 @@
-<section class="flex min-h-[720px] flex-col bg-[#eef5f7] lg:min-h-0">
-    <div class="border-b border-slate-200 bg-white px-4 py-3">
-        <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+<section class="flex min-h-[720px] flex-col bg-[#e8f1f3] lg:min-h-0">
+    <div class="border-b border-slate-200 bg-white px-5 py-4">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div class="flex min-w-0 items-center gap-3">
                 @php
                     $contactName = $conversation->contact->full_name;
@@ -10,18 +10,25 @@
                         ->map(fn ($part) => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($part, 0, 1)))
                         ->join('');
                 @endphp
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#10202a] text-sm font-bold text-white">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#10202a] text-sm font-bold text-white shadow-sm">
                     {{ $contactInitials ?: 'N' }}
                 </div>
                 <div class="min-w-0">
-                    <h2 class="truncate text-base font-semibold text-slate-950">{{ $contactName }}</h2>
-                    <p class="truncate text-xs text-slate-500">
-                        {{ $conversation->contact->primary_phone }} · {{ $conversation->channel?->name }} · {{ $conversation->assignedUser?->name ?? 'Sin asignar' }}
-                    </p>
+                    <div class="flex min-w-0 flex-wrap items-center gap-2">
+                        <h2 class="truncate text-lg font-semibold text-slate-950">{{ $contactName }}</h2>
+                        <span class="noia-badge-neutral py-0.5">{{ $statusLabels[$conversation->status] ?? $conversation->status }}</span>
+                    </div>
+                    <div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
+                        <span>{{ $conversation->contact->primary_phone }}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{{ $conversation->channel?->name }}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{{ $conversation->assignedUser?->name ?? 'Sin asignar' }}</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex flex-col gap-2 xl:flex-row xl:items-center">
+            <div class="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-end">
                 @can('messages.send')
                     @if($conversation->assigned_user_id !== auth()->id())
                         <form method="POST" action="{{ route('conversations.assign-me', $conversation) }}">
@@ -52,7 +59,7 @@
     </div>
 
     <div class="min-h-0 flex-1 overflow-y-auto px-4 py-5">
-        <div class="mx-auto max-w-5xl space-y-3">
+        <div class="mx-auto max-w-4xl space-y-3">
             @php
                 $lastDate = null;
                 $displayTimezone = config('app.display_timezone', 'America/Bogota');
@@ -86,7 +93,7 @@
                     @php $lastDate = $dateKey; @endphp
                 @endif
 
-                <div class="@if($item->direction === 'outbound') ml-auto bg-[#d9fdd3] text-slate-950 @else bg-white text-slate-950 @endif max-w-[82%] rounded-lg px-4 py-3 shadow-sm lg:max-w-[68%]">
+                <div class="@if($item->direction === 'outbound') ml-auto rounded-br-sm bg-[#d9fdd3] text-slate-950 @else rounded-bl-sm bg-white text-slate-950 @endif max-w-[88%] rounded-lg px-4 py-3 shadow-sm ring-1 ring-black/5 lg:max-w-[72%]">
                     <div class="flex items-start justify-between gap-3">
                         <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{{ $item->direction === 'outbound' ? 'Saliente' : 'Entrante' }}</p>
                         <p class="shrink-0 text-[11px] text-slate-500">{{ optional($createdAt)->format('H:i') }}</p>
@@ -166,45 +173,28 @@
         </div>
     </div>
 
-    <div class="border-t border-slate-200 bg-white px-4 py-3">
-        <div class="mx-auto max-w-5xl space-y-3">
+    <div class="border-t border-slate-200 bg-white px-4 py-4 shadow-[0_-16px_40px_rgba(15,23,42,0.06)]">
+        <div class="mx-auto max-w-4xl space-y-3">
             @if($customerCareWindowClosed)
-                <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                    <p class="font-semibold">{{ $freeFormEligibility->label() }}</p>
-                    <p class="mt-1">{{ $freeFormEligibility->description() }}</p>
+                <div class="flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="font-semibold">{{ $freeFormEligibility->label() }}</p>
+                        <p class="mt-1">{{ $freeFormEligibility->description() }}</p>
+                    </div>
+                    <span class="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">Usar plantilla</span>
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('conversations.reply', $conversation) }}" class="space-y-2">
-                @csrf
-                <h3 class="sr-only">Respuesta de texto</h3>
-                <div class="grid gap-2 lg:grid-cols-[1fr_auto]">
-                    <textarea class="noia-textarea min-h-[54px] resize-none bg-slate-50" name="body" rows="2" placeholder="Responder conversación" @disabled($customerCareWindowClosed)></textarea>
-                    <button class="noia-btn-success h-full min-h-[54px] px-6" @disabled($customerCareWindowClosed)>Enviar respuesta</button>
-                </div>
-            </form>
-
-            <div class="grid gap-3 xl:grid-cols-2">
-                <details class="rounded-lg border border-slate-200 bg-slate-50/80 p-3">
-                    <summary class="cursor-pointer text-sm font-semibold text-slate-800">Respuesta con adjunto</summary>
-                    <form method="POST" enctype="multipart/form-data" action="{{ route('conversations.reply-media', $conversation) }}" class="mt-3 space-y-3">
-                        @csrf
-                        <select class="noia-select w-full bg-white" name="type" @disabled($customerCareWindowClosed)>
-                            <option value="image">Imagen</option>
-                            <option value="document">Documento</option>
-                        </select>
-                        <textarea class="noia-textarea min-h-[80px] bg-white" name="body" rows="2" placeholder="Texto opcional" @disabled($customerCareWindowClosed)></textarea>
-                        <input class="noia-file-input bg-white" type="file" name="file" @disabled($customerCareWindowClosed)>
-                        <button class="noia-btn-info" @disabled($customerCareWindowClosed)>Enviar adjunto</button>
-                    </form>
-                </details>
-
-                <details class="rounded-lg border border-slate-200 bg-slate-50/80 p-3" open>
-                    <summary class="cursor-pointer text-sm font-semibold text-slate-800">Respuesta con plantilla</summary>
-                    <form method="POST" action="{{ route('conversations.reply-template', $conversation) }}" class="mt-3 space-y-3">
-                        @csrf
-                        <div class="grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
-                            <select class="noia-select w-full bg-white" name="message_template_id">
+            @if($customerCareWindowClosed)
+                <div class="grid gap-3 xl:grid-cols-[minmax(0,1fr)_310px]">
+                    <div class="rounded-lg border border-amber-200 bg-amber-50/70 p-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-sm font-semibold text-slate-900">Enviar plantilla aprobada</p>
+                            <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">{{ $templates->count() }} disponibles</span>
+                        </div>
+                        <form method="POST" action="{{ route('conversations.reply-template', $conversation) }}" class="mt-3 grid gap-3 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_auto]">
+                            @csrf
+                            <select class="noia-select bg-white" name="message_template_id">
                                 <option value="">Selecciona plantilla</option>
                                 @foreach($templates as $template)
                                     <option value="{{ $template->id }}" @selected((int) old('message_template_id') === $template->id)>
@@ -212,16 +202,80 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <input class="noia-input w-full bg-white" name="variables" value="{{ old('variables') }}" placeholder="Variables separadas por |">
-                            <button class="noia-btn-warning">Enviar plantilla</button>
+                            <input class="noia-input bg-white" name="variables" value="{{ old('variables') }}" placeholder="Variables separadas por |">
+                            <button class="noia-btn-warning px-5">Enviar plantilla</button>
+                            @error('variables')
+                                <p class="text-xs font-semibold text-red-600 lg:col-span-3">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs text-amber-900/80 lg:col-span-3">Ejemplo de variables: Juan|12345</p>
+                        </form>
+                    </div>
+
+                    <details class="rounded-lg border border-slate-200 bg-slate-50/80 p-3">
+                        <summary class="cursor-pointer text-sm font-semibold text-slate-700">Texto y adjuntos pausados</summary>
+                        <div class="mt-3 space-y-2 text-sm text-slate-500">
+                            <p>Se habilitan cuando el cliente responde por WhatsApp y abre la ventana de 24 horas.</p>
+                            <textarea class="noia-textarea min-h-[54px] resize-none bg-white" rows="2" placeholder="Responder conversación" disabled></textarea>
                         </div>
+                    </details>
+                </div>
+            @else
+                <div class="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+                    <div class="space-y-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-sm font-semibold text-slate-900">Respuesta rápida</p>
+                        <span class="text-xs font-semibold text-emerald-700">Ventana 24h activa</span>
+                    </div>
+
+                    <form method="POST" action="{{ route('conversations.reply', $conversation) }}" class="space-y-2">
+                        @csrf
+                        <h3 class="sr-only">Respuesta de texto</h3>
+                        <div class="grid gap-2 lg:grid-cols-[1fr_auto]">
+                            <textarea class="noia-textarea min-h-[56px] resize-none bg-white" name="body" rows="2" placeholder="Responder conversación"></textarea>
+                            <button class="noia-btn-success h-full min-h-[56px] px-6">Enviar</button>
+                        </div>
+                    </form>
+
+                    <details class="rounded-lg border border-slate-200 bg-white p-3">
+                        <summary class="cursor-pointer text-sm font-semibold text-slate-800">Adjuntar imagen o documento</summary>
+                        <form method="POST" enctype="multipart/form-data" action="{{ route('conversations.reply-media', $conversation) }}" class="mt-3 grid gap-3 lg:grid-cols-[160px_1fr]">
+                            @csrf
+                            <select class="noia-select bg-white" name="type">
+                                <option value="image">Imagen</option>
+                                <option value="document">Documento</option>
+                            </select>
+                            <input class="noia-file-input bg-white" type="file" name="file">
+                            <textarea class="noia-textarea min-h-[72px] bg-white lg:col-span-2" name="body" rows="2" placeholder="Texto opcional"></textarea>
+                            <button class="noia-btn-info lg:col-span-2">Enviar adjunto</button>
+                        </form>
+                    </details>
+                </div>
+
+                <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-sm font-semibold text-slate-900">Respuesta con plantilla</p>
+                        <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">{{ $templates->count() }} disponibles</span>
+                    </div>
+                    <form method="POST" action="{{ route('conversations.reply-template', $conversation) }}" class="mt-3 space-y-3">
+                        @csrf
+                        <select class="noia-select w-full bg-white" name="message_template_id">
+                            <option value="">Selecciona plantilla</option>
+                            @foreach($templates as $template)
+                                <option value="{{ $template->id }}" @selected((int) old('message_template_id') === $template->id)>
+                                    {{ $template->name }} · {{ $template->currentVersion?->expectedVariableCount() ?? 0 }} variables
+                                </option>
+                            @endforeach
+                        </select>
+                        <input class="noia-input w-full bg-white" name="variables" value="{{ old('variables') }}" placeholder="Variables separadas por |">
                         @error('variables')
                             <p class="text-xs font-semibold text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="text-xs text-slate-500">Completa exactamente la cantidad de variables indicada. Ejemplo: Juan|12345</p>
+                        <button class="noia-btn-warning w-full">Enviar plantilla</button>
+                        <p class="text-xs text-amber-900/80">Completa exactamente la cantidad de variables indicada. Ejemplo: Juan|12345</p>
                     </form>
-                </details>
-            </div>
+                </div>
+                </div>
+            @endif
         </div>
     </div>
 </section>

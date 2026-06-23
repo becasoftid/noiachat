@@ -31,6 +31,15 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
    - Enviar una plantilla aprobada si la ventana de 24h esta cerrada.
    - Enviar adjuntos cuando el flujo de compliance lo permita.
 
+## Organizacion visual del panel
+
+- La lista lateral muestra contacto, vista previa, hora, contador de no leidos, canal y usuario asignado.
+- El chat activo se resalta para evitar dudas cuando hay varios contactos visibles.
+- La cabecera del panel muestra contacto, telefono, canal, responsable y estado operativo.
+- El historial mantiene burbujas entrantes/salientes, errores de Meta y estados de entrega/lectura.
+- El compositor inferior separa la respuesta rapida de texto, los adjuntos y las plantillas aprobadas.
+- Cuando la ventana de 24h esta cerrada, texto y adjuntos quedan deshabilitados visualmente y la accion de plantilla queda destacada.
+
 ## Reglas de negocio
 
 - El inicio de chat respeta empresa y sede activa.
@@ -76,4 +85,4 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
 
 ## Estado
 
-MVP. El flujo principal queda unificado en conversaciones. Como mejora futura se puede reemplazar el selector de contacto por busqueda/autocomplete cuando haya alto volumen de contactos.
+MVP. El flujo principal queda unificado en conversaciones y la vista fue reorganizada para que la operacion diaria sea mas cercana a una bandeja tipo WhatsApp. Como mejora futura se puede reemplazar el selector de contacto por busqueda/autocomplete cuando haya alto volumen de contactos.

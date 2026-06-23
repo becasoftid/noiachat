@@ -29,7 +29,7 @@ class EloquentConversationRepository implements ConversationRepositoryInterface
     public function paginateLatest(int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
         return $this->query()
-            ->with(['contact', 'assignedUser'])
+            ->with(['contact', 'channel', 'assignedUser'])
             ->addSelect([
                 'latest_inbound_body' => InboundMessage::query()
                     ->select('body')

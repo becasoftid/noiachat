@@ -29,23 +29,35 @@
             href="{{ route('conversations.index', array_merge(request()->query(), ['conversation' => $listConversation->id])) }}"
             data-unread-count="{{ $listConversation->unread_count }}"
             class="@class([
-                'group transition hover:bg-slate-50',
-                'bg-slate-100' => $isActive,
+                'group relative transition hover:bg-slate-50',
+                'bg-cyan-50/70' => $isActive,
                 'bg-white' => ! $isActive,
             ])"
-            style="display:grid;grid-template-columns:42px minmax(0,1fr) 52px;align-items:center;column-gap:10px;width:100%;max-width:100%;min-height:64px;overflow:hidden;padding:10px 14px;text-decoration:none;"
+            style="display:grid;grid-template-columns:42px minmax(0,1fr) 58px;align-items:center;column-gap:10px;width:100%;max-width:100%;min-height:72px;overflow:hidden;padding:12px 14px;text-decoration:none;"
         >
+            @if($isActive)
+                <span class="absolute inset-y-3 left-0 w-1 rounded-r-full bg-cyan-700" aria-hidden="true"></span>
+            @endif
+
             <div style="display:flex;width:42px;height:42px;align-items:center;justify-content:center;border-radius:9999px;background:#10202a;color:#fff;font-size:13px;font-weight:700;line-height:1;box-shadow:0 1px 2px rgb(15 23 42 / 0.08);">
                 {{ $initials ?: 'N' }}
             </div>
 
             <div style="min-width:0;overflow:hidden;">
-                <p style="display:block;margin:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#0f172a;font-size:15px;font-weight:700;line-height:20px;">{{ $name }}</p>
+                <div class="flex min-w-0 items-center gap-2">
+                    <p style="display:block;margin:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#0f172a;font-size:15px;font-weight:700;line-height:20px;">{{ $name }}</p>
+                    @if($listConversation->status !== 'open')
+                        <span class="hidden shrink-0 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500 sm:inline-flex">
+                            {{ $statusLabels[$listConversation->status] ?? $listConversation->status }}
+                        </span>
+                    @endif
+                </div>
                 <span class="sr-only">{{ $listConversation->contact->primary_phone }}</span>
                 <p style="display:block;margin:2px 0 0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64748b;font-size:13px;line-height:18px;">{{ $previewPrefix }}{{ $preview }}</p>
+                <p class="mt-1 truncate text-[11px] font-semibold text-slate-400">{{ $listConversation->channel?->name }} · {{ $listConversation->assignedUser?->name ?? 'Sin asignar' }}</p>
             </div>
 
-            <div style="display:flex;width:52px;min-width:52px;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;text-align:right;">
+            <div style="display:flex;width:58px;min-width:58px;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;text-align:right;">
                 <p style="margin:0;color:{{ $listConversation->unread_count > 0 ? '#059669' : '#94a3b8' }};font-size:12px;font-weight:600;line-height:16px;white-space:nowrap;">
                     @if($timestamp)
                         {{ $timestamp->isToday() ? $timestamp->format('H:i') : $timestamp->format('d/m/Y') }}
