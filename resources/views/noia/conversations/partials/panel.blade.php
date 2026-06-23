@@ -1,20 +1,14 @@
 @php
     $displayTimezone = config('app.display_timezone', 'America/Bogota');
-    $contactName = $conversation->contact->full_name;
-    $contactInitials = collect(explode(' ', trim($contactName)))
-        ->filter()
-        ->take(2)
-        ->map(fn ($part) => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($part, 0, 1)))
-        ->join('');
     $backToInboxUrl = route('conversations.index', request()->except(['conversation']));
     $lastActivity = $conversation->last_message_at?->copy()->timezone($displayTimezone);
     $windowUntil = $customerCareWindowUntil?->copy()->timezone($displayTimezone);
 @endphp
 
 <section class="flex min-h-0 flex-col bg-[#f7fbfc]">
-    <header class="border-b border-slate-200 bg-white px-4 py-4">
-        <div class="flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
-            <div class="flex min-w-0 items-center gap-3">
+    <header class="border-b border-slate-200 bg-white px-4 py-3">
+        <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div class="flex min-w-0 flex-wrap items-center gap-2">
                 <a
                     href="{{ $backToInboxUrl }}"
                     class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-cyan-100 lg:hidden"
@@ -25,29 +19,13 @@
                         <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </a>
-                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#10202a] text-base font-bold text-white shadow-sm">
-                    {{ $contactInitials ?: 'N' }}
-                </div>
-                <div class="min-w-0">
-                    <div class="flex min-w-0 flex-wrap items-center gap-2">
-                        <h2 class="truncate text-xl font-bold text-slate-950">{{ $contactName }}</h2>
-                        <span class="rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-700">{{ $statusLabels[$conversation->status] ?? $conversation->status }}</span>
-                    </div>
-                    <div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
-                        <span>{{ $conversation->contact->primary_phone }}</span>
-                        <span aria-hidden="true">·</span>
-                        <span class="font-semibold text-emerald-700">{{ $conversation->channel?->name ?? 'WhatsApp' }}</span>
-                    </div>
-                </div>
-            </div>
 
-            <div class="flex flex-wrap items-center gap-2">
-                <span class="inline-flex h-10 items-center gap-2 rounded-lg bg-slate-50 px-3 text-sm font-semibold text-slate-600">
+                <span class="inline-flex h-10 min-w-0 items-center gap-2 rounded-lg bg-slate-50 px-3 text-sm font-semibold text-slate-600">
                     <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke-linecap="round" />
                         <circle cx="9" cy="7" r="4" />
                     </svg>
-                    {{ $conversation->assignedUser?->name ?? 'Sin asignar' }}
+                    <span class="truncate">{{ $conversation->assignedUser?->name ?? 'Sin asignar' }}</span>
                 </span>
 
                 @can('messages.send')
@@ -59,7 +37,9 @@
                         </form>
                     @endif
                 @endcan
+            </div>
 
+            <div class="flex flex-wrap items-center gap-2">
                 <form method="POST" action="{{ route('conversations.assign', $conversation) }}" class="flex gap-2">
                     @csrf
                     @method('PUT')
@@ -87,9 +67,9 @@
             </div>
         </div>
 
-        <div class="@class(['mt-4 rounded-lg border px-4 py-3 text-sm', 'border-amber-200 bg-amber-50 text-amber-900' => $customerCareWindowClosed, 'border-emerald-200 bg-emerald-50 text-emerald-800' => ! $customerCareWindowClosed])">
+        <div class="@class(['mt-3 rounded-lg border px-3 py-2 text-sm', 'border-amber-200 bg-amber-50 text-amber-900' => $customerCareWindowClosed, 'border-emerald-200 bg-emerald-50 text-emerald-800' => ! $customerCareWindowClosed])">
             @if($customerCareWindowClosed)
-                <p class="font-semibold">Ventana 24h cerrada. Ventana de atención cerrada. Usa una plantilla aprobada para responder.</p>
+                <p class="font-semibold">Ventana 24h cerrada. Usa una plantilla aprobada para responder.</p>
             @else
                 <p class="font-semibold">Ventana de atención abierta{{ $windowUntil ? ' hasta las '.$windowUntil->format('H:i') : '' }}. Puedes enviar mensajes libres.</p>
             @endif
