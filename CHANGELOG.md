@@ -46,6 +46,7 @@ El formato sigue una estructura inspirada en [Keep a Changelog](https://keepacha
 - Endurecimiento de settings de canal WhatsApp: secretos enmascarados, preservacion al dejar campos vacios y validaciones HTTPS/Meta ID.
 - Gobierno de rotacion del token WhatsApp por canal: expiracion, ultima rotacion, responsable, procedimiento y alertas en monitor de salud.
 - 2FA OTP por email para roles administrativos (`admin`, `super_admin`, `company_admin` y `branch_manager`) antes de acceder al panel.
+- Interruptor `NOIACHAT_2FA_ENABLED` para activar o desactivar temporalmente el 2FA administrativo mientras se configura correo/SMTP real.
 - Onboarding de prueba basica desde `/register`: crea usuario responsable, empresa, sede inicial, membresia `company_admin` y suscripcion `trialing` al plan `basic_trial`.
 - Manual de onboarding publico en `docs/onboarding-registro-trial.md`, con flujo `/register`, reglas de trial, validaciones en espanol y checklist.
 - Modelo inicial de planes, suscripciones y features por plan: tablas `plans`, `company_subscriptions`, `features` y `plan_features`, con seeders de `basic_trial`, `basic`, `pro` y `enterprise`.

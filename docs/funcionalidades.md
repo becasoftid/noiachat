@@ -8,7 +8,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 
 | Area | Estado general | Lectura rapida |
 | --- | --- | --- |
-| Autenticacion y acceso | MVP | Login funcional; registro crea empresa/sede en prueba basica, gestion de usuarios disponible para admin y 2FA OTP obligatorio para roles administrativos; falta validacion SMTP productiva y politicas avanzadas. |
+| Autenticacion y acceso | MVP | Login funcional; registro crea empresa/sede en prueba basica, gestion de usuarios disponible para admin y 2FA OTP configurable para roles administrativos; queda desactivado temporalmente hasta configurar correo/SMTP. |
 | Multiempresa y sedes | MVP | Modelo base, contexto activo, aislamiento, canales WhatsApp, contactos, conversaciones, auditoria, metricas y administracion UI por empresa/sede creados; falta endurecimiento UX y validacion productiva con empresas reales. |
 | Contactos | MVP | CRUD, importacion, deduplicacion basica y fusion controlada funcionan dentro del alcance de empresa/canal. |
 | Consentimientos | MVP | Otorgar/revocar funciona; falta historial mas completo y reglas de expiracion si aplican. |
@@ -18,7 +18,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | Auditoria | MVP | Registro y filtros funcionan por empresa/sede; falta detalle expandido/exportacion. |
 | Reportes | MVP | Dashboard basico segmentado por empresa/sede; faltan metricas operativas avanzadas y exportaciones. |
 | Despliegue | Operativo | GitHub Actions funciona con secretos, worker permanente y backups automaticos locales. |
-| Seguridad | MVP | Roles, usuarios activos, CSRF base, firma webhook y 2FA para administradores; falta validacion SMTP productiva y politicas productivas avanzadas. |
+| Seguridad | MVP | Roles, usuarios activos, CSRF base, firma webhook y 2FA administrativo configurable; falta activar 2FA con SMTP real y politicas productivas avanzadas. |
 
 ## Leyenda
 
@@ -32,7 +32,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | AUTH-001 | Autenticacion | Login de administrador | Operativo | P0 | Login validado en produccion; tests de autenticacion | Cambiar contrasena inicial y configurar recuperacion por email real. |
 | AUTH-002 | Autenticacion | Recuperacion de contrasena | MVP | P1 | Breeze y tests existentes | Configurar mailer real y probar flujo productivo. |
 | AUTH-003 | Usuarios | Gestion de usuarios desde panel | MVP | P1 | CRUD admin, asignacion de roles, bloqueo de inactivos, aislamiento por empresa activa y ocultamiento/bloqueo de administradores globales en Usuarios y Membresias para usuarios comerciales; pruebas en `tests/Feature/UserManagementTest.php` y `tests/Feature/Auth/RegistrationTest.php` | Validar flujo manual en panel y mejorar gestion de sesiones activas. |
-| AUTH-004 | Usuarios | 2FA para administradores | MVP | P2 | Desafio OTP por email obligatorio para `admin`, `super_admin`, `company_admin` y `branch_manager`; pruebas en `tests/Feature/Auth/AdminTwoFactorAuthenticationTest.php` | Configurar mailer SMTP real y validar entrega/copy en produccion. |
+| AUTH-004 | Usuarios | 2FA para administradores | MVP | P2 | Desafio OTP por email configurable con `NOIACHAT_2FA_ENABLED`; cuando esta activo aplica a `admin`, `super_admin`, `company_admin` y `branch_manager`; pruebas en `tests/Feature/Auth/AdminTwoFactorAuthenticationTest.php` | Mantener `NOIACHAT_2FA_ENABLED=false` hasta configurar correo/SMTP real; luego activarlo y validar entrega/copy en produccion. |
 | ONBOARD-001 | Onboarding | Registro con empresa, sede y plan basico de prueba | MVP | P1 | `/login` enlaza a `Crear cuenta de prueba`; `/register` tiene vista dedicada, toggle de contrasena, validaciones en espanol, crea usuario `company_admin`, empresa, sede inicial, membresia activa y suscripcion `trialing` al plan `basic_trial`; menu comercial oculta y bloquea modulos tecnicos; documentado en `docs/onboarding-registro-trial.md`; pruebas en `tests/Feature/Auth/RegistrationTest.php` | Validar UX en movil/produccion y mantener copy comercial del trial alineado con ventas. |
 | BILLING-001 | Planes | Modelo de planes y suscripciones por empresa | MVP | P1 | Tablas `plans` y `company_subscriptions`, modelos, seeder de planes y registro usando suscripcion real; pruebas en `tests/Feature/BillingPlansTest.php` | Implementar servicio de evaluacion de suscripcion y estados vencidos. |
 | BILLING-002 | Planes | Funcionalidades permitidas por plan | MVP | P1 | Tablas `features` y `plan_features`, catalogo inicial y matriz por `basic_trial`, `basic`, `pro`, `enterprise`; pruebas en `tests/Feature/BillingPlansTest.php` | Implementar `SubscriptionFeatureService` y middleware `feature`. |
@@ -135,7 +135,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 
 - Dashboard avanzado.
 - Reportes por operador/contacto.
-- Validacion productiva de 2FA con SMTP real.
+- Activar 2FA administrativo despues de configurar correo/SMTP real.
 - Monitor de salud WhatsApp.
 - Alertas proactivas por errores repetidos.
 
@@ -183,6 +183,7 @@ Una funcionalidad solo debe pasar a `Operativo` si cumple:
 | 2026-06-18 | BILLING-PRO-001 y BILLING-PRO-002 implementados como MVP: catalogo comercial en `/billing` y solicitudes internas de upgrade auditadas. | Equipo NoiaChat |
 | 2026-06-19 | ONBOARD-001 ajustado: login enlaza al registro trial, `/register` reorganizado, campos de contrasena con mostrar/ocultar, validaciones en espanol y manual `docs/onboarding-registro-trial.md`. | Equipo NoiaChat |
 | 2026-06-19 | ONBOARD-001 endurecido: usuario comercial de trial ve menu operativo y no accede a modulos tecnicos de plataforma por menu ni URL directa. | Equipo NoiaChat |
+| 2026-06-22 | AUTH-004 ajustado: 2FA administrativo queda controlado por `NOIACHAT_2FA_ENABLED` y se desactiva temporalmente hasta configurar correo/SMTP real. | Equipo NoiaChat |
 | 2026-06-19 | AUTH-003 endurecido: usuarios comerciales no ven ni editan administradores globales en Usuarios/Membresias y no pueden asignar roles globales. | Equipo NoiaChat |
 | 2026-06-19 | WA-COM-001 a WA-COM-010 documentados: configuracion comercial de WhatsApp por empresa/sede separada de configuracion tecnica de plataforma. | Equipo NoiaChat |
 | 2026-06-19 | WA-COM-002 iniciado: permiso `whatsapp.integration.manage` creado para configuracion WhatsApp empresarial sin conceder acceso tecnico de plataforma. | Equipo NoiaChat |

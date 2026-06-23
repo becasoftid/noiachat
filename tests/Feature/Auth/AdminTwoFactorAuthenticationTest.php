@@ -23,6 +23,8 @@ class AdminTwoFactorAuthenticationTest extends TestCase
 
     public function test_administrators_must_complete_two_factor_challenge(): void
     {
+        config(['noiachat.two_factor.enabled' => true]);
+
         $admin = $this->adminUser();
 
         $response = $this->post('/login', [
@@ -40,6 +42,8 @@ class AdminTwoFactorAuthenticationTest extends TestCase
 
     public function test_administrators_can_authenticate_with_valid_two_factor_code(): void
     {
+        config(['noiachat.two_factor.enabled' => true]);
+
         $admin = $this->adminUser();
 
         $this->post('/login', [
@@ -60,6 +64,8 @@ class AdminTwoFactorAuthenticationTest extends TestCase
 
     public function test_invalid_two_factor_code_keeps_administrator_out(): void
     {
+        config(['noiachat.two_factor.enabled' => true]);
+
         $admin = $this->adminUser();
 
         $this->post('/login', [
@@ -86,6 +92,22 @@ class AdminTwoFactorAuthenticationTest extends TestCase
 
         $response->assertRedirect(route('dashboard', absolute: false));
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_administrators_skip_two_factor_when_disabled(): void
+    {
+        config(['noiachat.two_factor.enabled' => false]);
+
+        $admin = $this->adminUser();
+
+        $response = $this->post('/login', [
+            'email' => $admin->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertAuthenticatedAs($admin);
+        $this->assertFalse(session()->has('auth.two_factor'));
     }
 
     private function adminUser(): User

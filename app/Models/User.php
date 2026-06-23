@@ -122,6 +122,10 @@ class User extends Authenticatable
 
     public function requiresTwoFactorAuthentication(): bool
     {
+        if (! config('noiachat.two_factor.enabled', false)) {
+            return false;
+        }
+
         return $this->hasAnyRole(config('noiachat.two_factor.admin_roles', [
             'admin',
             'super_admin',

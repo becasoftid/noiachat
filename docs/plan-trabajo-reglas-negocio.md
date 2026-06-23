@@ -278,7 +278,7 @@ Objetivo: operar con menor riesgo.
 
 | ID | Tarea | Prioridad | Resultado esperado |
 | --- | --- | --- | --- |
-| P2-06 | 2FA para administradores | P2 | Implementado como MVP: roles administrativos requieren desafio OTP por email antes de entrar al panel. |
+| P2-06 | 2FA para administradores | P2 | Implementado como MVP configurable: roles administrativos requieren desafio OTP por email cuando `NOIACHAT_2FA_ENABLED=true`; queda apagado temporalmente hasta configurar correo/SMTP real. |
 | P2-07 | Ocultar secretos en settings | P1 | Tokens se muestran enmascarados. |
 | P2-08 | Monitor de salud | P1 | Implementado como MVP: `/health` y `noiachat:health-check` muestran cola, webhook, jobs fallidos, disco, backups y errores recientes. |
 | P2-09 | Backups externos | P1 | Copia fuera del servidor local. |
@@ -290,7 +290,7 @@ Criterios de aceptacion:
 - Un secreto guardado no se expone completo en vistas.
 - Hay evidencia de backup y restauracion.
 - Fallos de cola/webhook generan alerta o indicador.
-- Los administradores tienen mecanismo adicional de proteccion.
+- Los administradores tienen mecanismo adicional de proteccion cuando el correo/SMTP real esta configurado y `NOIACHAT_2FA_ENABLED=true`.
 
 ## Orden recomendado de implementacion
 
@@ -327,7 +327,7 @@ Una tarea se considera terminada cuando:
 La siguiente tarea recomendada depende del alcance comercial inmediato:
 
 - Si se va a operar con mas de una empresa real, la prioridad debe ser ejecutar `MT-10` en staging/copia productiva usando `docs/multiempresa-checklist-produccion.md` y `php8.4 artisan noiachat:tenant-validate`, porque la base multiempresa ya esta implementada como MVP y necesita validacion con datos reales antes de produccion.
-- Si la operacion seguira con una sola empresa por ahora, la siguiente tarea recomendada es validar entrega SMTP real del 2FA y documentar soporte operativo ante perdida de acceso administrativo.
+- Si la operacion seguira con una sola empresa por ahora, la siguiente tarea recomendada es configurar correo/SMTP real, activar `NOIACHAT_2FA_ENABLED=true`, validar entrega del 2FA y documentar soporte operativo ante perdida de acceso administrativo.
 - Si se habilitara registro publico comercial, la siguiente tarea recomendada es validar tarifas, copy comercial, cron de vencimiento y flujo de upgrade en staging antes de produccion publica.
 - Si la prioridad es operacion productiva, la alternativa recomendada es conectar `noiachat:health-check` a cron/alertas externas y ejecutar `MT-10` en staging/copia productiva.
 

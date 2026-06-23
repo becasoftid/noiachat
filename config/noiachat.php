@@ -12,6 +12,7 @@ return [
     ],
 
     'two_factor' => [
+        'enabled' => (bool) env('NOIACHAT_2FA_ENABLED', false),
         'admin_roles' => ['admin', 'super_admin', 'company_admin', 'branch_manager'],
         'code_ttl_minutes' => (int) env('NOIACHAT_2FA_CODE_TTL_MINUTES', 10),
         'max_attempts' => (int) env('NOIACHAT_2FA_MAX_ATTEMPTS', 5),
