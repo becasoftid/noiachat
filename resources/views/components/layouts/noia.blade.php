@@ -232,11 +232,19 @@
 
             <section class="px-5 py-6 lg:px-8 lg:py-8">
                 @if (session('status'))
-                    <div class="noia-alert-success">{{ session('status') }}</div>
+                    <div
+                        class="sr-only"
+                        x-data
+                        x-init="window.App.toast({ type: 'success', message: @js(session('status')) })"
+                    ></div>
                 @endif
 
                 @if (session('error'))
-                    <div class="noia-alert-danger">{{ session('error') }}</div>
+                    <div
+                        class="sr-only"
+                        x-data
+                        x-init="window.App.toast({ type: 'error', message: @js(session('error')) })"
+                    ></div>
                 @endif
 
                 @if ($subscriptionNotice)

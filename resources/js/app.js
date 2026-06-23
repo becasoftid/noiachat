@@ -1,10 +1,35 @@
 import './bootstrap';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 import Alpine from 'alpinejs';
+import Swal from 'sweetalert2';
 
 window.Alpine = Alpine;
 
 window.App = window.App || {};
+
+window.App.toast = ({ type = 'success', message = '' } = {}) => {
+    if (!message) {
+        return;
+    }
+
+    const isError = type === 'error';
+
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: isError ? 'error' : 'success',
+        title: message,
+        showConfirmButton: false,
+        timer: isError ? 5200 : 3600,
+        timerProgressBar: true,
+        customClass: {
+            popup: `noia-swal-toast ${isError ? 'noia-swal-toast-error' : 'noia-swal-toast-success'}`,
+            title: 'noia-swal-title',
+            timerProgressBar: isError ? 'noia-swal-progress-error' : 'noia-swal-progress-success',
+        },
+    });
+};
 
 window.App.conversationSound = {
     storageKey: 'noiachat.conversationSound.enabled',

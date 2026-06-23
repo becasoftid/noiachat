@@ -97,6 +97,30 @@
         @apply noia-alert border-amber-200 bg-amber-50 text-amber-800;
     }
 
+    .noia-swal-toast {
+        @apply rounded-lg border bg-white px-4 py-3 shadow-[0_18px_50px_rgba(15,23,42,0.16)];
+    }
+
+    .noia-swal-toast-success {
+        @apply border-emerald-200;
+    }
+
+    .noia-swal-toast-error {
+        @apply border-rose-200;
+    }
+
+    .noia-swal-title {
+        @apply text-left text-sm font-semibold text-slate-900;
+    }
+
+    .noia-swal-progress-success {
+        @apply bg-emerald-600;
+    }
+
+    .noia-swal-progress-error {
+        @apply bg-rose-600;
+    }
+
     .noia-badge {
         @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold;
     }
