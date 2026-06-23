@@ -6,6 +6,7 @@
         ->take(2)
         ->map(fn ($part) => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($part, 0, 1)))
         ->join('');
+    $backToInboxUrl = route('conversations.index', request()->except(['conversation']));
     $lastActivity = $conversation->last_message_at?->copy()->timezone($displayTimezone);
     $windowUntil = $customerCareWindowUntil?->copy()->timezone($displayTimezone);
 @endphp
@@ -14,6 +15,16 @@
     <header class="border-b border-slate-200 bg-white px-4 py-4">
         <div class="flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
             <div class="flex min-w-0 items-center gap-3">
+                <a
+                    href="{{ $backToInboxUrl }}"
+                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-cyan-100 lg:hidden"
+                    aria-label="Volver al inbox"
+                    title="Volver al inbox"
+                >
+                    <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </a>
                 <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#10202a] text-base font-bold text-white shadow-sm">
                     {{ $contactInitials ?: 'N' }}
                 </div>

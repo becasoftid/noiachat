@@ -1,4 +1,4 @@
-<x-layouts.noia title="Conversaciones" header="Conversaciones">
+<x-layouts.conversation-workspace title="Conversaciones">
     @php
         $statusLabels = [
             'open' => 'Abierta',
@@ -27,11 +27,11 @@
     @endphp
 
     <div
-        class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:grid lg:h-[calc(100vh-190px)] lg:min-h-[660px]"
+        class="h-full min-h-0 w-full max-w-full overflow-hidden bg-white lg:grid"
         :class="{ 'xl:grid-cols-[340px_minmax(0,1fr)_280px] 2xl:grid-cols-[360px_minmax(0,1fr)_300px]': true }"
         x-data="{ filtersOpen: false, detailsOpen: false }"
     >
-        <aside class="flex min-h-[660px] flex-col border-slate-200 bg-white lg:border-r">
+        <aside class="{{ $conversation ? 'hidden lg:flex' : 'flex' }} h-full min-h-0 w-full max-w-full flex-col overflow-x-hidden border-slate-200 bg-white lg:border-r">
             <div class="border-b border-slate-200 bg-white p-4">
                 <div class="flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
@@ -57,12 +57,12 @@
                     </button>
                 </div>
 
-                <form method="GET" class="mt-4 flex gap-2">
+                <form method="GET" class="mt-4 flex min-w-0 gap-2">
                     @if(request()->filled('conversation'))
                         <input type="hidden" name="conversation" value="{{ request('conversation') }}">
                     @endif
                     <label class="sr-only" for="conversation-search">Buscar conversación</label>
-                    <input id="conversation-search" class="noia-input bg-white" name="search" value="{{ request('search') }}" placeholder="Buscar por nombre o teléfono">
+                    <input id="conversation-search" class="noia-input min-w-0 flex-1 w-auto bg-white" name="search" value="{{ request('search') }}" placeholder="Buscar por nombre o teléfono">
                     <button class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-cyan-200 hover:text-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-100" aria-label="Buscar">
                         <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="7" />
@@ -78,20 +78,22 @@
                     <a href="{{ route('conversations.index', array_merge($baseQuery, ['quick' => 'unread'])) }}" class="@class(['rounded-lg border px-3 py-2 transition focus:outline-none focus:ring-4 focus:ring-emerald-100', 'border-emerald-200 bg-emerald-50 text-emerald-700' => request('quick') === 'unread', 'border-slate-200 bg-white text-slate-600 hover:border-slate-300' => request('quick') !== 'unread'])">No leídos</a>
                 </div>
 
-                <div class="mt-4 grid grid-cols-3 gap-2">
+                <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
                     @can('messages.send')
-                        <a href="{{ route('conversations.index', array_merge(request()->query(), ['new' => 1])) }}" class="noia-btn-success h-11 px-3">
+                        <a href="{{ route('conversations.index', array_merge(request()->query(), ['new' => 1])) }}" class="noia-btn-success h-11 min-w-0 px-2 sm:px-3">
                             <span class="text-lg leading-none">+</span>
                             <span class="hidden sm:inline">Nuevo chat</span>
                         </a>
                     @endcan
-                    <button type="button" class="noia-btn-secondary h-11 px-3" x-on:click="filtersOpen = ! filtersOpen" :aria-expanded="filtersOpen.toString()">
-                        Filtros
+                    <button type="button" class="noia-btn-secondary h-11 min-w-0 px-2 sm:px-3" x-on:click="filtersOpen = ! filtersOpen" :aria-expanded="filtersOpen.toString()">
+                        <span class="truncate">Filtros</span>
                         @if($activeFilterCount > 0)
                             <span class="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-cyan-700 px-1.5 text-xs font-bold text-white">{{ $activeFilterCount }}</span>
                         @endif
                     </button>
-                    <a href="{{ route('reports.exports.conversations', request()->except('conversation')) }}" class="noia-btn-secondary h-11 px-3">Exportar</a>
+                    <a href="{{ route('reports.exports.conversations', request()->except('conversation')) }}" class="noia-btn-secondary col-span-2 h-11 min-w-0 px-2 sm:col-span-1 sm:px-3">
+                        <span class="truncate">Exportar</span>
+                    </a>
                 </div>
 
                 @can('messages.send')
@@ -216,4 +218,4 @@
             </section>
         @endif
     </div>
-</x-layouts.noia>
+</x-layouts.conversation-workspace>
