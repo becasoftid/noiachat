@@ -3,7 +3,7 @@
     $displayTimezone = config('app.display_timezone', 'America/Bogota');
 @endphp
 
-<div class="divide-y divide-slate-100">
+<div class="space-y-3 p-3">
     @forelse($conversations as $listConversation)
         @php
             $name = $listConversation->contact->full_name;
@@ -24,60 +24,63 @@
             $preview = $preview ?: $listConversation->contact->primary_phone;
             $previewPrefix = $latestIsOutbound ? 'Tu: ' : '';
             $timestamp = $listConversation->last_message_at?->copy()->timezone($displayTimezone);
+            $windowClosed = ! $latestInboundAt || $latestInboundAt->copy()->addHours(24)->isPast();
         @endphp
         <a
             href="{{ route('conversations.index', array_merge(request()->query(), ['conversation' => $listConversation->id])) }}"
             data-unread-count="{{ $listConversation->unread_count }}"
             class="@class([
-                'group relative transition hover:bg-slate-50',
-                'bg-cyan-50/70' => $isActive,
-                'bg-white' => ! $isActive,
+                'block rounded-lg border p-3 text-left transition focus:outline-none focus:ring-4 focus:ring-emerald-100',
+                'border-emerald-200 bg-emerald-50/80 shadow-sm' => $isActive,
+                'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm' => ! $isActive,
             ])"
-            style="display:grid;grid-template-columns:42px minmax(0,1fr) 58px;align-items:center;column-gap:10px;width:100%;max-width:100%;min-height:72px;overflow:hidden;padding:12px 14px;text-decoration:none;"
         >
-            @if($isActive)
-                <span class="absolute inset-y-3 left-0 w-1 rounded-r-full bg-cyan-700" aria-hidden="true"></span>
-            @endif
-
-            <div style="display:flex;width:42px;height:42px;align-items:center;justify-content:center;border-radius:9999px;background:#10202a;color:#fff;font-size:13px;font-weight:700;line-height:1;box-shadow:0 1px 2px rgb(15 23 42 / 0.08);">
-                {{ $initials ?: 'N' }}
-            </div>
-
-            <div style="min-width:0;overflow:hidden;">
-                <div class="flex min-w-0 items-center gap-2">
-                    <p style="display:block;margin:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#0f172a;font-size:15px;font-weight:700;line-height:20px;">{{ $name }}</p>
-                    @if($listConversation->status !== 'open')
-                        <span class="hidden shrink-0 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500 sm:inline-flex">
-                            {{ $statusLabels[$listConversation->status] ?? $listConversation->status }}
-                        </span>
-                    @endif
+            <div class="flex items-start gap-3">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#10202a] text-sm font-bold text-white shadow-sm">
+                    {{ $initials ?: 'N' }}
                 </div>
-                <span class="sr-only">{{ $listConversation->contact->primary_phone }}</span>
-                <p style="display:block;margin:2px 0 0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64748b;font-size:13px;line-height:18px;">{{ $previewPrefix }}{{ $preview }}</p>
-                <p class="mt-1 truncate text-[11px] font-semibold text-slate-400">{{ $listConversation->channel?->name }} · {{ $listConversation->assignedUser?->name ?? 'Sin asignar' }}</p>
-            </div>
 
-            <div style="display:flex;width:58px;min-width:58px;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;text-align:right;">
-                <p style="margin:0;color:{{ $listConversation->unread_count > 0 ? '#059669' : '#94a3b8' }};font-size:12px;font-weight:600;line-height:16px;white-space:nowrap;">
-                    @if($timestamp)
-                        {{ $timestamp->isToday() ? $timestamp->format('H:i') : $timestamp->format('d/m/Y') }}
-                    @else
-                        --
-                    @endif
-                </p>
-                @if($listConversation->unread_count > 0)
-                    <span class="sr-only">{{ $listConversation->unread_count }} sin leer</span>
-                    <span aria-hidden="true" class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-xs font-bold text-white">
-                        {{ $listConversation->unread_count }}
-                    </span>
-                @endif
+                <div class="min-w-0 flex-1">
+                    <div class="flex min-w-0 items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-bold text-slate-950">{{ $name }}</p>
+                            <p class="mt-0.5 truncate text-xs font-semibold text-slate-500">
+                                {{ $listConversation->contact->primary_phone }} · {{ $listConversation->channel?->name ?? 'Canal' }}
+                            </p>
+                        </div>
+                        <div class="shrink-0 text-right">
+                            <p class="@class(['text-xs font-semibold', 'text-emerald-700' => $listConversation->unread_count > 0, 'text-slate-400' => $listConversation->unread_count < 1])">
+                                @if($timestamp)
+                                    {{ $timestamp->isToday() ? $timestamp->format('H:i') : ($timestamp->isYesterday() ? 'Ayer' : $timestamp->format('d/m')) }}
+                                @else
+                                    --
+                                @endif
+                            </p>
+                            @if($listConversation->unread_count > 0)
+                                <span class="sr-only">{{ $listConversation->unread_count }} sin leer</span>
+                                <span class="mt-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-600 px-1.5 text-xs font-bold text-white">
+                                    {{ $listConversation->unread_count }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <p class="mt-2 truncate text-sm text-slate-700">{{ $previewPrefix }}{{ $preview }}</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
+                        <span class="@class(['rounded-full px-2.5 py-1', 'bg-amber-100 text-amber-800' => $windowClosed, 'bg-emerald-100 text-emerald-700' => ! $windowClosed])">
+                            {{ $windowClosed ? 'Ventana cerrada' : 'Ventana abierta' }}
+                        </span>
+                        <span class="truncate text-slate-500">{{ $listConversation->assignedUser?->name ?? 'Sin asignar' }}</span>
+                    </div>
+                </div>
             </div>
         </a>
     @empty
-        <div class="m-3 rounded-lg border border-dashed border-slate-300 bg-slate-50/70 p-6 text-sm text-slate-500">
-            No hay conversaciones para mostrar.
+        <div class="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+            <p class="font-semibold text-slate-700">No hay conversaciones para mostrar.</p>
+            <p class="mt-1">Ajusta los filtros o inicia un nuevo chat.</p>
         </div>
     @endforelse
 </div>
 
-<div class="border-t border-slate-100 px-3 py-3">{{ $conversations->appends(request()->query())->links() }}</div>
+<div class="border-t border-slate-100 bg-white px-3 py-3">{{ $conversations->appends(request()->query())->links() }}</div>

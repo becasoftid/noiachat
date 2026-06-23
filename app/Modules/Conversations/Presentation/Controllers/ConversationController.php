@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\Compliance\Application\Services\ComplianceDecisionService;
 use App\Modules\Contacts\Domain\Repositories\ChannelRepositoryInterface;
 use App\Modules\Contacts\Domain\Repositories\ContactRepositoryInterface;
+use App\Modules\Conversations\Application\Services\ConversationService;
 use App\Modules\Conversations\Domain\Repositories\ConversationRepositoryInterface;
 use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
 use App\Modules\Conversations\Presentation\Requests\AssignConversationRequest;
@@ -22,9 +23,11 @@ use App\Modules\Messaging\Presentation\Requests\SendConversationMediaMessageRequ
 use App\Modules\Tenancy\Application\Services\TenantContext;
 use App\Modules\Tenancy\Infrastructure\Persistence\Models\Branch;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Http\Request;
 
 class ConversationController extends Controller
 {
@@ -42,9 +45,11 @@ class ConversationController extends Controller
     {
         $conversation = $this->activeConversation();
         $filters = $this->filters();
+        $conversations = $this->conversations->paginateLatest(20, $filters);
 
         return view('noia.conversations.index', [
-            'conversations' => $this->conversations->paginateLatest(20, $filters),
+            'conversations' => $conversations,
+            'unreadConversationCount' => $this->unreadConversationCount($conversations),
             'users' => $this->tenantUsersQuery(branchId: $conversation?->branch_id ?? ($filters['branch_id'] ?? null))->get(),
             'branches' => $this->tenantBranches(),
             'contacts' => $this->contacts->ordered(),
@@ -69,7 +74,7 @@ class ConversationController extends Controller
 
         $contact = $this->contacts->findById($validated['contact_id']) ?? abort(404);
         $channel = $this->channels->active()->firstWhere('id', (int) $validated['channel_id']) ?? abort(404);
-        $conversation = app(\App\Modules\Conversations\Application\Services\ConversationService::class)
+        $conversation = app(ConversationService::class)
             ->findOrCreate($contact->id, $channel->id);
 
         return redirect()
@@ -82,6 +87,7 @@ class ConversationController extends Controller
         return view('noia.conversations.partials.list', [
             'conversations' => $this->conversations->paginateLatest(20, $this->filters()),
             'statusLabels' => $this->statusLabels(),
+            'activeConversationId' => request('conversation'),
         ]);
     }
 
@@ -253,25 +259,31 @@ class ConversationController extends Controller
                 'timeline' => collect(),
                 'freeFormEligibility' => null,
                 'templates' => collect(),
+                'templateOptions' => [],
+                'customerCareWindowUntil' => null,
             ];
         }
+
+        $templates = MessageTemplate::query()
+            ->forTenantContext()
+            ->with('currentVersion')
+            ->where('channel_id', $conversation->channel_id)
+            ->where('is_active', true)
+            ->get();
 
         return [
             'conversation' => $conversation,
             'timeline' => $this->buildTimeline($conversation),
             'freeFormEligibility' => $this->compliance->decide($conversation->contact, $conversation->channel_id),
-            'templates' => MessageTemplate::query()
-                ->forTenantContext()
-                ->with('currentVersion')
-                ->where('channel_id', $conversation->channel_id)
-                ->where('is_active', true)
-                ->get(),
+            'templates' => $templates,
+            'templateOptions' => $this->templateOptions($templates),
+            'customerCareWindowUntil' => $this->customerCareWindowUntil($conversation),
         ];
     }
 
     private function filters(): array
     {
-        $filters = request()->only(['status', 'assigned_user_id', 'search', 'date_from', 'date_to']);
+        $filters = request()->only(['status', 'assigned_user_id', 'search', 'date_from', 'date_to', 'quick']);
         $branchId = request()->string('branch_id')->toString();
 
         if ($this->canFilterByBranch() && $branchId !== '' && $this->tenantBranches()->contains('id', $branchId)) {
@@ -344,5 +356,43 @@ class ConversationController extends Controller
     {
         return app(TenantContext::class)->companyId() !== null
             && app(TenantContext::class)->branchId() === null;
+    }
+
+    private function unreadConversationCount(LengthAwarePaginator $conversations): int
+    {
+        return $conversations->getCollection()
+            ->filter(fn (Conversation $conversation): bool => (int) ($conversation->unread_count ?? 0) > 0)
+            ->count();
+    }
+
+    private function customerCareWindowUntil(Conversation $conversation): ?Carbon
+    {
+        $latestInbound = $conversation->inboundMessages->max('created_at');
+
+        return $latestInbound ? $latestInbound->copy()->addHours(24) : null;
+    }
+
+    private function templateOptions(Collection $templates): array
+    {
+        return $templates->map(function (MessageTemplate $template): array {
+            $body = (string) $template->currentVersion?->body;
+            preg_match_all('/\{\{\s*(\d+)\s*\}\}/', $body, $matches);
+            $variables = collect($matches[1] ?? [])
+                ->unique()
+                ->sort()
+                ->values()
+                ->map(fn (string $number): array => [
+                    'key' => $number,
+                    'label' => 'Variable '.$number,
+                ])
+                ->all();
+
+            return [
+                'id' => $template->id,
+                'name' => $template->name,
+                'body' => $body,
+                'variables' => $variables,
+            ];
+        })->values()->all();
     }
 }

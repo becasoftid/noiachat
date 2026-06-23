@@ -36,12 +36,33 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
 
 ## Organizacion visual del panel
 
-- La lista lateral muestra contacto, vista previa, hora, contador de no leidos, canal y usuario asignado.
-- El chat activo se resalta para evitar dudas cuando hay varios contactos visibles.
-- La cabecera del panel muestra contacto, telefono, canal, responsable y estado operativo.
-- El historial mantiene burbujas entrantes/salientes, errores de Meta y estados de entrega/lectura.
-- El compositor inferior separa la respuesta rapida de texto, los adjuntos y las plantillas aprobadas.
-- Cuando la ventana de 24h esta cerrada, texto y adjuntos quedan deshabilitados visualmente y la accion de plantilla queda destacada.
+La vista `/conversations` queda organizada como una bandeja operativa tipo WhatsApp:
+
+- Columna izquierda de inbox con titulo, contador de no leidos, busqueda por nombre/telefono, filtros rapidos, accion **Nuevo chat**, filtros avanzados y exportacion.
+- Lista de conversaciones con avatar, contacto, telefono, canal, vista previa, hora, contador de no leidos, responsable y estado de ventana.
+- Conversacion activa resaltada para evitar dudas cuando hay varios contactos visibles.
+- Cabecera compacta con avatar, contacto, telefono, canal, estado, responsable, accion **Asignarme**, selector de estado y accion de detalles.
+- Historial con scroll independiente, divisores de fecha, burbujas entrantes/salientes, eventos del sistema, estados de entrega/lectura y errores tecnicos cuando existan.
+- Compositor inferior inteligente que muestra solo el formulario permitido por el estado de la ventana.
+- Panel lateral de detalles en escritorio con contacto, canal, responsable, ultima actividad, estado del canal, estado de ventana y acceso al perfil completo.
+- En pantallas menores a escritorio amplio, los detalles se abren como drawer para evitar scroll horizontal.
+
+### Ventana de atencion y composer
+
+La ventana de 24h se muestra como una sola fuente de verdad calculada en backend.
+
+Cuando la ventana esta abierta:
+
+- Se muestra el mensaje **Ventana de atencion abierta** con hora limite cuando esta disponible.
+- El operador puede responder con texto libre.
+- El operador puede alternar a respuesta con adjunto para imagen o documento, respetando las validaciones existentes.
+
+Cuando la ventana esta cerrada:
+
+- Se muestra una franja ambar con **Ventana 24h cerrada** y la indicacion de usar plantilla aprobada.
+- El campo de texto libre queda oculto/deshabilitado.
+- Se muestra el composer de plantilla con selector, campos individuales para variables requeridas, vista previa y boton **Enviar plantilla**.
+- Las variables se envian al backend usando el mismo campo `variables` existente, sin cambiar el contrato del endpoint.
 
 ## Reglas de negocio
 
@@ -57,6 +78,9 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
 - Las conversaciones cerradas no se reutilizan automaticamente.
 - La ventana de atencion de WhatsApp sigue gobernando si se puede enviar texto libre o adjuntos.
 - El envio por plantilla aprobada sigue disponible desde el panel de conversacion.
+- Los filtros rapidos **Todos**, **Mios**, **No asignados** y **No leidos** se aplican sobre el mismo alcance de empresa/sede activo.
+- El panel de detalles no crea datos nuevos; solo muestra informacion disponible del contacto, la conversacion y el canal.
+- La UI no inventa etiquetas, notas ni nombres de variables que no existan en el modelo actual.
 
 ## Rutas
 
@@ -82,10 +106,16 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
 - Un usuario sin permiso `messages.send` no puede iniciar conversaciones.
 - No se crean conversaciones para contactos o canales fuera del tenant activo.
 - Las pruebas automatizadas cubren creacion/reutilizacion del chat y el cambio del boton de nuevo envio.
+- El redisenio de `/conversations` conserva los endpoints actuales de responder texto, responder adjunto, responder plantilla, asignacion y cambio de estado.
+- La pantalla no muestra simultaneamente compositor de texto libre y compositor de plantilla.
+- Los bloqueos por politica se muestran como tarjetas de sistema legibles dentro del historial.
+- La vista de detalles es lateral en escritorio amplio y drawer en pantallas menores.
 
 ## Evidencia esperada
 
 - Pruebas en `tests/Feature/NoiaChatMvpTest.php`.
+- Build frontend con `npm run build`.
+- Suite completa con `php artisan test`.
 - Validacion manual:
   1. Ir a `/contacts`.
   2. Buscar un contacto.
@@ -95,7 +125,47 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
   6. Confirmar que abre `/conversations?conversation={id}` cuando hay canal directo.
   7. Confirmar que abre `/conversations?new=1&contact_id={id}` cuando se debe elegir canal.
   8. Enviar plantilla o texto segun ventana de 24h.
+  9. Confirmar que el inbox no presenta scroll horizontal en escritorio y tablet.
+  10. Confirmar que una conversacion sin ventana 24h muestra solo composer de plantilla.
+  11. Confirmar que una conversacion con ventana abierta muestra texto libre y adjunto.
+
+## Implementacion UX/UI 2026-06-22
+
+Se implemento el redisenio de `/conversations` sobre Blade, Tailwind CSS y Alpine.js sin incorporar frameworks adicionales ni modificar base de datos.
+
+Archivos funcionales ajustados:
+
+- `app/Modules/Conversations/Presentation/Controllers/ConversationController.php`.
+- `app/Modules/Conversations/Infrastructure/Persistence/Repositories/EloquentConversationRepository.php`.
+- `resources/views/noia/conversations/index.blade.php`.
+- `resources/views/noia/conversations/show.blade.php`.
+- `resources/views/noia/conversations/partials/list.blade.php`.
+- `resources/views/noia/conversations/partials/panel.blade.php`.
+- `resources/views/noia/conversations/partials/details.blade.php`.
+- `resources/js/app.js`.
+
+Componentes/partials relevantes:
+
+- Inbox operativo.
+- Lista de conversaciones.
+- Panel de conversacion activa.
+- Panel de detalles del contacto.
+- Composer inteligente de texto/adjunto/plantilla.
+- Composer Alpine para variables de plantilla y vista previa.
+
+Validaciones ejecutadas:
+
+- `php artisan test --filter=NoiaChatMvpTest`: exitoso.
+- `npm run build`: exitoso.
+- `php artisan test`: exitoso.
+- `./vendor/bin/pint --test` global: pendiente por deuda historica de formato en archivos no relacionados; los archivos PHP modificados del modulo Conversaciones pasan Pint.
+
+Limitaciones conscientes:
+
+- Los nombres de variables de plantilla se muestran como `Variable 1`, `Variable 2`, etc. porque la sincronizacion actual conserva placeholders numericos de Meta (`{{1}}`, `{{2}}`) y no nombres semanticos.
+- El envio de adjuntos dentro de plantillas no se habilito porque el endpoint actual de plantilla no soporta archivo sin cambiar contrato backend.
+- El menu global conserva rutas reales existentes; no se agregaron enlaces falsos para secciones del mockup que aun no tienen ruta propia.
 
 ## Estado
 
-MVP. El flujo principal queda centrado en contactos para iniciar la conversacion y en conversaciones para atenderla. La vista fue reorganizada para que la operacion diaria sea mas cercana a una bandeja tipo WhatsApp. Como mejora futura se puede reemplazar el selector de contacto por busqueda/autocomplete cuando haya alto volumen de contactos.
+Operativo. El flujo principal queda centrado en contactos para iniciar la conversacion y en conversaciones para atenderla. La vista fue reorganizada para que la operacion diaria sea mas cercana a una bandeja tipo WhatsApp, con inbox, conversacion activa, detalles laterales y composer segun ventana de atencion. Como mejora futura se puede reemplazar el selector de contacto por busqueda/autocomplete cuando haya alto volumen de contactos.

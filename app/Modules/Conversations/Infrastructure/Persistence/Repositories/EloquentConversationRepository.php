@@ -7,8 +7,8 @@ use App\Modules\Conversations\Infrastructure\Persistence\Models\Conversation;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\InboundMessage;
 use App\Modules\Messaging\Infrastructure\Persistence\Models\Message;
 use App\Modules\Tenancy\Application\Services\TenantContext;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class EloquentConversationRepository implements ConversationRepositoryInterface
 {
@@ -65,6 +65,15 @@ class EloquentConversationRepository implements ConversationRepositoryInterface
             })
             ->when($filters['status'] ?? null, fn ($q, $value) => $q->where('status', $value))
             ->when($filters['assigned_user_id'] ?? null, fn ($q, $value) => $q->where('assigned_user_id', $value))
+            ->when(($filters['quick'] ?? null) === 'unassigned', fn ($q) => $q->whereNull('assigned_user_id'))
+            ->when(($filters['quick'] ?? null) === 'unread', function ($q): void {
+                $q->whereHas('inboundMessages', function ($unreadQuery): void {
+                    $unreadQuery->where(function ($dateQuery): void {
+                        $dateQuery->whereNull('conversations.last_read_at')
+                            ->orWhereColumn('inbound_messages.created_at', '>', 'conversations.last_read_at');
+                    });
+                });
+            })
             ->when($filters['date_from'] ?? null, fn ($q, $value) => $q->whereDate('last_message_at', '>=', $value))
             ->when($filters['date_to'] ?? null, fn ($q, $value) => $q->whereDate('last_message_at', '<=', $value))
             ->when($filters['search'] ?? null, function ($query, $value): void {

@@ -99,4 +99,40 @@ window.App.conversationInbox = (refreshUrl) => ({
     },
 });
 
+window.App.templateComposer = (templates) => ({
+    templates,
+    selectedId: '',
+    values: {},
+    get selectedTemplate() {
+        return this.templates.find((template) => String(template.id) === String(this.selectedId)) || null;
+    },
+    get serializedVariables() {
+        if (!this.selectedTemplate) {
+            return '';
+        }
+
+        return this.selectedTemplate.variables
+            .map((variable) => (this.values[variable.key] || '').trim())
+            .filter((value) => value !== '')
+            .join('|');
+    },
+    get canSubmit() {
+        if (!this.selectedTemplate) {
+            return false;
+        }
+
+        return this.selectedTemplate.variables.length === 0
+            || this.selectedTemplate.variables.every((variable) => (this.values[variable.key] || '').trim() !== '');
+    },
+    get preview() {
+        if (!this.selectedTemplate) {
+            return '';
+        }
+
+        return this.selectedTemplate.body.replace(/\{\{\s*(\d+)\s*\}\}/g, (match, key) => {
+            return (this.values[key] || '').trim() || `{{${key}}}`;
+        });
+    },
+});
+
 Alpine.start();
