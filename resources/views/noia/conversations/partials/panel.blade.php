@@ -72,7 +72,13 @@
                     </select>
                 </form>
 
-                <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 focus:outline-none focus:ring-4 focus:ring-cyan-100" aria-label="Ver detalles" x-on:click="detailsOpen = true">
+                <button
+                    type="button"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-cyan-100"
+                    x-bind:aria-label="detailsOpen ? 'Ocultar detalles' : 'Ver detalles'"
+                    x-bind:title="detailsOpen ? 'Ocultar detalles' : 'Ver detalles'"
+                    x-on:click="detailsOpen = ! detailsOpen"
+                >
                     <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 13v5M12 6h.01" stroke-linecap="round" />
                         <circle cx="12" cy="12" r="9" />
@@ -201,7 +207,7 @@
         </div>
     </div>
 
-    <footer class="border-t border-slate-200 bg-white px-4 py-4 shadow-[0_-16px_40px_rgba(15,23,42,0.06)]">
+    <footer class="border-t border-slate-200 bg-white px-3 py-3 shadow-[0_-16px_40px_rgba(15,23,42,0.06)]">
         <div class="w-full">
             @if($customerCareWindowClosed)
                 <textarea class="sr-only" disabled aria-hidden="true"></textarea>
@@ -275,21 +281,21 @@
                     </div>
                 </form>
             @else
-                <div x-data="{ mode: 'text' }" class="rounded-lg border border-slate-200 bg-white p-3">
-                    <div class="mb-3 flex flex-wrap gap-2">
-                        <button type="button" class="rounded-lg px-3 py-2 text-sm font-semibold" x-bind:class="mode === 'text' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600'" x-on:click="mode = 'text'">Mensaje</button>
-                        <button type="button" class="rounded-lg px-3 py-2 text-sm font-semibold" x-bind:class="mode === 'media' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600'" x-on:click="mode = 'media'">Adjuntar archivo</button>
+                <div x-data="{ mode: 'text' }" class="rounded-lg border border-slate-200 bg-white p-2">
+                    <div class="mb-2 flex flex-wrap gap-2">
+                        <button type="button" class="rounded-lg px-3 py-1.5 text-sm font-semibold" x-bind:class="mode === 'text' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600'" x-on:click="mode = 'text'">Mensaje</button>
+                        <button type="button" class="rounded-lg px-3 py-1.5 text-sm font-semibold" x-bind:class="mode === 'media' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600'" x-on:click="mode = 'media'">Adjuntar archivo</button>
                     </div>
 
-                    <form x-show="mode === 'text'" method="POST" action="{{ route('conversations.reply', $conversation) }}" class="grid gap-3 lg:grid-cols-[1fr_auto]">
+                    <form x-show="mode === 'text'" method="POST" action="{{ route('conversations.reply', $conversation) }}" class="grid gap-2 lg:grid-cols-[1fr_auto]">
                         @csrf
                         <h3 class="sr-only">Respuesta de texto</h3>
                         <label class="sr-only" for="conversation-body">Responder conversación</label>
-                        <textarea id="conversation-body" class="noia-textarea min-h-[58px] resize-none bg-white" name="body" rows="2" placeholder="Responder conversación"></textarea>
-                        <button class="noia-btn-success min-h-[58px] px-6">Enviar</button>
+                        <textarea id="conversation-body" class="noia-textarea min-h-[52px] resize-none bg-white py-3" name="body" rows="2" placeholder="Responder conversación"></textarea>
+                        <button class="noia-btn-success min-h-[52px] px-6">Enviar</button>
                     </form>
 
-                    <form x-cloak x-show="mode === 'media'" method="POST" enctype="multipart/form-data" action="{{ route('conversations.reply-media', $conversation) }}" class="grid gap-3 lg:grid-cols-[160px_1fr_auto]">
+                    <form x-cloak x-show="mode === 'media'" method="POST" enctype="multipart/form-data" action="{{ route('conversations.reply-media', $conversation) }}" class="grid gap-2 lg:grid-cols-[150px_1fr_auto]">
                         @csrf
                         <select class="noia-select bg-white" name="type" aria-label="Tipo de adjunto">
                             <option value="image">Imagen</option>
@@ -297,7 +303,7 @@
                         </select>
                         <input class="noia-file-input bg-white" type="file" name="file">
                         <button class="noia-btn-info px-6">Enviar adjunto</button>
-                        <textarea class="noia-textarea min-h-[58px] bg-white lg:col-span-3" name="body" rows="2" placeholder="Texto opcional"></textarea>
+                        <textarea class="noia-textarea min-h-[52px] bg-white py-3 lg:col-span-3" name="body" rows="2" placeholder="Texto opcional"></textarea>
                     </form>
                 </div>
             @endif
@@ -305,7 +311,7 @@
     </footer>
 </section>
 
-<aside class="hidden min-h-0 overflow-y-auto border-l border-slate-200 bg-white xl:block">
+<aside x-cloak x-show="detailsOpen" x-transition.opacity class="hidden min-h-0 overflow-y-auto border-l border-slate-200 bg-white xl:block">
     <div class="p-4">
         @include('noia.conversations.partials.details')
     </div>

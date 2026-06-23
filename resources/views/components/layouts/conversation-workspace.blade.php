@@ -54,7 +54,8 @@
                         <a
                             href="{{ route($item['route']) }}"
                             title="{{ $item['label'] }}"
-                            class="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg px-3 transition focus:outline-none focus:ring-4 focus:ring-cyan-100 {{ request()->routeIs($item['active']) ? 'bg-[#10202a] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950' }}"
+                            aria-label="{{ $item['label'] }}"
+                            class="group relative inline-flex h-10 shrink-0 items-center gap-2 rounded-lg px-3 transition focus:outline-none focus:ring-4 focus:ring-cyan-100 {{ request()->routeIs($item['active']) ? 'bg-[#10202a] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950' }}"
                         >
                             <span class="flex h-6 w-6 shrink-0 items-center justify-center">
                                 @switch($item['icon'])
@@ -133,6 +134,9 @@
                                 @endswitch
                             </span>
                             <span class="hidden 2xl:inline">{{ $item['label'] }}</span>
+                            <span class="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-950 px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100 lg:block 2xl:hidden">
+                                {{ $item['label'] }}
+                            </span>
                         </a>
                     @endforeach
                 </nav>

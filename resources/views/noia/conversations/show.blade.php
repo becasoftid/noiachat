@@ -21,8 +21,9 @@
         $customerCareWindowClosed = $freeFormEligibility->value === 'blocked_customer_care_window';
     @endphp
     <div
-        class="h-full min-h-0 w-full max-w-full overflow-hidden bg-white lg:grid xl:grid-cols-[390px_minmax(0,1fr)_320px]"
-        x-data="{ detailsOpen: false }"
+        class="h-full min-h-0 w-full max-w-full overflow-hidden bg-white lg:grid"
+        :class="detailsOpen ? 'xl:grid-cols-[390px_minmax(0,1fr)_320px]' : 'xl:grid-cols-[390px_minmax(0,1fr)]'"
+        x-data="{ detailsOpen: window.matchMedia('(min-width: 1280px)').matches }"
     >
         <aside class="hidden min-h-0 flex-col border-slate-200 bg-white lg:flex lg:border-r">
             <div class="border-b border-slate-200 bg-slate-50/80 p-4">

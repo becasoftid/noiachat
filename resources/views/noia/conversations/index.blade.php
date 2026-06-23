@@ -28,8 +28,8 @@
 
     <div
         class="h-full min-h-0 w-full max-w-full overflow-hidden bg-white lg:grid"
-        :class="{ 'xl:grid-cols-[340px_minmax(0,1fr)_280px] 2xl:grid-cols-[360px_minmax(0,1fr)_300px]': true }"
-        x-data="{ filtersOpen: false, detailsOpen: false }"
+        :class="detailsOpen ? 'xl:grid-cols-[340px_minmax(0,1fr)_280px] 2xl:grid-cols-[360px_minmax(0,1fr)_300px]' : 'xl:grid-cols-[340px_minmax(0,1fr)] 2xl:grid-cols-[360px_minmax(0,1fr)]'"
+        x-data="{ filtersOpen: false, detailsOpen: window.matchMedia('(min-width: 1280px)').matches }"
     >
         <aside class="{{ $conversation ? 'hidden lg:flex' : 'flex' }} h-full min-h-0 w-full max-w-full flex-col overflow-x-hidden border-slate-200 bg-white lg:border-r">
             <div class="border-b border-slate-200 bg-white p-4">
