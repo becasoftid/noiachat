@@ -1,5 +1,6 @@
 @php
     $displayTimezone = config('app.display_timezone', 'America/Bogota');
+    $contactName = $conversation->contact->full_name;
     $backToInboxUrl = route('conversations.index', request()->except(['conversation']));
     $lastActivity = $conversation->last_message_at?->copy()->timezone($displayTimezone);
     $windowUntil = $customerCareWindowUntil?->copy()->timezone($displayTimezone);
@@ -19,6 +20,16 @@
                         <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </a>
+
+                <span
+                    x-show="! detailsOpen"
+                    x-transition.opacity
+                    class="inline-flex h-10 min-w-0 items-center gap-2 rounded-lg bg-emerald-50 px-3 text-sm font-semibold text-emerald-800 lg:hidden xl:inline-flex"
+                >
+                    <span class="max-w-[220px] truncate">{{ $contactName }}</span>
+                    <span class="hidden h-1 w-1 rounded-full bg-emerald-500 sm:inline-block"></span>
+                    <span class="hidden text-emerald-700 sm:inline">{{ $conversation->channel?->name ?? 'WhatsApp' }}</span>
+                </span>
 
                 <span class="inline-flex h-10 min-w-0 items-center gap-2 rounded-lg bg-slate-50 px-3 text-sm font-semibold text-slate-600">
                     <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -77,7 +88,7 @@
     </header>
 
     <div class="min-h-0 flex-1 overflow-y-auto bg-[#f7fbfc] px-4 py-5 2xl:px-6">
-        <div class="w-full space-y-3">
+        <div class="mx-auto w-full max-w-5xl space-y-3">
             @php $lastDate = null; @endphp
             @forelse($timeline as $item)
                 @php
@@ -116,7 +127,7 @@
                         <p class="mt-1">{{ $item->compliance_block_description }}</p>
                     </div>
                 @else
-                    <div class="@if($item->direction === 'outbound') ml-auto rounded-br-sm bg-[#d9fdd3] @else rounded-bl-sm bg-white @endif max-w-[92%] rounded-lg px-4 py-3 text-slate-950 shadow-sm ring-1 ring-black/5 lg:max-w-[78%] 2xl:max-w-[72%]">
+                    <div class="@if($item->direction === 'outbound') ml-auto rounded-br-sm bg-[#d9fdd3] @else rounded-bl-sm bg-white @endif w-fit max-w-[92%] rounded-lg px-4 py-3 text-slate-950 shadow-sm ring-1 ring-black/5 lg:max-w-[680px]">
                         <div class="flex items-start justify-between gap-3">
                             <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{{ $item->direction === 'outbound' ? 'Saliente' : 'Entrante' }}</p>
                             <p class="shrink-0 text-[11px] text-slate-500">{{ optional($createdAt)->format('H:i') }}</p>
