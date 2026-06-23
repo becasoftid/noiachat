@@ -34,8 +34,6 @@ class MessageController extends Controller
     {
         return view('noia.messages.index', [
             'messages' => $this->messages->paginateLatest(20, request()->only(['status', 'type', 'search', 'date_from', 'date_to'])),
-            'contacts' => $this->contacts->ordered(),
-            'channels' => $this->channels->active(),
         ]);
     }
 

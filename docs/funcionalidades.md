@@ -91,7 +91,7 @@ Esta matriz controla el estado funcional del proyecto. Debe actualizarse cada ve
 | CONV-003 | Conversaciones | Asignacion a operador | MVP | P1 | Select, accion "Asignar a mi" y pruebas en `NoiaChatMvpTest` | Crear filtros por equipo y reglas operativas de reasignacion. |
 | CONV-004 | Conversaciones | Estados abierta/pendiente/resuelta/cerrada | MVP | P1 | Select existe | Definir reglas operativas y automatizaciones. |
 | CONV-005 | Conversaciones | Auto-refresh o tiempo real | MVP | P1 | Polling simple del inbox con endpoint parcial y `NoiaChatMvpTest` | Evaluar tiempo real con Echo/Reverb si el volumen lo exige. |
-| CONV-006 | Conversaciones | Nuevo chat como flujo principal de envio | MVP | P1 | `/messages` permite abrir chat directo por contacto/canal y conserva enlace a `/conversations?new=1`; `POST /conversations/start` crea o reutiliza conversacion; documentado en `docs/conversaciones-flujo-operativo.md` | Mejorar selector con busqueda/autocomplete cuando crezca el volumen de contactos. |
+| CONV-006 | Conversaciones | Nuevo chat como flujo principal de envio | MVP | P1 | `/contacts` muestra acciones por icono para ver y enviar mensaje; el envio crea o reutiliza conversacion por contacto/canal mediante `POST /conversations/start`; `/messages` queda como bitacora con acceso secundario a `/conversations?new=1`; documentado en `docs/conversaciones-flujo-operativo.md` | Mejorar selector con busqueda/autocomplete cuando crezca el volumen de contactos. |
 | UI-001 | Interfaz | Menu lateral colapsable con iconos | Operativo | P1 | Layout principal permite contraer/expandir, recuerda preferencia local e identifica opciones por icono | Validar usabilidad con usuarios y reemplazar SVG inline por libreria de iconos si se adopta una. |
 | AUDIT-001 | Auditoria | Registro de acciones principales | MVP | P0 | `/audit-logs` muestra contactos y acciones | Agregar auditoria de mas eventos operativos. |
 | AUDIT-002 | Auditoria | Filtros de auditoria | MVP | P1 | Modal de filtros implementado con sede disponible para alcance de empresa | Agregar exportacion CSV/Excel. |
@@ -194,7 +194,6 @@ Una funcionalidad solo debe pasar a `Operativo` si cumple:
 | 2026-06-19 | WA-COM-009/010 implementados como MVP: pruebas de aislamiento comercial y comando de validacion real de canal WhatsApp Meta. | Equipo NoiaChat |
 | 2026-06-22 | CONV-006 implementado como MVP: el inicio de nuevos envios pasa a `/conversations` mediante Nuevo chat, reutilizando o creando conversaciones por contacto/canal. | Equipo NoiaChat |
 | 2026-06-22 | CONV-001/CONV-002 ajustados visualmente: inbox y panel de conversacion quedan mas claros para operacion diaria, destacando chat activo, contexto, ventana 24h y respuesta por plantilla. | Equipo NoiaChat |
-| 2026-06-22 | CONV-006 ajustado: `/messages` permite abrir directamente una conversacion existente o nueva al seleccionar contacto y canal. | Equipo NoiaChat |
 | 2026-06-15 | Redisenio operativo de conversaciones, carga del chat activo en `/conversations` y menu lateral colapsable con iconos. | Equipo NoiaChat |
 | 2026-06-15 | Indicadores de lectura en mensajes salientes y sonido opcional para mensajes entrantes nuevos. | Equipo NoiaChat |
 | 2026-06-08 | Creacion de matriz inicial de funcionalidades y backlog priorizado. | Equipo NoiaChat |

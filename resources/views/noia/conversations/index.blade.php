@@ -106,7 +106,7 @@
                             <select class="noia-select bg-white" name="contact_id" required>
                                 <option value="">Selecciona contacto</option>
                                 @foreach($contacts as $contact)
-                                    <option value="{{ $contact->id }}" @selected(old('contact_id') === $contact->id)>
+                                    <option value="{{ $contact->id }}" @selected((old('contact_id') ?? request('contact_id')) === $contact->id)>
                                         {{ $contact->full_name }} · {{ $contact->primary_phone }}
                                     </option>
                                 @endforeach

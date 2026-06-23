@@ -14,7 +14,7 @@ class EloquentContactRepository implements ContactRepositoryInterface
     public function paginateWithSearch(?string $search = null, int $perPage = 15): LengthAwarePaginator
     {
         return $this->query()
-            ->with(['contactConsents', 'messages'])
+            ->with(['contactChannels.channel', 'contactConsents', 'messages'])
             ->when($search, function ($query, $term): void {
                 $query->where(function ($builder) use ($term): void {
                     $builder->where('full_name', 'like', "%{$term}%")

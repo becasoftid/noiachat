@@ -24,6 +24,7 @@ class ContactController extends Controller
     {
         return view('noia.contacts.index', [
             'contacts' => $this->contacts->paginateWithSearch($request->string('search')->toString() ?: null),
+            'activeChannels' => Channel::query()->forTenantContext()->where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 

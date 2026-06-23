@@ -155,11 +155,23 @@ class NoiaChatMvpTest extends TestCase
         $this->actingAs($this->admin)
             ->get(route('messages.index'))
             ->assertOk()
-            ->assertSee(route('conversations.start'), false)
             ->assertSee(route('conversations.index', ['new' => 1]), false)
             ->assertSee('Nuevo envío')
-            ->assertSee('Abrir chat directo')
-            ->assertSee('Abrir chat');
+            ->assertDontSee('Abrir chat directo');
+    }
+
+    public function test_contacts_index_shows_view_and_send_message_actions(): void
+    {
+        $contact = $this->makeContact('573101000117', true);
+
+        $this->actingAs($this->admin)
+            ->get(route('contacts.index'))
+            ->assertOk()
+            ->assertSee(route('contacts.show', $contact), false)
+            ->assertSee(route('conversations.start'), false)
+            ->assertSee('Enviar mensaje a '.$contact->full_name, false)
+            ->assertSee('name="contact_id" value="'.$contact->id.'"', false)
+            ->assertSee('name="channel_id" value="'.$this->channel->id.'"', false);
     }
 
     public function test_operator_can_start_new_chat_from_conversations(): void
