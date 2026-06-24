@@ -22,10 +22,13 @@ window.App.toast = ({ type = 'success', message = '' } = {}) => {
             text: message,
             confirmButtonText: 'Entendido',
             buttonsStyling: false,
+            width: '32rem',
             customClass: {
                 popup: 'noia-swal-modal noia-swal-modal-error',
+                icon: 'noia-swal-icon',
                 title: 'noia-swal-modal-title',
                 htmlContainer: 'noia-swal-modal-text',
+                actions: 'noia-swal-actions',
                 confirmButton: 'noia-swal-confirm',
             },
         });
@@ -41,7 +44,7 @@ window.App.toast = ({ type = 'success', message = '' } = {}) => {
         showConfirmButton: false,
         timer: 3200,
         timerProgressBar: true,
-        width: '24rem',
+        width: '22rem',
         customClass: {
             popup: 'noia-swal-toast noia-swal-toast-success',
             title: 'noia-swal-title',
