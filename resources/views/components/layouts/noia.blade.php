@@ -39,11 +39,11 @@
                 localStorage.setItem('noia.sidebarCollapsed', this.sidebarCollapsed ? 'true' : 'false');
             },
         }"
-        class="min-h-screen transition-[grid-template-columns] duration-200 lg:grid"
+        class="min-h-screen transition-[grid-template-columns] duration-200 lg:grid lg:h-screen lg:overflow-hidden"
         :class="sidebarCollapsed ? 'lg:grid-cols-[88px_minmax(0,1fr)]' : 'lg:grid-cols-[280px_minmax(0,1fr)]'"
     >
         <aside
-            class="bg-[#10202a] px-5 py-5 text-white transition-all duration-200 lg:min-h-screen lg:py-8"
+            class="bg-[#10202a] px-5 py-5 text-white transition-all duration-200 lg:h-screen lg:min-h-0 lg:overflow-y-auto lg:py-8"
             :class="sidebarCollapsed ? 'lg:px-4' : 'lg:px-6'"
         >
             <div class="flex items-center justify-between gap-4 lg:block">
@@ -181,8 +181,8 @@
             </nav>
         </aside>
 
-        <main class="min-w-0">
-            <header class="border-b border-slate-200 bg-white/90 px-5 py-5 backdrop-blur lg:px-8">
+        <main class="min-w-0 lg:h-screen lg:min-h-0 lg:overflow-y-auto">
+            <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-5 py-5 backdrop-blur lg:px-8">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">NoiaChat</p>
