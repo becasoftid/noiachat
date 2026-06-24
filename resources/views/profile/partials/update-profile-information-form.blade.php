@@ -39,9 +39,11 @@
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="noia-alert-success mt-2">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
+                        <div
+                            class="sr-only"
+                            x-data
+                            x-init="window.App.toast({ type: 'success', message: @js(__('A new verification link has been sent to your email address.')) })"
+                        ></div>
                     @endif
                 </div>
             @endif
@@ -51,13 +53,11 @@
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
             @if (session('status') === 'profile-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm font-medium text-emerald-700"
-                >{{ __('Saved.') }}</p>
+                <div
+                    class="sr-only"
+                    x-data
+                    x-init="window.App.toast({ type: 'success', message: @js(__('Saved.')) })"
+                ></div>
             @endif
         </div>
     </form>

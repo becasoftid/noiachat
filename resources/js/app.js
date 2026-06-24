@@ -15,18 +15,37 @@ window.App.toast = ({ type = 'success', message = '' } = {}) => {
 
     const isError = type === 'error';
 
+    if (isError) {
+        Swal.fire({
+            icon: 'error',
+            title: 'No se pudo completar la accion',
+            text: message,
+            confirmButtonText: 'Entendido',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'noia-swal-modal noia-swal-modal-error',
+                title: 'noia-swal-modal-title',
+                htmlContainer: 'noia-swal-modal-text',
+                confirmButton: 'noia-swal-confirm',
+            },
+        });
+
+        return;
+    }
+
     Swal.fire({
         toast: true,
         position: 'top-end',
-        icon: isError ? 'error' : 'success',
+        icon: 'success',
         title: message,
         showConfirmButton: false,
-        timer: isError ? 5200 : 3600,
+        timer: 3200,
         timerProgressBar: true,
+        width: '24rem',
         customClass: {
-            popup: `noia-swal-toast ${isError ? 'noia-swal-toast-error' : 'noia-swal-toast-success'}`,
+            popup: 'noia-swal-toast noia-swal-toast-success',
             title: 'noia-swal-title',
-            timerProgressBar: isError ? 'noia-swal-progress-error' : 'noia-swal-progress-success',
+            timerProgressBar: 'noia-swal-progress-success',
         },
     });
 };

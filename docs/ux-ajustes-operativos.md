@@ -92,6 +92,24 @@ Archivo principal:
 
 - `resources/views/noia/tenancy/whatsapp/index.blade.php`
 
+## Notificaciones y alertas
+
+Cambios aplicados:
+
+- Mensajes transitorios de exito (`session('status')`) se muestran como toast SweetAlert2 compacto.
+- Errores transitorios (`session('error')`) se muestran como modal SweetAlert2 centrado, con texto legible y accion **Entendido**.
+- Login, recuperacion de contrasena, verificacion de email y perfil usan el mismo componente de notificacion SweetAlert2.
+- Las alertas persistentes de validacion, plan o suscripcion permanecen inline porque requieren contexto visible y no deben desaparecer.
+
+Archivos principales:
+
+- `resources/js/app.js`
+- `resources/css/app.css`
+- `resources/views/components/auth-session-status.blade.php`
+- `resources/views/auth/verify-email.blade.php`
+- `resources/views/profile/partials/update-profile-information-form.blade.php`
+- `resources/views/profile/partials/update-password-form.blade.php`
+
 ## Validaciones
 
 Validaciones ejecutadas durante estos ajustes:
