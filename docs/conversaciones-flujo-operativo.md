@@ -36,15 +36,15 @@ Esa separacion obliga al usuario a elegir contacto y canal varias veces, no mues
 
 ## Organizacion visual del panel
 
-La vista `/conversations` queda organizada como una bandeja operativa tipo WhatsApp:
+La vista `/conversations` queda organizada como una bandeja operativa tipo WhatsApp. Los ajustes visuales recientes tambien estan resumidos en `docs/ux-ajustes-operativos.md`.
 
 - Columna izquierda de inbox con titulo, contador de no leidos, busqueda por nombre/telefono, filtros rapidos, accion **Nuevo chat**, filtros avanzados y exportacion.
 - Lista de conversaciones con avatar, contacto, telefono, canal, vista previa, hora, contador de no leidos, responsable y estado de ventana.
 - Conversacion activa resaltada para evitar dudas cuando hay varios contactos visibles.
-- Cabecera compacta con avatar, contacto, telefono, canal, estado, responsable, accion **Asignarme**, selector de estado y accion de detalles.
+- Cabecera compacta con contexto de responsable, estado y ventana 24h. La informacion repetida de contacto/canal se evita cuando ya esta visible en el panel de detalles.
 - Historial con scroll independiente, divisores de fecha, burbujas entrantes/salientes, eventos del sistema, estados de entrega/lectura y errores tecnicos cuando existan.
 - Compositor inferior inteligente que muestra solo el formulario permitido por el estado de la ventana.
-- Panel lateral de detalles en escritorio con contacto, canal, responsable, ultima actividad, estado del canal, estado de ventana y acceso al perfil completo.
+- Panel lateral de detalles colapsable en escritorio con contacto, canal, responsable, ultima actividad, estado del canal, estado de ventana y acceso al perfil completo.
 - En pantallas menores a escritorio amplio, los detalles se abren como drawer para evitar scroll horizontal.
 
 ### Ventana de atencion y composer

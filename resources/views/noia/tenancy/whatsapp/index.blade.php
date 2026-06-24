@@ -20,7 +20,7 @@
         $totalConversations = $channels->sum('conversations_count');
     @endphp
 
-    <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]" x-data="{ createOpen: false }" x-on:keydown.escape.window="createOpen = false">
         <div class="space-y-6">
             <section class="noia-card">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -52,84 +52,111 @@
                 </dl>
             </section>
 
-            <details class="noia-card group" @if($channels->isEmpty()) open @endif>
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
+            <section class="noia-card">
+                <div class="flex items-center justify-between gap-4">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Nuevo canal</p>
                         <h3 class="mt-1 text-lg font-semibold text-slate-950">Crear configuracion WhatsApp</h3>
                     </div>
-                    <span class="noia-btn-success h-10 px-4">Crear canal</span>
-                </summary>
+                    <button type="button" class="noia-btn-success h-10 px-4" x-on:click="createOpen = true">Crear canal</button>
+                </div>
+            </section>
 
-                <form method="POST" action="{{ route('whatsapp.channels.store') }}" class="mt-6 grid gap-4 border-t border-slate-200 pt-6">
-                    @csrf
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <label class="grid gap-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Nombre</span>
-                            <input class="noia-input" name="name" value="{{ old('name', 'WhatsApp') }}" required>
-                        </label>
-                        <label class="grid gap-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Sede</span>
-                            <select class="noia-select" name="branch_id">
-                                <option value="">Toda la empresa</option>
-                                @foreach($branches as $branch)
-                                    <option value="{{ $branch->id }}" @selected(old('branch_id') === $branch->id)>{{ $branch->name }}</option>
-                                @endforeach
-                            </select>
-                        </label>
-                        <label class="grid gap-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Phone Number ID</span>
-                            <input class="noia-input" name="settings[phone_number_id]" value="{{ old('settings.phone_number_id') }}" inputmode="numeric">
-                        </label>
-                        <label class="grid gap-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">WABA ID</span>
-                            <input class="noia-input" name="settings[business_account_id]" value="{{ old('settings.business_account_id') }}" inputmode="numeric">
-                        </label>
-                        <label class="grid gap-2 md:col-span-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Access token</span>
-                            <input class="noia-input" type="password" autocomplete="new-password" name="settings[access_token]">
-                        </label>
-                        <label class="grid gap-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Webhook verify token</span>
-                            <input class="noia-input" type="password" autocomplete="new-password" name="settings[webhook_verify_token]">
-                        </label>
-                        <label class="grid gap-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">App secret</span>
-                            <input class="noia-input" type="password" autocomplete="new-password" name="settings[app_secret]">
-                        </label>
-                        <label class="grid gap-2 md:col-span-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Graph API base URL</span>
-                            <input class="noia-input" name="settings[api_base_url]" value="{{ old('settings.api_base_url', 'https://graph.facebook.com/v21.0') }}">
-                        </label>
-                        <label class="grid gap-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Expira</span>
-                            <input class="noia-input" type="date" name="settings[access_token_expires_at]" value="{{ old('settings.access_token_expires_at') }}">
-                        </label>
-                        <label class="grid gap-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Ultima rotacion</span>
-                            <input class="noia-input" type="date" name="settings[access_token_rotated_at]" value="{{ old('settings.access_token_rotated_at') }}">
-                        </label>
-                        <label class="grid gap-2 md:col-span-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Responsable</span>
-                            <input class="noia-input" name="settings[access_token_responsible]" value="{{ old('settings.access_token_responsible') }}">
-                        </label>
-                        <label class="grid gap-2 md:col-span-2">
-                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Procedimiento de rotacion</span>
-                            <textarea class="noia-textarea" name="settings[access_token_rotation_procedure]" rows="3">{{ old('settings.access_token_rotation_procedure') }}</textarea>
-                        </label>
-                        <label class="flex h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700">
-                            <input type="checkbox" name="is_active" value="1" checked class="rounded border-slate-300 text-cyan-700 focus:ring-cyan-100">
-                            Activo
-                        </label>
-                        <button class="noia-btn-success">Crear canal</button>
+            <div
+                x-cloak
+                x-show="createOpen"
+                x-transition.opacity
+                class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="create-whatsapp-channel"
+            >
+                <div class="absolute inset-0" x-on:click="createOpen = false"></div>
+                <div class="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl">
+                    <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Nuevo canal</p>
+                            <h3 id="create-whatsapp-channel" class="mt-1 text-xl font-semibold text-slate-950">Crear configuracion WhatsApp</h3>
+                        </div>
+                        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50" x-on:click="createOpen = false" aria-label="Cerrar modal">
+                            <span class="text-2xl leading-none">×</span>
+                        </button>
                     </div>
-                </form>
-            </details>
+
+                    <form method="POST" action="{{ route('whatsapp.channels.store') }}" class="min-h-0 overflow-y-auto px-6 py-5">
+                        @csrf
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <label class="grid gap-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Nombre</span>
+                                <input class="noia-input" name="name" value="{{ old('name', 'WhatsApp') }}" required>
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Sede</span>
+                                <select class="noia-select" name="branch_id">
+                                    <option value="">Toda la empresa</option>
+                                    @foreach($branches as $branch)
+                                        <option value="{{ $branch->id }}" @selected(old('branch_id') === $branch->id)>{{ $branch->name }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Phone Number ID</span>
+                                <input class="noia-input" name="settings[phone_number_id]" value="{{ old('settings.phone_number_id') }}" inputmode="numeric">
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">WABA ID</span>
+                                <input class="noia-input" name="settings[business_account_id]" value="{{ old('settings.business_account_id') }}" inputmode="numeric">
+                            </label>
+                            <label class="grid gap-2 md:col-span-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Access token</span>
+                                <input class="noia-input" type="password" autocomplete="new-password" name="settings[access_token]">
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Webhook verify token</span>
+                                <input class="noia-input" type="password" autocomplete="new-password" name="settings[webhook_verify_token]">
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">App secret</span>
+                                <input class="noia-input" type="password" autocomplete="new-password" name="settings[app_secret]">
+                            </label>
+                            <label class="grid gap-2 md:col-span-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Graph API base URL</span>
+                                <input class="noia-input" name="settings[api_base_url]" value="{{ old('settings.api_base_url', 'https://graph.facebook.com/v21.0') }}">
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Expira</span>
+                                <input class="noia-input" type="date" name="settings[access_token_expires_at]" value="{{ old('settings.access_token_expires_at') }}">
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Ultima rotacion</span>
+                                <input class="noia-input" type="date" name="settings[access_token_rotated_at]" value="{{ old('settings.access_token_rotated_at') }}">
+                            </label>
+                            <label class="grid gap-2 md:col-span-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Responsable</span>
+                                <input class="noia-input" name="settings[access_token_responsible]" value="{{ old('settings.access_token_responsible') }}">
+                            </label>
+                            <label class="grid gap-2 md:col-span-2">
+                                <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Procedimiento de rotacion</span>
+                                <textarea class="noia-textarea" name="settings[access_token_rotation_procedure]" rows="3">{{ old('settings.access_token_rotation_procedure') }}</textarea>
+                            </label>
+                            <label class="flex h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700">
+                                <input type="checkbox" name="is_active" value="1" checked class="rounded border-slate-300 text-cyan-700 focus:ring-cyan-100">
+                                Activo
+                            </label>
+                        </div>
+
+                        <div class="sticky bottom-0 -mx-6 mt-6 flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4">
+                            <button type="button" class="noia-btn-secondary" x-on:click="createOpen = false">Cancelar</button>
+                            <button class="noia-btn-success">Crear canal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
             <section class="space-y-4">
                 @forelse($channels as $channel)
                     @php($state = $channel->getAttribute('operational_status'))
-                    <article class="noia-card">
+                    <article class="noia-card" x-data="{ editOpen: false }" x-on:keydown.escape.window="editOpen = false">
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                                 <div class="flex flex-wrap items-center gap-2">
@@ -145,6 +172,7 @@
                             </div>
 
                             <div class="flex flex-wrap gap-2">
+                                <button type="button" class="noia-btn-primary h-10 px-4" x-on:click="editOpen = true">Editar configuracion</button>
                                 <form method="POST" action="{{ route('whatsapp.channels.test', $channel) }}">
                                     @csrf
                                     <button class="noia-btn-secondary h-10 px-4">Probar conexion</button>
@@ -215,78 +243,97 @@
                             </div>
                         @endif
 
-                        <details class="mt-5 rounded-lg border border-slate-200 bg-slate-50/70 p-4 group">
-                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-800 [&::-webkit-details-marker]:hidden">
-                                <span>Editar configuracion</span>
-                                <span class="text-xs text-slate-500 group-open:hidden">Mostrar campos</span>
-                                <span class="hidden text-xs text-slate-500 group-open:inline">Ocultar campos</span>
-                            </summary>
-
-                            <form method="POST" action="{{ route('whatsapp.channels.update', $channel) }}" class="mt-5 grid gap-4 border-t border-slate-200 pt-5">
-                                @csrf
-                                @method('PATCH')
-                                <div class="grid gap-4 md:grid-cols-2">
-                                    <label class="grid gap-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Nombre</span>
-                                        <input class="noia-input" name="name" value="{{ old('name', $channel->name) }}" required>
-                                    </label>
-                                    <label class="grid gap-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Sede</span>
-                                        <select class="noia-select" name="branch_id">
-                                            <option value="" @selected($channel->branch_id === null)>Toda la empresa</option>
-                                            @foreach($branches as $branch)
-                                                <option value="{{ $branch->id }}" @selected($channel->branch_id === $branch->id)>{{ $branch->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </label>
-                                    <label class="grid gap-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Phone Number ID</span>
-                                        <input class="noia-input" name="settings[phone_number_id]" value="{{ old('settings.phone_number_id', data_get($channel->settings, 'phone_number_id')) }}" inputmode="numeric">
-                                    </label>
-                                    <label class="grid gap-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">WABA ID</span>
-                                        <input class="noia-input" name="settings[business_account_id]" value="{{ old('settings.business_account_id', data_get($channel->settings, 'business_account_id')) }}" inputmode="numeric">
-                                    </label>
-                                    <label class="grid gap-2 md:col-span-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Access token: {{ $maskSecret(data_get($channel->settings, 'access_token')) }}</span>
-                                        <input class="noia-input" type="password" autocomplete="new-password" name="settings[access_token]">
-                                    </label>
-                                    <label class="grid gap-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Webhook token: {{ $maskSecret(data_get($channel->settings, 'webhook_verify_token')) }}</span>
-                                        <input class="noia-input" type="password" autocomplete="new-password" name="settings[webhook_verify_token]">
-                                    </label>
-                                    <label class="grid gap-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">App secret: {{ $maskSecret(data_get($channel->settings, 'app_secret')) }}</span>
-                                        <input class="noia-input" type="password" autocomplete="new-password" name="settings[app_secret]">
-                                    </label>
-                                    <label class="grid gap-2 md:col-span-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Graph API base URL</span>
-                                        <input class="noia-input" name="settings[api_base_url]" value="{{ old('settings.api_base_url', data_get($channel->settings, 'api_base_url', 'https://graph.facebook.com/v21.0')) }}">
-                                    </label>
-                                    <label class="grid gap-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Expira</span>
-                                        <input class="noia-input" type="date" name="settings[access_token_expires_at]" value="{{ old('settings.access_token_expires_at', data_get($channel->settings, 'access_token_expires_at')) }}">
-                                    </label>
-                                    <label class="grid gap-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Ultima rotacion</span>
-                                        <input class="noia-input" type="date" name="settings[access_token_rotated_at]" value="{{ old('settings.access_token_rotated_at', data_get($channel->settings, 'access_token_rotated_at')) }}">
-                                    </label>
-                                    <label class="grid gap-2 md:col-span-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Responsable</span>
-                                        <input class="noia-input" name="settings[access_token_responsible]" value="{{ old('settings.access_token_responsible', data_get($channel->settings, 'access_token_responsible')) }}">
-                                    </label>
-                                    <label class="grid gap-2 md:col-span-2">
-                                        <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Procedimiento de rotacion</span>
-                                        <textarea class="noia-textarea" name="settings[access_token_rotation_procedure]" rows="3">{{ old('settings.access_token_rotation_procedure', data_get($channel->settings, 'access_token_rotation_procedure')) }}</textarea>
-                                    </label>
-                                    <label class="flex h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700">
-                                        <input type="checkbox" name="is_active" value="1" @checked($channel->is_active) class="rounded border-slate-300 text-cyan-700 focus:ring-cyan-100">
-                                        Activo
-                                    </label>
-                                    <button class="noia-btn-primary">Guardar canal</button>
+                        <div
+                            x-cloak
+                            x-show="editOpen"
+                            x-transition.opacity
+                            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="edit-channel-{{ $channel->id }}"
+                        >
+                            <div class="absolute inset-0" x-on:click="editOpen = false"></div>
+                            <div class="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl">
+                                <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
+                                    <div>
+                                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Configuracion WhatsApp</p>
+                                        <h3 id="edit-channel-{{ $channel->id }}" class="mt-1 text-xl font-semibold text-slate-950">Editar {{ $channel->name }}</h3>
+                                    </div>
+                                    <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50" x-on:click="editOpen = false" aria-label="Cerrar modal">
+                                        <span class="text-2xl leading-none">×</span>
+                                    </button>
                                 </div>
-                            </form>
-                        </details>
+
+                                <form method="POST" action="{{ route('whatsapp.channels.update', $channel) }}" class="min-h-0 overflow-y-auto px-6 py-5">
+                                    @csrf
+                                    @method('PATCH')
+                                    <div class="grid gap-4 md:grid-cols-2">
+                                        <label class="grid gap-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Nombre</span>
+                                            <input class="noia-input" name="name" value="{{ old('name', $channel->name) }}" required>
+                                        </label>
+                                        <label class="grid gap-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Sede</span>
+                                            <select class="noia-select" name="branch_id">
+                                                <option value="" @selected($channel->branch_id === null)>Toda la empresa</option>
+                                                @foreach($branches as $branch)
+                                                    <option value="{{ $branch->id }}" @selected($channel->branch_id === $branch->id)>{{ $branch->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <label class="grid gap-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Phone Number ID</span>
+                                            <input class="noia-input" name="settings[phone_number_id]" value="{{ old('settings.phone_number_id', data_get($channel->settings, 'phone_number_id')) }}" inputmode="numeric">
+                                        </label>
+                                        <label class="grid gap-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">WABA ID</span>
+                                            <input class="noia-input" name="settings[business_account_id]" value="{{ old('settings.business_account_id', data_get($channel->settings, 'business_account_id')) }}" inputmode="numeric">
+                                        </label>
+                                        <label class="grid gap-2 md:col-span-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Access token: {{ $maskSecret(data_get($channel->settings, 'access_token')) }}</span>
+                                            <input class="noia-input" type="password" autocomplete="new-password" name="settings[access_token]">
+                                        </label>
+                                        <label class="grid gap-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Webhook token: {{ $maskSecret(data_get($channel->settings, 'webhook_verify_token')) }}</span>
+                                            <input class="noia-input" type="password" autocomplete="new-password" name="settings[webhook_verify_token]">
+                                        </label>
+                                        <label class="grid gap-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">App secret: {{ $maskSecret(data_get($channel->settings, 'app_secret')) }}</span>
+                                            <input class="noia-input" type="password" autocomplete="new-password" name="settings[app_secret]">
+                                        </label>
+                                        <label class="grid gap-2 md:col-span-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Graph API base URL</span>
+                                            <input class="noia-input" name="settings[api_base_url]" value="{{ old('settings.api_base_url', data_get($channel->settings, 'api_base_url', 'https://graph.facebook.com/v21.0')) }}">
+                                        </label>
+                                        <label class="grid gap-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Expira</span>
+                                            <input class="noia-input" type="date" name="settings[access_token_expires_at]" value="{{ old('settings.access_token_expires_at', data_get($channel->settings, 'access_token_expires_at')) }}">
+                                        </label>
+                                        <label class="grid gap-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Ultima rotacion</span>
+                                            <input class="noia-input" type="date" name="settings[access_token_rotated_at]" value="{{ old('settings.access_token_rotated_at', data_get($channel->settings, 'access_token_rotated_at')) }}">
+                                        </label>
+                                        <label class="grid gap-2 md:col-span-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Responsable</span>
+                                            <input class="noia-input" name="settings[access_token_responsible]" value="{{ old('settings.access_token_responsible', data_get($channel->settings, 'access_token_responsible')) }}">
+                                        </label>
+                                        <label class="grid gap-2 md:col-span-2">
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Procedimiento de rotacion</span>
+                                            <textarea class="noia-textarea" name="settings[access_token_rotation_procedure]" rows="3">{{ old('settings.access_token_rotation_procedure', data_get($channel->settings, 'access_token_rotation_procedure')) }}</textarea>
+                                        </label>
+                                        <label class="flex h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700">
+                                            <input type="checkbox" name="is_active" value="1" @checked($channel->is_active) class="rounded border-slate-300 text-cyan-700 focus:ring-cyan-100">
+                                            Activo
+                                        </label>
+                                    </div>
+
+                                    <div class="sticky bottom-0 -mx-6 mt-6 flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4">
+                                        <button type="button" class="noia-btn-secondary" x-on:click="editOpen = false">Cancelar</button>
+                                        <button class="noia-btn-primary">Guardar canal</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </article>
                 @empty
                     <div class="noia-card">

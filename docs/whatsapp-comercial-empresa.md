@@ -1,6 +1,6 @@
 # Plan comercial de configuracion WhatsApp por empresa
 
-Ultima actualizacion: 2026-06-19
+Ultima actualizacion: 2026-06-24
 
 Este documento separa la configuracion tecnica interna de NoiaChat de la configuracion comercial que debe poder gestionar cada empresa para conectar su propio WhatsApp Cloud API de Meta.
 
@@ -19,11 +19,15 @@ La arquitectura base ya existe:
 - Los envios salientes usan el canal asociado al mensaje.
 - La sincronizacion de plantillas usa `business_account_id` y `access_token` del canal.
 
-La brecha actual es de producto/UI:
+La pantalla comercial ya esta disponible en `/integrations/whatsapp`:
 
-- La configuracion existe en `/settings`, pero esa ruta es de plataforma y requiere `platform.access`.
-- El usuario comercial `company_admin` no tiene una pantalla propia para configurar WhatsApp.
-- La experiencia no esta orientada a onboarding comercial ni validacion guiada.
+- Resumen operativo de canales activos, canales en revision, mensajes y conversaciones.
+- Tarjetas por canal con estado, pendientes, credenciales clave, metricas y acciones.
+- Formularios de crear canal y editar configuracion en modales para evitar una pantalla larga y enredada.
+- Checklist Meta lateral con los datos necesarios y flujo recomendado.
+- Acciones de prueba de conexion y sincronizacion de plantillas visibles por canal.
+
+La ruta `/settings` queda como configuracion tecnica de plataforma, no como flujo principal para clientes comerciales.
 
 ## Alcance funcional
 
@@ -38,14 +42,14 @@ El usuario solo debe ver y editar canales de su empresa y sede permitida.
 
 | ID | Actividad | Prioridad | Estado | Objetivo | Criterio de aceptacion |
 | --- | --- | --- | --- | --- | --- |
-| WA-COM-001 | Pantalla comercial de canales WhatsApp | P1 | MVP | Crear una vista para que `company_admin` gestione canales WhatsApp de su empresa/sede sin entrar a `/settings`. | Desde el menu comercial se accede a la configuracion del canal propio y no aparecen modulos tecnicos globales. |
+| WA-COM-001 | Pantalla comercial de canales WhatsApp | P1 | MVP | Crear una vista para que `company_admin` gestione canales WhatsApp de su empresa/sede sin entrar a `/settings`. | Desde el menu comercial se accede a `/integrations/whatsapp`, con resumen operativo y canales propios. |
 | WA-COM-002 | Permisos comerciales para integraciones | P1 | MVP | Separar permisos de plataforma y permisos de integracion empresarial. | `company_admin` puede configurar su canal; `operator` no; `super_admin` conserva soporte global. |
-| WA-COM-003 | Crear/editar canal por empresa/sede | P1 | MVP | Permitir crear o actualizar canal WhatsApp asociado a la empresa y sede activa. | No se puede crear/editar un canal de otra empresa ni exceder el limite del plan. |
-| WA-COM-004 | Formulario seguro de credenciales Meta | P1 | MVP | Capturar `phone_number_id`, `business_account_id`, `access_token`, `webhook_verify_token`, `app_secret` y metadata de rotacion. | Secretos se enmascaran, campos vacios conservan valores existentes y hay validaciones en espanol. |
+| WA-COM-003 | Crear/editar canal por empresa/sede | P1 | MVP | Permitir crear o actualizar canal WhatsApp asociado a la empresa y sede activa. | Crear y editar abren modales; no se puede crear/editar un canal de otra empresa ni exceder el limite del plan. |
+| WA-COM-004 | Formulario seguro de credenciales Meta | P1 | MVP | Capturar `phone_number_id`, `business_account_id`, `access_token`, `webhook_verify_token`, `app_secret` y metadata de rotacion. | Secretos se enmascaran, campos vacios conservan valores existentes, hay validaciones en espanol y los formularios largos tienen scroll interno en modal. |
 | WA-COM-005 | Prueba de conexion con Meta | P1 | MVP | Validar credenciales antes o despues de guardar. | La pantalla muestra exito o error legible al consultar Meta con el token y WABA configurados. |
 | WA-COM-006 | Sincronizacion comercial de plantillas | P1 | MVP | Permitir sincronizar plantillas desde la misma pantalla comercial. | Las plantillas se sincronizan solo para el canal de la empresa/sede activa. |
 | WA-COM-007 | Estado operativo del canal | P2 | MVP | Mostrar resumen claro: activo, credenciales completas, ultima sincronizacion, expiracion de token y alertas. | El administrador entiende si el canal esta listo, incompleto o requiere accion. |
-| WA-COM-008 | Guia en pantalla y documentacion operativa | P2 | MVP | Documentar datos que debe copiar desde Meta y pasos de verificacion. | Existe checklist operativo y copy de ayuda sin exponer secretos. |
+| WA-COM-008 | Guia en pantalla y documentacion operativa | P2 | MVP | Documentar datos que debe copiar desde Meta y pasos de verificacion. | Existe checklist operativo lateral, flujo recomendado y nota UX en `docs/ux-ajustes-operativos.md`. |
 | WA-COM-009 | Pruebas de aislamiento y permisos | P1 | MVP | Cubrir acceso por UI, rutas directas, edicion cruzada y asignacion de canales. | Tests prueban que empresa A no ve ni modifica canal de empresa B. |
 | WA-COM-010 | Despliegue y validacion con numero real | P1 | MVP | Validar el flujo en staging/produccion con un numero WhatsApp real por empresa. | Envio, recepcion, webhook y plantillas funcionan con credenciales del canal comercial. |
 
@@ -87,6 +91,18 @@ El usuario solo debe ver y editar canales de su empresa y sede permitida.
 - Prueba de webhook entrante asociado a la empresa correcta.
 - Prueba de envio saliente usando el canal configurado.
 - Documentacion actualizada en `docs/integracion-whatsapp.md` o documento operativo comercial.
+
+## Evidencia UX reciente
+
+Cambios visuales documentados:
+
+- `docs/ux-ajustes-operativos.md`
+- `docs/funcionalidades.md`
+
+Validaciones ejecutadas:
+
+- `npm run build`
+- `php artisan test --filter=NoiaChatMvpTest`
 
 ## Avances
 
