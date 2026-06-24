@@ -1,3 +1,5 @@
+@import 'sweetalert2/dist/sweetalert2.min.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -127,7 +129,8 @@
     }
 
     .noia-swal-modal.swal2-popup {
-        @apply max-w-lg px-0 pb-6 pt-7;
+        max-width: 30rem !important;
+        padding: 1.75rem 2rem 1.5rem !important;
     }
 
     .noia-swal-modal-error {
@@ -135,29 +138,39 @@
     }
 
     .noia-swal-icon.swal2-icon {
-        @apply mb-4 mt-0;
-        height: 4rem;
-        width: 4rem;
+        height: 3.75rem !important;
+        margin: 0 auto 1.25rem !important;
+        width: 3.75rem !important;
     }
 
     .noia-swal-modal-title {
-        @apply m-0 px-8 text-center text-xl font-semibold leading-7 text-slate-950;
+        @apply m-0 px-2 text-center text-xl font-semibold leading-7 text-slate-950;
+        padding-top: 0 !important;
     }
 
     .noia-swal-modal-text {
-        @apply mt-3 px-8 text-center text-sm leading-6 text-slate-600;
+        @apply mt-3 px-2 text-center text-sm leading-6 text-slate-600;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        max-width: 24rem;
     }
 
     .noia-swal-actions {
         @apply mt-6;
+        margin-bottom: 0 !important;
     }
 
     .noia-swal-confirm {
         @apply inline-flex h-11 min-w-[120px] items-center justify-center rounded-lg bg-[#10202a] px-5 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-[#173141] focus:outline-none;
+        background: #10202a !important;
+        border: 0 !important;
+        color: #ffffff !important;
+        font-family: inherit !important;
+        margin: 0 !important;
     }
 
     .noia-swal-confirm.swal2-confirm:focus {
-        box-shadow: 0 0 0 4px rgb(207 250 254);
+        box-shadow: 0 0 0 4px rgb(207 250 254) !important;
     }
 
     .noia-swal-progress-success {
