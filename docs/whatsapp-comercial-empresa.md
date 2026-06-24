@@ -24,7 +24,7 @@ La pantalla comercial ya esta disponible en `/integrations/whatsapp`:
 - Resumen operativo de canales activos, canales en revision, mensajes y conversaciones.
 - Tarjetas por canal con estado, pendientes, credenciales clave, metricas y acciones.
 - Formularios de crear canal y editar configuracion en modales para evitar una pantalla larga y enredada.
-- Checklist Meta lateral con los datos necesarios y flujo recomendado.
+- Ayuda Meta desplegable con los datos necesarios y flujo recomendado.
 - Acciones de prueba de conexion y sincronizacion de plantillas visibles por canal.
 
 La ruta `/settings` queda como configuracion tecnica de plataforma, no como flujo principal para clientes comerciales.
@@ -49,7 +49,7 @@ El usuario solo debe ver y editar canales de su empresa y sede permitida.
 | WA-COM-005 | Prueba de conexion con Meta | P1 | MVP | Validar credenciales antes o despues de guardar. | La pantalla muestra exito o error legible al consultar Meta con el token y WABA configurados. |
 | WA-COM-006 | Sincronizacion comercial de plantillas | P1 | MVP | Permitir sincronizar plantillas desde la misma pantalla comercial. | Las plantillas se sincronizan solo para el canal de la empresa/sede activa. |
 | WA-COM-007 | Estado operativo del canal | P2 | MVP | Mostrar resumen claro: activo, credenciales completas, ultima sincronizacion, expiracion de token y alertas. | El administrador entiende si el canal esta listo, incompleto o requiere accion. |
-| WA-COM-008 | Guia en pantalla y documentacion operativa | P2 | MVP | Documentar datos que debe copiar desde Meta y pasos de verificacion. | Existe checklist operativo lateral, flujo recomendado y nota UX en `docs/ux-ajustes-operativos.md`. |
+| WA-COM-008 | Guia en pantalla y documentacion operativa | P2 | MVP | Documentar datos que debe copiar desde Meta y pasos de verificacion. | Existe ayuda desplegable con checklist operativo, flujo recomendado y nota UX en `docs/ux-ajustes-operativos.md`. |
 | WA-COM-009 | Pruebas de aislamiento y permisos | P1 | MVP | Cubrir acceso por UI, rutas directas, edicion cruzada y asignacion de canales. | Tests prueban que empresa A no ve ni modifica canal de empresa B. |
 | WA-COM-010 | Despliegue y validacion con numero real | P1 | MVP | Validar el flujo en staging/produccion con un numero WhatsApp real por empresa. | Envio, recepcion, webhook y plantillas funcionan con credenciales del canal comercial. |
 

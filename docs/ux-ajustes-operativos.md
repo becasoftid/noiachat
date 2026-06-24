@@ -82,8 +82,8 @@ Cambios aplicados:
 
 - Resumen superior con canales activos, canales en revision, mensajes y conversaciones.
 - Tarjetas de canal enfocadas en estado, pendientes, credenciales clave, metricas y acciones.
-- Checklist Meta lateral y compacto.
-- Flujo recomendado en tarjeta lateral.
+- Ayuda Meta en boton desplegable compacto.
+- Checklist Meta y flujo recomendado dentro del panel desplegable de ayuda.
 - Formulario de crear canal movido a modal.
 - Formulario de editar configuracion movido a modal por canal.
 - Modales con cierre por boton, clic fuera o tecla `Escape`, y scroll interno para formularios largos.

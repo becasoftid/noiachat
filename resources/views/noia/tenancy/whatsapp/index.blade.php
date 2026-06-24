@@ -20,8 +20,7 @@
         $totalConversations = $channels->sum('conversations_count');
     @endphp
 
-    <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]" x-data="{ createOpen: false }" x-on:keydown.escape.window="createOpen = false">
-        <div class="space-y-6">
+    <div class="space-y-6" x-data="{ createOpen: false }" x-on:keydown.escape.window="createOpen = false">
             <section class="noia-card">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
@@ -51,6 +50,46 @@
                     </div>
                 </dl>
             </section>
+
+            <details class="noia-card group">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Ayuda Meta</p>
+                        <h3 class="mt-1 text-lg font-semibold text-slate-950">Datos necesarios y flujo recomendado</h3>
+                    </div>
+                    <span class="noia-btn-secondary h-10 px-4 group-open:hidden">Ver ayuda</span>
+                    <span class="noia-btn-secondary hidden h-10 px-4 group-open:inline-flex">Ocultar ayuda</span>
+                </summary>
+
+                <div class="mt-5 grid gap-4 border-t border-slate-200 pt-5 lg:grid-cols-2">
+                    <div>
+                        <h4 class="font-semibold text-slate-950">Checklist Meta</h4>
+                        <div class="mt-3 grid gap-3 text-sm text-slate-600 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                            <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                <p class="font-semibold text-slate-900">1. Numero y cuenta</p>
+                                <p class="mt-1">Copia `Phone Number ID` y `WhatsApp Business Account ID` desde Meta Developers.</p>
+                            </div>
+                            <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                <p class="font-semibold text-slate-900">2. Seguridad</p>
+                                <p class="mt-1">Guarda access token, webhook verify token, app secret, responsable y fechas de rotacion.</p>
+                            </div>
+                            <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                <p class="font-semibold text-slate-900">3. Validacion</p>
+                                <p class="mt-1">Prueba conexion y sincroniza plantillas aprobadas despues de guardar credenciales.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold text-slate-950">Flujo recomendado</h4>
+                        <ol class="mt-3 grid gap-3 text-sm text-slate-600 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                            <li class="rounded-lg bg-slate-50 p-3"><strong class="text-slate-900">1.</strong> Crear o editar el canal.</li>
+                            <li class="rounded-lg bg-slate-50 p-3"><strong class="text-slate-900">2.</strong> Probar conexion con Meta.</li>
+                            <li class="rounded-lg bg-slate-50 p-3"><strong class="text-slate-900">3.</strong> Sincronizar plantillas y operar conversaciones.</li>
+                        </ol>
+                    </div>
+                </div>
+            </details>
 
             <section class="noia-card">
                 <div class="flex items-center justify-between gap-4">
@@ -342,36 +381,5 @@
                     </div>
                 @endforelse
             </section>
-        </div>
-
-        <aside class="space-y-6 xl:sticky xl:top-6">
-            <section class="noia-card">
-                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Checklist Meta</p>
-                <h3 class="mt-2 text-lg font-semibold text-slate-950">Datos necesarios</h3>
-                <div class="mt-5 space-y-3 text-sm text-slate-600">
-                    <details class="rounded-lg border border-slate-200 bg-slate-50 p-3" open>
-                        <summary class="cursor-pointer list-none font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">1. Numero y cuenta</summary>
-                        <p class="mt-2">Copia `Phone Number ID` y `WhatsApp Business Account ID` desde Meta Developers.</p>
-                    </details>
-                    <details class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                        <summary class="cursor-pointer list-none font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">2. Seguridad</summary>
-                        <p class="mt-2">Guarda access token, webhook verify token, app secret, responsable y fechas de rotacion.</p>
-                    </details>
-                    <details class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                        <summary class="cursor-pointer list-none font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">3. Validacion</summary>
-                        <p class="mt-2">Prueba conexion y sincroniza plantillas aprobadas despues de guardar credenciales.</p>
-                    </details>
-                </div>
-            </section>
-
-            <section class="noia-card">
-                <h3 class="font-semibold text-slate-950">Flujo recomendado</h3>
-                <ol class="mt-4 space-y-3 text-sm text-slate-600">
-                    <li class="rounded-lg bg-slate-50 p-3"><strong class="text-slate-900">1.</strong> Crear o editar el canal.</li>
-                    <li class="rounded-lg bg-slate-50 p-3"><strong class="text-slate-900">2.</strong> Probar conexion con Meta.</li>
-                    <li class="rounded-lg bg-slate-50 p-3"><strong class="text-slate-900">3.</strong> Sincronizar plantillas y operar conversaciones.</li>
-                </ol>
-            </section>
-        </aside>
     </div>
 </x-layouts.noia>
